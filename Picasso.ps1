@@ -264,6 +264,9 @@ function Install-Software($colour) {
         throw "Failed to $operation the $name software."
     }
     
+    Write-Message 'Updating PATH'
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    Write-Message 'PATH updated'
     Write-Message "$operation on $name application successful."
 }
 
