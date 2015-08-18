@@ -10,6 +10,13 @@ In order for Picasso to install/upgrade/uninstall software it requires a Chocola
 
 Examples
 ========
+Running Picasso
+---------------
+```bash
+.\Picasso.ps1 example.json
+.\Picasso.ps1 -help
+```
+
 Install Git
 -----------
 This example palette will install Git onto the computer that Picasso is run:
