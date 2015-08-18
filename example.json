@@ -1,0 +1,34 @@
+{
+    "palette" : {
+        "paint": [
+            {
+            	"type": "software",
+            	"name": "git",
+            	"ensure": "installed",
+            	"version": "latest"
+            },
+            {
+            	"type": "git",
+            	"remote": "https://github.com/Badgerati/Table.git",
+            	"local": "C:\\Projects\\PicassoTest",
+            	"branchname": "master"
+            },
+            {
+                "type": "msbuild",
+                "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
+                "project": "C:\\Projects\\PicassoTest\\Table\\C#\\Table.sln",
+                "arguments": "/p:Configuration=Debug"
+            },
+            {
+                "type": "software",
+                "name": "curl",
+                "ensure": "installed",
+                "version": "latest"
+            },
+            {
+                "type": "cmd",
+                "command": "echo Hello, world!"
+            }
+        ]
+    }
+}
