@@ -31,6 +31,13 @@ function Test-Url($url) {
     }
 }
 
+# Wipes a given directory
+function Remove-Directory($directory) {
+    Write-Message "Wiping directory: '$directory'."
+    Remove-Item -Recurse -Force $directory | Out-Null
+    Write-Message 'Directory wiped.'
+}
+
 # Ensures that the configuration file passed is valid
 function Validate-File($config) {
     Write-Message 'Validating configuration file.'
@@ -131,9 +138,14 @@ function Checkout-Svn($colour) {
 
     $revision = $colour.revision
     
-    # clone
-    Write-Message "Checking out SVN repository from '$url' to '$path'."
+    # Delete existing directory
     Push-Location $path
+    if ((Test-Path $name)) {
+        Remove-Directory $name
+    }
+
+    # checkout
+    Write-Message "Checking out SVN repository from '$url' to '$path'."
     svn.exe checkout $url $name
 
     if (!$?) {
@@ -171,8 +183,8 @@ function Clone-Git($colour) {
     }
 
     $directory = $matches['repo']
-
-    $path = $colour.local
+    
+    $path = $colour.localpath
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No local git repository path specified.'
     }
@@ -187,15 +199,31 @@ function Clone-Git($colour) {
     }
 
     $commit = $colour.commit
-    
+    $name = $colour.localname
+
+    # delete directory if exists
+    Push-Location $path
+    if ((Test-Path $directory)) {
+        Remove-Directory $directory
+    }
+    elseif (![string]::IsNullOrWhiteSpace($name) -and (Test-Path $name)) {
+        Remove-Directory $name
+    }
+
     # clone
     Write-Message "Cloning git repository from '$url' to '$path'."
-    Push-Location $path
     git.exe clone $url
 
     if (!$?) {
         Pop-Location
         throw 'Failed to clone git repository.'
+    }
+
+    # rename
+    if (![string]::IsNullOrWhiteSpace($name)) {
+        Rename-Item $directory $name | Out-Null
+        Write-Message "Local directory renamed from '$directory' to '$name'."
+        $directory = $name
     }
 
     # checkout
@@ -317,6 +345,14 @@ function Run-Command($colour) {
     Write-Message 'Command ran successfully.'
 }
 
+
+
+# Ensure we're running against the correct version of PowerShell
+$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
+if ($currentVersion -lt 3) {
+    Write-Host "Picasso requires PowerShell 3.0 or greater, your version is $currentVersion" -ForegroundColor Red
+    return
+}
 
 
 # Check switches first

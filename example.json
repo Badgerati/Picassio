@@ -10,20 +10,15 @@
             {
             	"type": "git",
             	"remote": "https://github.com/Badgerati/Table.git",
-            	"local": "C:\\Projects\\PicassoTest",
+            	"localpath": "C:\\Projects\\PicassoTest",
+                "localname": "RenamedFolder",
             	"branchname": "master"
             },
             {
                 "type": "msbuild",
                 "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
-                "project": "C:\\Projects\\PicassoTest\\Table\\C#\\Table.sln",
+                "project": "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln",
                 "arguments": "/p:Configuration=Debug"
-            },
-            {
-                "type": "software",
-                "name": "curl",
-                "ensure": "installed",
-                "version": "latest"
             },
             {
                 "type": "cmd",
