@@ -10,6 +10,10 @@ function Write-Message($message) {
     Write-Host $message -ForegroundColor Cyan
 }
 
+function Write-Error($message) {
+    Write-Host $message -ForegroundColor Red
+}
+
 # Tests to see if a URL is valid
 function Test-Url($url) {
     if ([string]::IsNullOrWhiteSpace($url)) {
@@ -44,7 +48,8 @@ function Validate-File($config) {
 
     # Ensure file is passed
     if ([string]::IsNullOrWhiteSpace($config)) {
-        throw 'Configuration file supplied cannot be empty.'
+        Write-Error 'Configuration file supplied cannot be empty.'
+        return
     }
 
     # Ensure file is of valid json format
@@ -57,18 +62,21 @@ function Validate-File($config) {
 
     # Ensure that there's a pallete and paint section
     if ($json.palette -eq $null) {
-        throw 'No palette section found.'
+        Write-Error 'No palette section found.'
+        return
     }
     
     if ($json.palette.paint -eq $null -or $json.palette.paint.Count -eq 0) {
-        throw 'No paint array section found within palette.'
+        Write-Error 'No paint array section found within palette.'
+        return
     }
     
     # Ensure all paint sections have a type
     $list = [array]($json.palette.paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
 
     if ($list.Length -ne 0) {
-        throw 'All paint colours need a type parameter.'
+        Write-Error 'All paint colours need a type parameter.'
+        return
     }
     
     Write-Message 'Configuration file is valid.'
@@ -114,17 +122,20 @@ function Install-Chocolatey() {
 # Checkout a remote repository using svn into the supplied local path
 function Checkout-Svn($colour) {
     if (!(Test-Software svn.exe)) {
-        throw 'SVN is not installed'
+        Write-Error 'SVN is not installed'
+        return
     }
 
     $url = $colour.remote
     if ([string]::IsNullOrWhiteSpace($url)) {
-        throw 'No remote SVN repository passed.'
+        Write-Error 'No remote SVN repository passed.'
+        return
     }
 
     $path = $colour.localpath
     if ([string]::IsNullOrWhiteSpace($path)) {
-        throw 'No local SVN repository path specified.'
+        Write-Error 'No local SVN repository path specified.'
+        return
     }
 
     if (!(Test-Path $path)) {
@@ -133,7 +144,8 @@ function Checkout-Svn($colour) {
 
     $name = $colour.localname
     if ([string]::IsNullOrWhiteSpace($name)) {
-        throw 'No local name supplied for local repository.'
+        Write-Error 'No local name supplied for local repository.'
+        return
     }
 
     $revision = $colour.revision
@@ -174,19 +186,22 @@ function Checkout-Svn($colour) {
 # Clones the remote repository into the supplied local path
 function Clone-Git($colour) {
     if (!(Test-Software git.exe)) {
-        throw 'Git is not installed'
+        Write-Error 'Git is not installed'
+        return
     }
 
     $url = $colour.remote
     if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
-        throw "Remote git repository of '$url' is not valid."
+        Write-Error "Remote git repository of '$url' is not valid."
+        return
     }
 
     $directory = $matches['repo']
     
     $path = $colour.localpath
     if ([string]::IsNullOrWhiteSpace($path)) {
-        throw 'No local git repository path specified.'
+        Write-Error 'No local git repository path specified.'
+        return
     }
 
     if (!(Test-Path $path)) {
@@ -258,12 +273,14 @@ function Clone-Git($colour) {
 function Install-Software($colour) {
     $name = $colour.name
     if ([string]::IsNullOrWhiteSpace($name)) {
-        throw 'No name supplied for software colour.'
+        Write-Error 'No name supplied for software colour.'
+        return
     }
 
     $operation = ($colour.ensure.Substring(0, $colour.ensure.Length - 2)).ToLower()
     if ([string]::IsNullOrWhiteSpace($operation)) {
-        throw 'No ensure operation supplied for software colour.'
+        Write-Error 'No ensure operation supplied for software colour.'
+        return
     }
 
     if ($operation -eq 'install') {
@@ -302,12 +319,14 @@ function Install-Software($colour) {
 function Use-MSBuild($colour) {
     $path = $colour.path
     if (!(Test-Path $path)) {
-        throw 'Path to MSBuild.exe does not exist.'
+        Write-Error 'Path to MSBuild.exe does not exist.'
+        return
     }
 
     $project = $colour.project
     if (!(Test-Path $project)) {
-        throw 'Path to project for building does not exist.'
+        Write-Error 'Path to project for building does not exist.'
+        return
     }
 
     Push-Location (Split-Path $project -Parent)
@@ -332,7 +351,8 @@ function Use-MSBuild($colour) {
 function Run-Command($colour) {
     $command = $colour.command
     if ([string]::IsNullOrWhiteSpace($command)) {
-        throw 'No command passed to run via Command Prompt.'
+        Write-Error 'No command passed to run via Command Prompt.'
+        return
     }
 
     Write-Message 'Running command via Command Prompt.'
@@ -345,23 +365,83 @@ function Run-Command($colour) {
     Write-Message 'Command ran successfully.'
 }
 
+# Installs a service onto the system
+function Install-Service($colour) {
+    $name = $colour.name
+    if ([string]::IsNullOrWhiteSpace($name)) {
+        Write-Error 'No service name supplied.'
+        return
+    }
 
+    $service = (Get-WmiObject -Class Win32_Service -Filter "Name='$name'")
 
-# Ensure we're running against the correct version of PowerShell
-$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
-if ($currentVersion -lt 3) {
-    Write-Host "Picasso requires PowerShell 3.0 or greater, your version is $currentVersion" -ForegroundColor Red
-    return
+    $ensure = $colour.ensure
+    if ([string]::IsNullOrWhiteSpace($ensure)) {
+        Write-Error 'No ensure parameter supplied for service.'
+        return
+    }
+
+    $ensure = $ensure.ToLower()
+    if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled') {
+        Write-Error "Invalid ensure parameter supplied for service: '$ensure'."
+        return
+    }
+
+    if ($service -eq $null -and $ensure -eq 'uninstalled') {
+        Write-Message "Service '$name' already $ensure."
+        return
+    }
+
+    $state = $colour.state
+    if ([string]::IsNullOrWhiteSpace($state)) {
+        Write-Error 'No state parameter supplied for service.'
+        return
+    }
+
+    $state = $state.ToLower()
+    if ($state -ne 'started' -and $state -ne 'stopped') {
+        Write-Error "Invalid state parameter supplied for service: '$state'."
+        return
+    }
+
+    $path = $colour.path
+    if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
+        Write-Error 'No path passed to install service.'
+        return
+    }
+    
+    if ($service -ne $null -and $ensure -eq 'installed') {
+        Write-Message "Ensuring service '$name' is $state."
+        if ($state -eq 'started') {
+            Start-Service $name
+        }
+        else {
+            Stop-Service $name
+        }
+        Write-Message "Service $state."
+    }
+    elseif ($service -ne $null -and $ensure -eq 'uninstalled') {
+        Write-Message "Ensuring service '$name' is $ensure."
+        $service.delete()
+        Write-Message "Service $ensure."
+    }
+    else {
+        Write-Message "Ensuring service '$name' is $ensure."
+        New-Service -Name $name -BinaryPathName $path -StartupType Automatic
+        Write-Message "Service $ensure."
+
+        Write-Message "Ensuring service '$name' is $state."
+        if ($state -eq 'started') {
+            Start-Service $name
+        }
+        else {
+            Stop-Service $name
+        }
+        Write-Message "Service $state."
+    }
 }
 
-
-# Check switches first
-if ($version) {
-    Write-Host 'Picasso v0.1.0a' -ForegroundColor Green
-    return
-}
-
-if ($help) {
+function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
     Write-Host ''
     Write-Host 'The following is a list of possible colour types:'
@@ -370,17 +450,41 @@ if ($help) {
     Write-Host "`t- svn"
     Write-Host "`t- msbuild"
     Write-Host "`t- cmd"
+    Write-Host "`t- service"
+}
+
+
+
+# Ensure we're running against the correct version of PowerShell
+$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
+if ($currentVersion -lt 3) {
+    Write-Error "Picasso requires PowerShell 3.0 or greater, your version is $currentVersion"
+    return
+}
+
+
+# Check switches first
+if ($version) {
+    Write-Host 'Picasso v0.2.0a' -ForegroundColor Green
+    return
+}
+
+if ($help) {
+    Write-Help
     return
 }
 
 
 # Main Picasso logic
 if ([string]::IsNullOrWhiteSpace($config)) {
-    throw 'No configuration file supplied.'
+    Write-Error 'No configuration file supplied.'
+    Write-Help
+    return
 }
 
 if (!(Test-Path $config)) {
-    throw 'Passed configuration file does not exist.'
+    Write-Error 'Passed configuration file does not exist.'
+    return
 }
 
 $json = Validate-File (Get-Content $config -Raw)
@@ -418,9 +522,15 @@ ForEach ($colour in $json.palette.paint) {
                 Run-Command $colour
             }
 
+        'service'
+            {
+                Install-Service $colour
+            }
+
         default
             {
                 Write-Error "Unrecognised colour type found: $type"
+                return
             }
     }
 
