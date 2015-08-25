@@ -106,6 +106,13 @@ function Test-Software($command) {
     return $false
 }
 
+# Resets the PATH for the current session
+function Reset-Path() {
+    Write-Message 'Updating PATH'
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    Write-Message 'PATH updated'
+}
+
 # Install Chocolatey - if already installed, will just update
 function Install-Chocolatey() {
     if (Test-Software choco.exe) {
@@ -117,6 +124,8 @@ function Install-Chocolatey() {
     Set-ExecutionPolicy Unrestricted
     Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
     Write-Message 'Chocolately installed.'
+
+    Reset-Path
 }
 
 # Checkout a remote repository using svn into the supplied local path
@@ -309,9 +318,7 @@ function Install-Software($colour) {
         throw "Failed to $operation the $name software."
     }
     
-    Write-Message 'Updating PATH'
-    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    Write-Message 'PATH updated'
+    Reset-Path
     Write-Message "$operation on $name application successful."
 }
 
@@ -441,6 +448,7 @@ function Install-Service($colour) {
     }
 }
 
+# Writes the help manual to the console
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
     Write-Host ''
