@@ -21,7 +21,8 @@
                 "arguments": "/p:Configuration=Debug"
             },
             {
-                "type": "cmd",
+                "type": "command",
+                "prompt": "powershell",
                 "command": "echo Hello, world!"
             }
         ]

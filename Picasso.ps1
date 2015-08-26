@@ -48,8 +48,7 @@ function Validate-File($config) {
 
     # Ensure file is passed
     if ([string]::IsNullOrWhiteSpace($config)) {
-        Write-Error 'Configuration file supplied cannot be empty.'
-        return
+        throw 'Configuration file supplied cannot be empty.'
     }
 
     # Ensure file is of valid json format
@@ -62,21 +61,18 @@ function Validate-File($config) {
 
     # Ensure that there's a pallete and paint section
     if ($json.palette -eq $null) {
-        Write-Error 'No palette section found.'
-        return
+        throw 'No palette section found.'
     }
     
     if ($json.palette.paint -eq $null -or $json.palette.paint.Count -eq 0) {
-        Write-Error 'No paint array section found within palette.'
-        return
+        throw 'No paint array section found within palette.'
     }
     
     # Ensure all paint sections have a type
     $list = [array]($json.palette.paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
 
     if ($list.Length -ne 0) {
-        Write-Error 'All paint colours need a type parameter.'
-        return
+        throw 'All paint colours need a type parameter.'
     }
     
     Write-Message 'Configuration file is valid.'
@@ -131,20 +127,17 @@ function Install-Chocolatey() {
 # Checkout a remote repository using svn into the supplied local path
 function Checkout-Svn($colour) {
     if (!(Test-Software svn.exe)) {
-        Write-Error 'SVN is not installed'
-        return
+        throw 'SVN is not installed'
     }
 
     $url = $colour.remote
     if ([string]::IsNullOrWhiteSpace($url)) {
-        Write-Error 'No remote SVN repository passed.'
-        return
+        throw 'No remote SVN repository passed.'
     }
 
     $path = $colour.localpath
     if ([string]::IsNullOrWhiteSpace($path)) {
-        Write-Error 'No local SVN repository path specified.'
-        return
+        throw 'No local SVN repository path specified.'
     }
 
     if (!(Test-Path $path)) {
@@ -153,8 +146,7 @@ function Checkout-Svn($colour) {
 
     $name = $colour.localname
     if ([string]::IsNullOrWhiteSpace($name)) {
-        Write-Error 'No local name supplied for local repository.'
-        return
+        throw 'No local name supplied for local repository.'
     }
 
     $revision = $colour.revision
@@ -195,22 +187,19 @@ function Checkout-Svn($colour) {
 # Clones the remote repository into the supplied local path
 function Clone-Git($colour) {
     if (!(Test-Software git.exe)) {
-        Write-Error 'Git is not installed'
-        return
+        throw 'Git is not installed'
     }
 
     $url = $colour.remote
     if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
-        Write-Error "Remote git repository of '$url' is not valid."
-        return
+        throw "Remote git repository of '$url' is not valid."
     }
 
     $directory = $matches['repo']
     
     $path = $colour.localpath
     if ([string]::IsNullOrWhiteSpace($path)) {
-        Write-Error 'No local git repository path specified.'
-        return
+        throw 'No local git repository path specified.'
     }
 
     if (!(Test-Path $path)) {
@@ -282,14 +271,12 @@ function Clone-Git($colour) {
 function Install-Software($colour) {
     $name = $colour.name
     if ([string]::IsNullOrWhiteSpace($name)) {
-        Write-Error 'No name supplied for software colour.'
-        return
+        throw 'No name supplied for software colour.'
     }
 
     $operation = ($colour.ensure.Substring(0, $colour.ensure.Length - 2)).ToLower()
     if ([string]::IsNullOrWhiteSpace($operation)) {
-        Write-Error 'No ensure operation supplied for software colour.'
-        return
+        throw 'No ensure operation supplied for software colour.'
     }
 
     if ($operation -eq 'install') {
@@ -326,14 +313,12 @@ function Install-Software($colour) {
 function Use-MSBuild($colour) {
     $path = $colour.path
     if (!(Test-Path $path)) {
-        Write-Error 'Path to MSBuild.exe does not exist.'
-        return
+        throw 'Path to MSBuild.exe does not exist.'
     }
 
     $project = $colour.project
     if (!(Test-Path $project)) {
-        Write-Error 'Path to project for building does not exist.'
-        return
+        throw 'Path to project for building does not exist.'
     }
 
     Push-Location (Split-Path $project -Parent)
@@ -354,7 +339,7 @@ function Use-MSBuild($colour) {
     Write-Message "Project '$file' built successfully."
 }
 
-# Run a passed command using Command Prompt
+# Run a passed command using Command Prompt/PowerShell
 function Run-Command($colour) {
     $command = $colour.command
     if ([string]::IsNullOrWhiteSpace($command)) {
@@ -362,9 +347,31 @@ function Run-Command($colour) {
         return
     }
 
-    Write-Message 'Running command via Command Prompt.'
-    cmd.exe /C $command
+    $prompt = $colour.prompt
+    if ([string]::IsNullOrWhiteSpace($prompt)) {
+        Write-Message 'No prompt type passed, defaulting to Command Prompt.'
+        $prompt = 'cmd'
+    }
 
+    switch ($prompt.ToLower()) {
+        'cmd'
+            {
+                Write-Message 'Running command via Command Prompt.'
+                cmd.exe /C $command
+            }
+
+        'powershell'
+            {
+                Write-Message 'Running command via PowerShell.'
+                powershell.exe /C $command
+            }
+
+        default
+            {
+                throw "unrecognised prompt for command colour: '$prompt'."
+            }
+    }
+    
     if (!$?) {
         throw "Failed to run command: '$command'."
     }
@@ -376,22 +383,19 @@ function Run-Command($colour) {
 function Install-Service($colour) {
     $name = $colour.name
     if ([string]::IsNullOrWhiteSpace($name)) {
-        Write-Error 'No service name supplied.'
-        return
+        throw 'No service name supplied.'
     }
 
     $service = (Get-WmiObject -Class Win32_Service -Filter "Name='$name'")
 
     $ensure = $colour.ensure
     if ([string]::IsNullOrWhiteSpace($ensure)) {
-        Write-Error 'No ensure parameter supplied for service.'
-        return
+        throw 'No ensure parameter supplied for service.'
     }
 
     $ensure = $ensure.ToLower()
     if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled') {
-        Write-Error "Invalid ensure parameter supplied for service: '$ensure'."
-        return
+        throw "Invalid ensure parameter supplied for service: '$ensure'."
     }
 
     if ($service -eq $null -and $ensure -eq 'uninstalled') {
@@ -401,30 +405,29 @@ function Install-Service($colour) {
 
     $state = $colour.state
     if ([string]::IsNullOrWhiteSpace($state)) {
-        Write-Error 'No state parameter supplied for service.'
-        return
+        throw 'No state parameter supplied for service.'
     }
 
     $state = $state.ToLower()
     if ($state -ne 'started' -and $state -ne 'stopped') {
-        Write-Error "Invalid state parameter supplied for service: '$state'."
-        return
+        throw "Invalid state parameter supplied for service: '$state'."
     }
 
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
-        Write-Error 'No path passed to install service.'
-        return
+        throw 'No path passed to install service.'
     }
     
     if ($service -ne $null -and $ensure -eq 'installed') {
         Write-Message "Ensuring service '$name' is $state."
+
         if ($state -eq 'started') {
             Start-Service $name
         }
         else {
             Stop-Service $name
         }
+
         Write-Message "Service $state."
     }
     elseif ($service -ne $null -and $ensure -eq 'uninstalled') {
@@ -438,12 +441,14 @@ function Install-Service($colour) {
         Write-Message "Service $ensure."
 
         Write-Message "Ensuring service '$name' is $state."
+
         if ($state -eq 'started') {
             Start-Service $name
         }
         else {
             Stop-Service $name
         }
+
         Write-Message "Service $state."
     }
 }
@@ -457,7 +462,7 @@ function Write-Help() {
     Write-Host "`t- git"
     Write-Host "`t- svn"
     Write-Host "`t- msbuild"
-    Write-Host "`t- cmd"
+    Write-Host "`t- command"
     Write-Host "`t- service"
 }
 
@@ -525,7 +530,7 @@ ForEach ($colour in $json.palette.paint) {
                 Use-MSBuild $colour
             }
 
-        'cmd'
+        'command'
             {
                 Run-Command $colour
             }
