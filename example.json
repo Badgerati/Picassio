@@ -24,6 +24,13 @@
                 "type": "command",
                 "prompt": "powershell",
                 "command": "echo Hello, world!"
+            },
+            {
+                "type": "service",
+                "name": "Test Service",
+                "path": "C:\\full\\absoulte\\path\\to\\service.exe",
+                "ensure": "installed",
+                "state": "started"
             }
         ]
     }

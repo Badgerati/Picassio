@@ -353,6 +353,7 @@ function Run-Command($colour) {
         $prompt = 'cmd'
     }
 
+    # determine which prompt in which to run the command
     switch ($prompt.ToLower()) {
         'cmd'
             {
@@ -386,6 +387,7 @@ function Install-Service($colour) {
         throw 'No service name supplied.'
     }
 
+    # attempt to retrieve the service
     $service = (Get-WmiObject -Class Win32_Service -Filter "Name='$name'")
 
     $ensure = $colour.ensure
@@ -393,11 +395,13 @@ function Install-Service($colour) {
         throw 'No ensure parameter supplied for service.'
     }
 
+    # check we have a valid ensure property
     $ensure = $ensure.ToLower()
     if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled') {
         throw "Invalid ensure parameter supplied for service: '$ensure'."
     }
 
+    # check if service is alredy uninstalled
     if ($service -eq $null -and $ensure -eq 'uninstalled') {
         Write-Message "Service '$name' already $ensure."
         return
@@ -408,6 +412,7 @@ function Install-Service($colour) {
         throw 'No state parameter supplied for service.'
     }
 
+    # check we have a valid state property
     $state = $state.ToLower()
     if ($state -ne 'started' -and $state -ne 'stopped') {
         throw "Invalid state parameter supplied for service: '$state'."
@@ -422,7 +427,7 @@ function Install-Service($colour) {
         Write-Message "Ensuring service '$name' is $state."
 
         if ($state -eq 'started') {
-            Start-Service $name
+            Restart-Service $name
         }
         else {
             Stop-Service $name
