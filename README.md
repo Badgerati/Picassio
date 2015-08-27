@@ -1,6 +1,6 @@
 Picasso
 =======
-Picasso is a PowerShell provisioning script which using a single linear JSON file to determine what commands to execute.
+Picasso is a PowerShell provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
 Picasso is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picasso. The JSON file you pass in is called a 'palette' and this contains a 'paint' object which is an array of 'colours'.
 
@@ -41,6 +41,8 @@ There are still quite a few things I wish to add to Picasso, the following is a 
 Examples
 ========
 Picasso is typically best run by having the path to it within you environment's PATH. The following examples will all assume Picasso is within your PATH.
+
+To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it. 
 
 
 Running Picasso
@@ -189,4 +191,4 @@ The following palette will uninstall a service.
 }
 ```
 
-If you are ensuring a service in installed and started, and it already it then the service will be restarted.
+If you are ensuring a service is installed and started, and it already is then the service will be restarted.
