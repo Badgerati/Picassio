@@ -42,6 +42,14 @@ function Remove-Directory($directory) {
     Write-Message 'Directory wiped.'
 }
 
+# Backs up a directory, appending the current date/time
+function Backup-Directory($directory) {
+    Write-Message "Backing up directory: '$directory'"
+    $newDir = $directory + '_' + ([DateTime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
+    Rename-Item $directory $newDir -Force
+    Write-Message "Directory '$directory' renamed to '$newDir'"
+}
+
 # Ensures that the configuration file passed is valid
 function Validate-File($config) {
     Write-Message 'Validating configuration file.'
@@ -104,7 +112,6 @@ function Test-Software($command) {
 
 # Resets the PATH for the current session
 function Reset-Path() {
-    Write-Message 'Updating PATH'
     $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
     Write-Message 'PATH updated'
 }
@@ -127,7 +134,8 @@ function Install-Chocolatey() {
 # Checkout a remote repository using svn into the supplied local path
 function Checkout-Svn($colour) {
     if (!(Test-Software svn.exe)) {
-        throw 'SVN is not installed'
+        Write-Error 'SVN is not installed'
+        Install-AdhocSoftware 'svn' 'SVN'
     }
 
     $url = $colour.remote
@@ -154,7 +162,7 @@ function Checkout-Svn($colour) {
     # Delete existing directory
     Push-Location $path
     if ((Test-Path $name)) {
-        Remove-Directory $name
+        Backup-Directory $name
     }
 
     # checkout
@@ -187,7 +195,8 @@ function Checkout-Svn($colour) {
 # Clones the remote repository into the supplied local path
 function Clone-Git($colour) {
     if (!(Test-Software git.exe)) {
-        throw 'Git is not installed'
+        Write-Error 'Git is not installed'
+        Install-AdhocSoftware 'git.install' 'Git'
     }
 
     $url = $colour.remote
@@ -217,10 +226,10 @@ function Clone-Git($colour) {
     # delete directory if exists
     Push-Location $path
     if ((Test-Path $directory)) {
-        Remove-Directory $directory
+        Backup-Directory $directory
     }
     elseif (![string]::IsNullOrWhiteSpace($name) -and (Test-Path $name)) {
-        Remove-Directory $name
+        Backup-Directory $name
     }
 
     # clone
@@ -267,6 +276,22 @@ function Clone-Git($colour) {
     Write-Message 'Git clone was successful.'
 }
 
+# Installs software via Chocolatey on an adhoc basis
+function Install-AdhocSoftware($packageName, $name) {
+    if (!(Test-Software choco.exe)) {
+        Install-Chocolatey
+    }
+
+    Write-Message "Installing $name"
+    choco.exe install $packageName -y
+
+    if (!$?) {
+        throw "Failed to install the $name."
+    }
+    
+    Write-Message "Installation of $name successful."
+}
+
 # Uses Chocolatey to install, upgrade or uninstall the speicified software
 function Install-Software($colour) {
     $name = $colour.name
@@ -305,7 +330,6 @@ function Install-Software($colour) {
         throw "Failed to $operation the $name software."
     }
     
-    Reset-Path
     Write-Message "$operation on $name application successful."
 }
 
@@ -414,7 +438,7 @@ function Install-Service($colour) {
 
     # check we have a valid state property
     $state = $state.ToLower()
-    if ($state -ne 'started' -and $state -ne 'stopped') {
+    if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'installed') {
         throw "Invalid state parameter supplied for service: '$state'."
     }
 
@@ -551,6 +575,7 @@ ForEach ($colour in $json.palette.paint) {
                 return
             }
     }
-
+    
+    Reset-Path
     Write-Host ([string]::Empty)
 }
