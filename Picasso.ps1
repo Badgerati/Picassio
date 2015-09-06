@@ -519,13 +519,17 @@ if ($help) {
 
 # Main Picasso logic
 if ([string]::IsNullOrWhiteSpace($config)) {
-    Write-Error 'No configuration file supplied.'
-    Write-Help
-    return
+    Write-Message 'No config file supplied, using default.'
+    $config = './picasso.json'
+
+    if (!(Test-Path $config)) {
+        Write-Error 'Default picasso.json file cannot be found in current directory.'
+        return
+    }
 }
 
 if (!(Test-Path $config)) {
-    Write-Error 'Passed configuration file does not exist.'
+    Write-Error "Passed configuration file does not exist: '$config'"
     return
 }
 
