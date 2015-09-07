@@ -31,6 +31,16 @@
                 "path": "C:\\full\\absoulte\\path\\to\\service.exe",
                 "ensure": "installed",
                 "state": "started"
+            },
+            {
+                "type": "copy",
+                "from": "C:\\path\\to\\some\\folder",
+                "to": "C:\\path\\to\\some\\other\\folder"
+            },
+            {
+                "type": "vagrant",
+                "path": "C:\\path\\to\\project",
+                "command": "up"
             }
         ]
     }

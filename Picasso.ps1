@@ -132,7 +132,7 @@ function Install-Chocolatey() {
 }
 
 # Checkout a remote repository using svn into the supplied local path
-function Checkout-Svn($colour) {
+function Colour-CheckoutSvn($colour) {
     if (!(Test-Software svn.exe)) {
         Write-Error 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
@@ -193,7 +193,7 @@ function Checkout-Svn($colour) {
 }
 
 # Clones the remote repository into the supplied local path
-function Clone-Git($colour) {
+function Colour-CloneGit($colour) {
     if (!(Test-Software git.exe)) {
         Write-Error 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
@@ -293,7 +293,7 @@ function Install-AdhocSoftware($packageName, $name) {
 }
 
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
-function Install-Software($colour) {
+function Colour-InstallSoftware($colour) {
     # Get list of software names
     $names = $colour.names
     if ($names -eq $null -or $names.Length -eq 0) {
@@ -369,7 +369,7 @@ function Install-Software($colour) {
 }
 
 # Use MSBuild to build a project or solution
-function Use-MSBuild($colour) {
+function Colour-UseMSBuild($colour) {
     $path = $colour.path
     if (!(Test-Path $path)) {
         throw 'Path to MSBuild.exe does not exist.'
@@ -399,7 +399,7 @@ function Use-MSBuild($colour) {
 }
 
 # Run a passed command using Command Prompt/PowerShell
-function Run-Command($colour) {
+function Colour-RunCommand($colour) {
     $command = $colour.command
     if ([string]::IsNullOrWhiteSpace($command)) {
         Write-Error 'No command passed to run via Command Prompt.'
@@ -440,7 +440,7 @@ function Run-Command($colour) {
 }
 
 # Installs a service onto the system
-function Install-Service($colour) {
+function Colour-InstallService($colour) {
     $name = $colour.name
     if ([string]::IsNullOrWhiteSpace($name)) {
         throw 'No service name supplied.'
@@ -517,6 +517,66 @@ function Install-Service($colour) {
     }
 }
 
+# Copy files/directories from one location to another
+function Colour-CopyFiles($colour) {
+    $from = $colour.from
+    if ([string]::IsNullOrWhiteSpace($from)) {
+        throw 'No from path specified.'
+    }
+    
+    if (!(Test-Path $from)) {
+        throw "From path specified doesn't exist: '$from'."
+    }
+
+    $to = $colour.to
+    if ([string]::IsNullOrWhiteSpace($to)) {
+        throw 'No to path specified.'
+    }
+
+    $toParent = Split-Path -Parent $to
+    if (!(Test-Path $toParent)) {
+        New-Item -ItemType Directory -Force -Path $toParent | Out-Null
+    }
+
+    Write-Message "Copying files/directories from '$from' to '$to'."
+
+    Copy-Item -Path $from -Destination $to -Recurse -Force | Out-Null
+
+    if (!$?) {
+        throw 'Failed to copy files/directories.'
+    }
+
+    Write-Message 'Files/directories copied successfully.'
+}
+
+# Calls vagrant from a specified path where a Vagrantfile can be found
+function Colour-Vagrant($colour) {
+    $path = $colour.path
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        throw 'No path specified to parent directory where the Vagrantfile is located.'
+    }
+    
+    if (!(Test-Path $path)) {
+        throw "Path specified doesn't exist: '$path'."
+    }
+
+    $command = $colour.command
+    if ([string]::IsNullOrWhiteSpace($command)) {
+        throw 'No command specified for which to call vagrant.'
+    }
+
+    Push-Location $path
+    vagrant.exe $command
+    
+    if (!$?) {
+        Pop-Location
+        throw 'Failed to call vagrant.'
+    }
+
+    Pop-Location
+    Write-Message "vagrant $command, successful."
+}
+
 # Writes the help manual to the console
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
@@ -528,14 +588,19 @@ function Write-Help() {
     Write-Host "`t- msbuild"
     Write-Host "`t- command"
     Write-Host "`t- service"
+    Write-Host "`t- copy"
 }
 
 # Writes the current version of Picasso to the console
 function Write-Version() {
-    Write-Host 'Picasso v0.2.1a' -ForegroundColor Green
+    Write-Host 'Picasso v0.2.2a' -ForegroundColor Green
 }
 
 
+
+##################################
+#          Main Script           #
+##################################
 
 # Ensure we're running against the correct version of PowerShell
 $currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
@@ -585,38 +650,49 @@ if ((Test-ColourType $json 'software')) {
 $total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 ForEach ($colour in $json.palette.paint) {
+    Write-Host ([string]::Empty)
     $type = $colour.type.ToLower()
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     switch ($type) {
         'software'
             {
-                Install-Software $colour
+                Colour-InstallSoftware $colour
             }
 
         'svn'
             {
-                Checkout-Svn $colour
+                Colour-CheckoutSvn $colour
             }
 
         'git'
             {
-                Clone-Git $colour
+                Colour-CloneGit $colour
             }
 
         'msbuild'
             {
-                Use-MSBuild $colour
+                Colour-UseMSBuild $colour
             }
 
         'command'
             {
-                Run-Command $colour
+                Colour-RunCommand $colour
             }
 
         'service'
             {
-                Install-Service $colour
+                Colour-InstallService $colour
+            }
+
+        'copy'
+            {
+                Colour-CopyFiles $colour
+            }
+
+        'vagrant'
+            {
+                Colour-Vagrant $colour
             }
 
         default

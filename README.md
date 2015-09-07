@@ -195,3 +195,58 @@ The following palette will uninstall a service.
 ```
 
 If you are ensuring a service is installed and started, and it already is then the service will be restarted.
+
+
+
+Copying Files/Directories
+-------------------------
+Picasso is able to copy files/folders from one location to another. This is useful for copying files from one system to another; for general maintenance of builds; or creating backups of files/folders. If you specify a path to copy to where all folders don't exist, Picasso will create them for you.
+
+The following palette will copy a folder, and then backup a file within it:
+```json
+{
+	"palette": {
+		"paint": [
+			{
+				"type": "copy",
+				"from": "C:\\path\\to\\some\\folder",
+				"to": "C:\\path\\to\\some\\other\\folder"
+			},
+			{
+				"type": "copy",
+				"from": "C:\\path\\to\\some\\other\\folder\\test.txt",
+				"to": "C:\\path\\to\\some\\other\\folder\\backups\\test.txt"
+			}
+		]
+	}
+}
+```
+
+
+
+Calling Vagrant
+---------------
+Picasso now also supports the ability to call "vagrant up" or other commands such as
+
+* halt
+* destroy
+* suspend
+* share
+* etc.
+
+from with a Picasso palette. You will need to supply a path to where a Vagrantfile is located in order for the command to work.
+
+The following palette with navigate to a folder, and call "vagrant up":
+```json
+{
+	"palette": {
+		"paint": [
+			{
+				"type": "vagrant",
+				"path": "C:\\path\\to\\project",
+				"command": "up"
+			}
+		]
+	}
+}
+```
