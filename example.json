@@ -3,9 +3,9 @@
         "paint": [
             {
             	"type": "software",
-            	"name": "git",
+            	"names": [ "git", "curl" ],
             	"ensure": "installed",
-            	"version": "latest"
+            	"versions": [ "latest" ]
             },
             {
             	"type": "git",

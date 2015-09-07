@@ -292,45 +292,80 @@ function Install-AdhocSoftware($packageName, $name) {
     Write-Message "Installation of $name successful."
 }
 
-# Uses Chocolatey to install, upgrade or uninstall the speicified software
+# Uses Chocolatey to install, upgrade or uninstall the speicified softwares
 function Install-Software($colour) {
-    $name = $colour.name
-    if ([string]::IsNullOrWhiteSpace($name)) {
-        throw 'No name supplied for software colour.'
+    # Get list of software names
+    $names = $colour.names
+    if ($names -eq $null -or $names.Length -eq 0) {
+        throw 'No names supplied for software colour.'
     }
-
-    $operation = ($colour.ensure.Substring(0, $colour.ensure.Length - 2)).ToLower()
+    
+    # Get ensured operation for installing/uninstalling
+    $operation = $colour.ensure
     if ([string]::IsNullOrWhiteSpace($operation)) {
         throw 'No ensure operation supplied for software colour.'
     }
 
-    if ($operation -eq 'install') {
-        $result = (choco.exe list -lo | Where-Object { $_ -like "*$name *" } | Select-Object -First 1)
+    $operation = $operation.ToLower()
 
-        if (![string]::IsNullOrEmpty($result)) {
-            $operation = 'upgrade'
-        }
+    if ($operation.EndsWith('ed')) {
+        $operation = $operation.Substring(0, $colour.ensure.Length - 2)
     }
 
-    if ([string]::IsNullOrWhiteSpace($colour.version) -or $colour.version.ToLower() -eq 'latest' -or $operation -eq 'unistall') {
-        $versionTag = [string]::Empty
-        $version = [string]::Empty
-        $versionStr = 'latest'
-    }
-    else {
-        $versionTag = '--version'
-        $version = $colour.version
-        $versionStr = $colour.version
-    }
-
-    Write-Message "$operation on $name application starting. Version: $versionStr"
-    choco.exe $operation $name $versionTag $version -y
-
-    if (!$?) {
-        throw "Failed to $operation the $name software."
+    # Gte list of versions (or single version for all names)
+    $versions = $colour.versions
+    if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {
+        throw 'Incorrect number of versions specified. Expected an equal amount to the amount of names speicified.'
     }
     
-    Write-Message "$operation on $name application successful."
+    for ($i = 0; $i -lt $names.Length; $i++) {
+        $name = $names[$i]
+        $this_operation = $operation
+
+        # Work out what version we're trying to install
+        if ($versions -eq $null -or $versions.Length -eq 0) {
+            $version = 'latest'
+        }
+        elseif ($versions.Length -eq 1) {
+            $version = $versions[0]
+        }
+        else {
+            $version = $versions[$i]
+        }
+
+        if ($this_operation -eq 'install') {
+            $result = (choco.exe list -lo | Where-Object { $_ -like "*$name *" } | Select-Object -First 1)
+
+            if (![string]::IsNullOrWhiteSpace($result)) {
+                $this_operation = 'upgrade'
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($version) -or $version.ToLower() -eq 'latest' -or $this_operation -eq 'uninstall') {
+            $versionTag = [string]::Empty
+            $version = [string]::Empty
+            $versionStr = 'latest'
+        }
+        else {
+            $versionTag = '--version'
+            $versionStr = $version
+        }
+
+        Write-Message "$this_operation on $name application starting. Version: $versionStr"
+        choco.exe $this_operation $name $versionTag $version -y
+
+        if (!$?) {
+            throw "Failed to $this_operation the $name software."
+        }
+    
+        Write-Message "$this_operation on $name application successful."
+
+        Reset-Path
+
+        if ($i -ne ($names.Length - 1)) {
+            Write-Host ([string]::Empty)
+        }
+    }
 }
 
 # Use MSBuild to build a project or solution
@@ -495,6 +530,11 @@ function Write-Help() {
     Write-Host "`t- service"
 }
 
+# Writes the current version of Picasso to the console
+function Write-Version() {
+    Write-Host 'Picasso v0.2.1a' -ForegroundColor Green
+}
+
 
 
 # Ensure we're running against the correct version of PowerShell
@@ -507,8 +547,11 @@ if ($currentVersion -lt 3) {
 
 # Check switches first
 if ($version) {
-    Write-Host 'Picasso v0.2.0a' -ForegroundColor Green
+    Write-Version
     return
+}
+else {
+    Write-Version
 }
 
 if ($help) {
@@ -539,8 +582,11 @@ if ((Test-ColourType $json 'software')) {
     Install-Chocolatey
 }
 
+$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
 ForEach ($colour in $json.palette.paint) {
     $type = $colour.type.ToLower()
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     switch ($type) {
         'software'
@@ -581,5 +627,9 @@ ForEach ($colour in $json.palette.paint) {
     }
     
     Reset-Path
+
+    Write-Host ('Time taken: {0}' -f $stopwatch.Elapsed) -ForegroundColor Magenta
     Write-Host ([string]::Empty)
 }
+
+Write-Host ('Total time taken: {0}' -f $total_stopwatch.Elapsed) -ForegroundColor Magenta

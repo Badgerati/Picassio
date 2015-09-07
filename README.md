@@ -20,6 +20,7 @@ Dependencies
 ============
 Picasso only depends on a few applications, and when required will automatically install them for you:
 
+* PowerShell v3.0+
 * Chocolatey
 * git
 * svn
@@ -34,7 +35,7 @@ There are still quite a few things I wish to add to Picasso, the following is a 
 * Bower and npm support
 * Installing wesbites via IIS
 * Ability to update hosts file
-* Docker
+* Docker/Vagrant
 * SSDT publishing
 
 
@@ -63,17 +64,19 @@ This example palette will install Git onto the computer that Picasso is run:
 		"paint": [
 			{
 				"type": "software",
-				"name": "git",
+				"names": [ "git" ],
 				"ensure": "installed",
-				"version": "latest"
+				"versions": [ "latest" ]
 			}
 		]
 	}
 }
 ```
-The above palette will ensure that Git is installed, and is installed up to the latest version (that is available to Chocolatey). If you wish to install a specific version of Git, then you would supply the version such as "version": "1.8.3".
+The above palette will ensure that Git is installed, and is installed up to the latest version (that is available to Chocolatey). If you wish to install a specific version of Git, then you would supply the version such as "versions": [ "1.8.3" ].
 
-If the version key is not supplied, then the install will default to the latest version. If you try to install software that is already installed, then Picasso will upgrade the software to what ever version you supply. If the version is less than the one installed then nothing will happen; so first you'll have to uninstall then install.
+If the version key is not supplied, then the install will default to the latest version. If you try to install software that is already installed, then Picasso will upgrade the software to what ever version you supply. If the version is less than the one installed then nothing will happen; so first you'll have to uninstall then re-install.
+
+If you specify multiple names to install such as '"names": [ "git", "curl" ]', then you must either specify all possible versions. If you omit the versions key then all software will be installed to the latest version. Specifying one version means all software will attempt to be installed to that version.
 
 If you instead wish to uninstall some software (so long as it was originally installed by Chocolately), then the following example palette will uninstall, say, Git
 ```json
@@ -82,7 +85,7 @@ If you instead wish to uninstall some software (so long as it was originally ins
 		"paint": [
 			{
 				"type": "software",
-				"name": "git",
+				"names": [ "git" ],
 				"ensure": "uninstalled"
 			}
 		]
