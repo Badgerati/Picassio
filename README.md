@@ -16,6 +16,7 @@ The following are all supported by Picasso:
 * Install/uninstall and stop/start Windows services
 * Copy files/folders with inclusions/exclusions
 * Call Vagrant
+* Add/remove entries from the hosts file
 
 
 Dependencies
@@ -36,7 +37,6 @@ There are still quite a few things I wish to add to Picasso, the following is a 
 
 * Bower and npm support
 * Installing wesbites via IIS
-* Ability to update hosts file
 * SSDT publishing
 
 
@@ -271,6 +271,44 @@ The following palette with navigate to a folder, and call "vagrant up":
 				"type": "vagrant",
 				"path": "C:\\path\\to\\project",
 				"command": "up"
+			}
+		]
+	}
+}
+```
+
+
+Updating the hosts File
+-----------------------
+Picasso will let you update the hosts file, by allowing you to add/remove entries. To add an entry you will need both the IP/Hostname however, to remove an entry on requires one or both.
+
+When removing, if you supply only either the IP or Hostname, all lines with that IP or Hostname will be removed. If you specify both, then only lines that have both the IP/Hostname will be removed.
+
+The following palette will add an entry to the hosts
+```json
+{
+	"palette": {
+		"paint": [
+			{
+				"type": "hosts",
+				"ensure": "added",
+				"ip": "127.0.0.3",
+				"hostname": "test.local.com"
+			}
+		]
+	}
+}
+```
+
+The following will remove all entries with the passed IP
+```json
+{
+	"palette": {
+		"paint": [
+			{
+				"type": "hosts",
+				"ensure": "removed",
+				"ip": "127.0.0.3"
 			}
 		]
 	}

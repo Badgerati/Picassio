@@ -43,6 +43,12 @@
                 "type": "vagrant",
                 "path": "C:\\path\\to\\project",
                 "command": "up"
+            },
+            {
+                "type": "hosts",
+                "ensure": "added",
+                "ip": "127.0.0.3",
+                "hostname": "test.local.com"
             }
         ]
     }
