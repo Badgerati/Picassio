@@ -1,6 +1,6 @@
 Picasso
 =======
-Picasso is a PowerShell provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
+Picasso is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
 Picasso is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picasso. The JSON file you pass in is called a 'palette' and this contains a 'paint' object which is an array of 'colours'.
 
@@ -14,16 +14,18 @@ The following are all supported by Picasso:
 * Build projects/solutions using MSBuild
 * Run specified commands using either Command Prompt or PowerShell
 * Install/uninstall and stop/start Windows services
+* Copy files/folders with inclusions/exclusions
+* Call Vagrant
 
 
 Dependencies
 ============
 Picasso only depends on a few applications, and when required will automatically install them for you:
 
-* PowerShell v3.0+
 * Chocolatey
 * git
 * svn
+* Vagrant
 
 The above will only be installed when Picasso needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
@@ -35,7 +37,6 @@ There are still quite a few things I wish to add to Picasso, the following is a 
 * Bower and npm support
 * Installing wesbites via IIS
 * Ability to update hosts file
-* Docker/Vagrant
 * SSDT publishing
 
 
@@ -43,7 +44,9 @@ Examples
 ========
 Picasso is typically best run by having the path to it within you environment's PATH. The following examples will all assume Picasso is within your PATH.
 
-To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it. 
+To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it.
+
+As a side note, each colour can have an optional "description" key-value. This value get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
 
 
 Running Picasso
@@ -202,6 +205,13 @@ Copying Files/Directories
 -------------------------
 Picasso is able to copy files/folders from one location to another. This is useful for copying files from one system to another; for general maintenance of builds; or creating backups of files/folders. If you specify a path to copy to where all folders don't exist, Picasso will create them for you.
 
+You can also specify files/folders to include/exclude using:
+
+* excludeFiles
+* excludeFolders
+* includeFiles
+* includeFolders
+
 The following palette will copy a folder, and then backup a file within it:
 ```json
 {
@@ -222,6 +232,22 @@ The following palette will copy a folder, and then backup a file within it:
 }
 ```
 
+The following palette will copy a folder, excluding html/js files; but including a src folder only:
+```json
+{
+	"palette": {
+		"paint": [
+			{
+				"type": "copy",
+				"from": "C:\\path\\to\\some\\folder",
+				"to": "C:\\path\\to\\some\\other\\folder",
+				"excludeFiles": [ "*.html", "*.js" ],
+				"includeFolders": [ "src" ]
+			}
+		]
+	}
+}
+```
 
 
 Calling Vagrant

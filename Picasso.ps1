@@ -96,8 +96,21 @@ function Test-ColourType($json, $type) {
 }
 
 # Check to see if a piece of software is installed
-function Test-Software($command) {
+function Test-Software($command, $name = $null) {
     try {
+        # attempt to see if it's install via chocolatey
+        if (![String]::IsNullOrWhiteSpace($name)) {
+            try {
+                $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
+            }
+            catch [exception] { }
+
+            if (![string]::IsNullOrWhiteSpace($result)) {
+                return $true
+            }
+        }
+
+        # attempt to call the program, see if we get a response back
         $value = [string]::Empty
         $value = & $command
 
@@ -133,7 +146,7 @@ function Install-Chocolatey() {
 
 # Checkout a remote repository using svn into the supplied local path
 function Colour-CheckoutSvn($colour) {
-    if (!(Test-Software svn.exe)) {
+    if (!(Test-Software svn.exe 'svn')) {
         Write-Error 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
     }
@@ -194,7 +207,7 @@ function Colour-CheckoutSvn($colour) {
 
 # Clones the remote repository into the supplied local path
 function Colour-CloneGit($colour) {
-    if (!(Test-Software git.exe)) {
+    if (!(Test-Software git.exe 'git')) {
         Write-Error 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
@@ -286,7 +299,7 @@ function Install-AdhocSoftware($packageName, $name) {
     choco.exe install $packageName -y
 
     if (!$?) {
-        throw "Failed to install the $name."
+        throw "Failed to install $name."
     }
     
     Write-Message "Installation of $name successful."
@@ -334,7 +347,7 @@ function Colour-InstallSoftware($colour) {
         }
 
         if ($this_operation -eq 'install') {
-            $result = (choco.exe list -lo | Where-Object { $_ -like "*$name *" } | Select-Object -First 1)
+            $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
 
             if (![string]::IsNullOrWhiteSpace($result)) {
                 $this_operation = 'upgrade'
@@ -517,7 +530,7 @@ function Colour-InstallService($colour) {
     }
 }
 
-# Copy files/directories from one location to another
+# Copy files/folders from one location to another
 function Colour-CopyFiles($colour) {
     $from = $colour.from
     if ([string]::IsNullOrWhiteSpace($from)) {
@@ -533,24 +546,56 @@ function Colour-CopyFiles($colour) {
         throw 'No to path specified.'
     }
 
-    $toParent = Split-Path -Parent $to
-    if (!(Test-Path $toParent)) {
-        New-Item -ItemType Directory -Force -Path $toParent | Out-Null
+    $excludeFiles = $colour.excludeFiles
+    $excludeFolders = $colour.excludeFolders
+
+    if ($excludeFolders -ne $null -and $excludeFolders.Length -gt 0) {
+        [Regex]$excludeFoldersRegex = (($excludeFolders | ForEach-Object {[Regex]::Escape($_)}) –Join '|')
     }
 
-    Write-Message "Copying files/directories from '$from' to '$to'."
+    $includeFiles = $colour.includeFiles
+    $includeFolders = $colour.includeFolders
+    
+    if ($includeFolders -ne $null -and $includeFolders.Length -gt 0) {
+        [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape($_)}) –Join '|')
+    }
 
-    Copy-Item -Path $from -Destination $to -Recurse -Force | Out-Null
+    Write-Message "Copying files/folders from '$from' to '$to'."
 
+    Get-ChildItem -Path $from -Recurse -Force -Exclude $excludeFiles -Include $includeFiles |
+        Where-Object { $excludeFoldersRegex -eq $null -or $_.FullName.Replace($from, [String]::Empty) -notmatch $excludeFoldersRegex } |
+        Where-Object { $includeFoldersRegex -eq $null -or $_.FullName.Replace($from, [String]::Empty) -match $includeFoldersRegex } |
+        Copy-Item -Destination {
+            if ($_.PSIsContainer) {
+                $path = Join-Path $to $_.Parent.FullName.Substring($from.Length)
+                $temp = $path
+            }
+            else {
+                $path = Join-Path $to $_.FullName.Substring($from.Length)
+                $temp = Split-Path -Parent $path
+            }
+            
+            if (!(Test-Path $temp)) {
+                New-Item -ItemType Directory -Force -Path $temp | Out-Null
+            }
+            
+            $path
+        } -Force -Exclude $excludeFiles -Include $includeFiles
+    
     if (!$?) {
-        throw 'Failed to copy files/directories.'
+        throw 'Failed to copy files/folders.'
     }
 
-    Write-Message 'Files/directories copied successfully.'
+    Write-Message 'Files/folders copied successfully.'
 }
 
 # Calls vagrant from a specified path where a Vagrantfile can be found
 function Colour-Vagrant($colour) {
+    if (!(Test-Software vagrant.exe 'vagrant')) {
+        Write-Error 'Vagrant is not installed'
+        Install-AdhocSoftware 'vagrant' 'Vagrant'
+    }
+
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No path specified to parent directory where the Vagrantfile is located.'
@@ -593,7 +638,7 @@ function Write-Help() {
 
 # Writes the current version of Picasso to the console
 function Write-Version() {
-    Write-Host 'Picasso v0.2.2a' -ForegroundColor Green
+    Write-Host 'Picasso v0.2.3a' -ForegroundColor Green
 }
 
 
@@ -653,6 +698,11 @@ ForEach ($colour in $json.palette.paint) {
     Write-Host ([string]::Empty)
     $type = $colour.type.ToLower()
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    $description = $colour.description
+    if (![String]::IsNullOrWhiteSpace($description)) {
+        Write-Host $description -ForegroundColor Green
+    }
 
     switch ($type) {
         'software'

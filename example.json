@@ -35,7 +35,9 @@
             {
                 "type": "copy",
                 "from": "C:\\path\\to\\some\\folder",
-                "to": "C:\\path\\to\\some\\other\\folder"
+                "to": "C:\\path\\to\\some\\other\\folder",
+                "excludeFiles": [ "*.html", "*.js" ],
+                "includeFolders": [ "src" ]
             },
             {
                 "type": "vagrant",
