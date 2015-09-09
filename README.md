@@ -30,6 +30,12 @@ Picasso only depends on a few applications, and when required will automatically
 
 The above will only be installed when Picasso needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
+To view the source code, you can see the ps1 scripts via:
+
+* PowerShell ISE
+* Your favourite text editor
+* Visual Studio (you will need the "PowerShell Tools" Visual Studio extension)
+
 
 To Do
 =====
