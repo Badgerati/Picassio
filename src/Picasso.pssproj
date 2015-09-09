@@ -26,9 +26,22 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup />
   <ItemGroup>
+    <Folder Include="Modules\" />
+    <Folder Include="Tools\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Modules\command.psm1" />
+    <Compile Include="Modules\copy.psm1" />
+    <Compile Include="Modules\git.psm1" />
+    <Compile Include="Modules\hosts.psm1" />
+    <Compile Include="Modules\msbuild.psm1" />
+    <Compile Include="Modules\service.psm1" />
+    <Compile Include="Modules\software.psm1" />
+    <Compile Include="Modules\svn.psm1" />
+    <Compile Include="Modules\vagrant.psm1" />
     <Compile Include="Picasso.ps1" />
+    <Compile Include="Tools\PicassoTools.psm1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
