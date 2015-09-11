@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="Modules\command.psm1" />
     <Compile Include="Modules\copy.psm1" />
+    <Compile Include="Modules\echo.psm1" />
     <Compile Include="Modules\git.psm1" />
     <Compile Include="Modules\hosts.psm1" />
     <Compile Include="Modules\msbuild.psm1" />

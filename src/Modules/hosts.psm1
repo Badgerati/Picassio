@@ -1,5 +1,5 @@
 # Updates the hosts file
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Colour-UpdateHosts($colour) {
     $hostFile = "$env:windir\System32\drivers\etc\hosts"

@@ -1,5 +1,5 @@
 # Copy files/folders from one location to another
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     $from = $colour.from

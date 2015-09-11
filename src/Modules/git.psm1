@@ -1,5 +1,5 @@
 # Clones the remote repository into the supplied local path
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     if (!(Test-Software git.exe 'git')) {

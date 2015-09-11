@@ -1,5 +1,5 @@
 # Calls vagrant from a specified path where a Vagrantfile can be found
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     if (!(Test-Software vagrant.exe 'vagrant')) {

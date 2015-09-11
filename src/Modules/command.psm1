@@ -1,5 +1,5 @@
 # Run a passed command using Command Prompt/PowerShell
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     $command = $colour.command

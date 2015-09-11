@@ -1,15 +1,15 @@
 # Use MSBuild to build a project or solution
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     $path = $colour.path
     if (!(Test-Path $path)) {
-        throw 'Path to MSBuild.exe does not exist.'
+        throw "Path to MSBuild.exe does not exist: '$path'"
     }
 
     $project = $colour.project
     if (!(Test-Path $project)) {
-        throw 'Path to project for building does not exist.'
+        throw "Path to project for building does not exist: '$project'"
     }
 
     Push-Location (Split-Path $project -Parent)

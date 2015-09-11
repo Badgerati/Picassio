@@ -1,5 +1,5 @@
 # Checkout a remote repository using svn into the supplied local path
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     if (!(Test-Software svn.exe 'svn')) {

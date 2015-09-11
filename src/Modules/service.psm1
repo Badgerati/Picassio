@@ -1,5 +1,5 @@
 # Installs a service onto the system
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
     $name = $colour.name

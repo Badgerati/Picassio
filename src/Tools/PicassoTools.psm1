@@ -4,6 +4,8 @@
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
     Write-Host ''
+	Write-Host 'To install picasso use: ".\Picasso.ps1 -install"' -ForegroundColor Yellow
+    Write-Host ''
     Write-Host 'The following is a list of possible colour types:'
     Write-Host "`t- software"
     Write-Host "`t- git"
@@ -14,23 +16,25 @@ function Write-Help() {
     Write-Host "`t- copy"
     Write-Host "`t- vagrant"
     Write-Host "`t- hosts"
+    Write-Host "`t- echo"
+	Write-Host ''
 }
 
 # Writes the current version of Picasso to the console
 function Write-Version() {
-    Write-Host 'Picasso v0.3.0a' -ForegroundColor Green
+    Write-Host 'Picasso v0.3.1a' -ForegroundColor Green
 }
 
 # Wipes a given directory
 function Remove-Directory($directory) {
-    Write-Message "Wiping directory: '$directory'."
+    Write-Message "Removing directory: '$directory'."
     Remove-Item -Recurse -Force $directory | Out-Null
-    Write-Message 'Directory wiped.'
+    Write-Message 'Directory removed successfully.'
 }
 
 # Backs up a directory, appending the current date/time
 function Backup-Directory($directory) {
-    Write-Message "Backing up directory: '$directory'"
+    Write-Message "Backing-up directory: '$directory'"
     $newDir = $directory + '_' + ([DateTime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
     Rename-Item $directory $newDir -Force
     Write-Message "Directory '$directory' renamed to '$newDir'"
@@ -51,10 +55,15 @@ function Write-Information($message) {
 	Write-Host $message -ForegroundColor Green
 }
 
+# Write a stamp message to the console (magenta)
+function Write-Stamp($message) {
+	Write-Host $message -ForegroundColor Magenta
+}
+
 # Resets the PATH for the current session
 function Reset-Path() {
     $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    Write-Message 'PATH updated.'
+    Write-Message 'Path updated.'
 }
 
 # Check to see if a piece of software is installed
@@ -65,7 +74,9 @@ function Test-Software($command, $name = $null) {
             try {
                 $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
             }
-            catch [exception] { }
+            catch [exception] {
+				$result = $null
+			}
 
             if (![string]::IsNullOrWhiteSpace($result)) {
                 return $true
@@ -75,7 +86,7 @@ function Test-Software($command, $name = $null) {
         # attempt to call the program, see if we get a response back
         $value = [string]::Empty
         $value = & $command
-
+		
         if (![string]::IsNullOrWhiteSpace($value)) {
             return $true
         }
@@ -112,7 +123,7 @@ function Install-AdhocSoftware($packageName, $name) {
         Install-Chocolatey
     }
 
-    Write-Message "Installing $name"
+    Write-Message "Installing $name."
     choco.exe install $packageName -y
 
     if (!$?) {
@@ -125,7 +136,7 @@ function Install-AdhocSoftware($packageName, $name) {
 # Install Chocolatey - if already installed, will just update
 function Install-Chocolatey() {
     if (Test-Software choco.exe) {
-        Write-Message 'Chocolatey is already installed'
+        Write-Message 'Chocolatey is already installed.'
         return
     }
     

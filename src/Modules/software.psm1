@@ -1,7 +1,11 @@
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
-Import-Module $env:PICASSO_TOOLS -DisableNameChecking
+Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Module($colour) {
+	if (!(Test-Software choco.exe)) {
+        Install-Chocolatey
+    }
+
     # Get list of software names
     $names = $colour.names
     if ($names -eq $null -or $names.Length -eq 0) {
@@ -14,20 +18,20 @@ function Start-Module($colour) {
         throw 'No ensure operation supplied for software colour.'
     }
 
-    $operation = $operation.ToLower()
+    $operation = $operation.ToLower().Trim()
 
     if ($operation.EndsWith('ed')) {
         $operation = $operation.Substring(0, $colour.ensure.Length - 2)
     }
 
-    # Gte list of versions (or single version for all names)
+    # Get list of versions (or single version for all names)
     $versions = $colour.versions
     if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {
         throw 'Incorrect number of versions specified. Expected an equal amount to the amount of names speicified.'
     }
     
     for ($i = 0; $i -lt $names.Length; $i++) {
-        $name = $names[$i]
+        $name = $names[$i].Trim()
         $this_operation = $operation
 
         # Work out what version we're trying to install
@@ -35,14 +39,23 @@ function Start-Module($colour) {
             $version = 'latest'
         }
         elseif ($versions.Length -eq 1) {
-            $version = $versions[0]
+            $version = $versions[0].Trim()
         }
         else {
-            $version = $versions[$i]
+            $version = $versions[$i].Trim()
         }
 
         if ($this_operation -eq 'install') {
-            $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
+            if ($version.ToLower() -ne 'latest') {
+				$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*$version*" } | Select-Object -First 1)
+
+				if (![string]::IsNullOrWhiteSpace($result)) {
+					Write-Information "$name $version is already installed."
+					continue
+				}
+			}
+			
+			$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
 
             if (![string]::IsNullOrWhiteSpace($result)) {
                 $this_operation = 'upgrade'
