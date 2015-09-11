@@ -4,6 +4,21 @@ Picasso is a PowerShell v3.0+ provisioning/deployment script which uses a single
 
 Picasso is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picasso. The JSON file you pass in is called a 'palette' and this contains a 'paint' object which is an array of 'colours'.
 
+All of Picasso's features (colours) are modularised, allowing for people to have the ability to create extension modules - explained at the end of this document.
+
+
+Installing
+==========
+To use Picasso properly, you will need to install the scripts. To do so, once you have downloaded the files, navigate to the "src" folder an run the following command in a PowerShell prompt in administrator mode.
+
+```shell
+.\Picasso.ps1 -install
+```
+
+This will install all scripts for you, setting up the Path/environment variables. You will will be able to use the "picasso" command straight away.
+
+Scripts are installed to "C:\Picasso".
+
 
 Features
 ========
@@ -17,6 +32,7 @@ The following are all supported by Picasso:
 * Copy files/folders with inclusions/exclusions
 * Call Vagrant
 * Add/remove entries from the hosts file
+* Extension modules can be written for third-parties
 
 
 Dependencies
@@ -44,12 +60,12 @@ There are still quite a few things I wish to add to Picasso, the following is a 
 * Bower and npm support
 * Installing wesbites via IIS
 * SSDT publishing
+* NUnit
+* Network load balancing
 
 
 Examples
 ========
-Picasso is typically best run by having the path to it within you environment's PATH. The following examples will all assume Picasso is within your PATH.
-
 To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it.
 
 As a side note, each colour can have an optional "description" key-value. This value get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
@@ -320,3 +336,63 @@ The following will remove all entries with the passed IP
 	}
 }
 ```
+
+
+Extensions
+==========
+Due to the way Picasso is designed, you have the ability to create extension psm1 modules. If you wish to create your own module, there are a few things you need to ensure:
+
+* Extension modules must be placed within the "C:\Picasso\Extensions" directory
+* The main logic of the extension must be contained within a "Start-Extension($colour)" function
+* You may use the Picasso tools via "Import-Module $env:PicassoTools -DisableNameChecking"
+* The $colour passed in is of JSON format
+
+Note: when you re-install Picasso, extensions will be kept intact.
+
+So, let's have an example. Say we way to have a simple echo extension which echos whatever we give it. This would look like:
+
+```powershell
+Import-Module $env:PicassoTools -DisableNameChecking
+
+function Start-Extension($colour) {
+	Write-Message 'Echo text supplied.'
+	$text = $colour.text
+	$command = "echo $text"
+    cmd.exe /C $command
+}
+``` 
+
+Here, you'll noticed that we import the Picasso tools module. This module contains some useful tools such as
+
+* Installing software
+* Writing messages
+* Testing if software is installed
+* Backing-up directories
+* and more
+
+Next, we have the mandatory "Start-Extension($colour)" function. This is the main point-of-call for your modules, and and JSON supplied by the user for your extension will be passed through.
+
+We only require that the user supply us with a "text" key in the palette.
+
+Within the function, all we do is retrieve the text via "$colour.text", and then echo the value with the help of a command prompt.
+
+The palette for this will look like the following
+
+```json
+{
+    "palette" : {
+        "paint": [
+            {
+            	"type": "extension",
+            	"extension": "echo",
+            	"text": "Hello, world!"
+            }
+        ]
+    }
+}
+
+```
+
+Here you can see that the type will be "extension", informing Picasso that it needs to get the module from the extensions - in case people wish to call extension modules with the same name as the core modules.
+
+Then, we have the extension name of "echo", which is the module to use. Finally there is the text that we wish to echo.
