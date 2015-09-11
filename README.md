@@ -349,9 +349,10 @@ Due to the way Picasso is designed, you have the ability to create extension psm
 
 Note: when you re-install Picasso, extensions will be kept intact.
 
-So, let's have an example. Say we way to have a simple echo extension which echos whatever we give it. This would look like:
+So, let's have an example. Say we want to have a simple echo extension which echos whatever we give it. This would look like:
 
 ```powershell
+# File name: echo.psm1
 Import-Module $env:PicassoTools -DisableNameChecking
 
 function Start-Extension($colour) {
