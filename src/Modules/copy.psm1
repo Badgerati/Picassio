@@ -1,20 +1,11 @@
 # Copy files/folders from one location to another
-Import-Module $env:PicassoTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-    $from = $colour.from
-    if ([string]::IsNullOrWhiteSpace($from)) {
-        throw 'No from path specified.'
-    }
-    
-    if (!(Test-Path $from)) {
-        throw "From path specified doesn't exist: '$from'."
-    }
+	Validate-Module $colour
 
-    $to = $colour.to
-    if ([string]::IsNullOrWhiteSpace($to)) {
-        throw 'No to path specified.'
-    }
+    $from = $colour.from.Trim()
+    $to = $colour.to.Trim()
 
     $excludeFiles = $colour.excludeFiles
     $excludeFolders = $colour.excludeFolders
@@ -57,4 +48,22 @@ function Start-Module($colour) {
     }
 
     Write-Message 'Files/folders copied successfully.'
+}
+
+function Validate-Module($colour) {
+    $from = $colour.from
+    if ([string]::IsNullOrWhiteSpace($from)) {
+        throw 'No from path specified.'
+    }
+
+	$from = $from.Trim()
+    
+    if (!(Test-Path $from)) {
+        throw "From path specified doesn't exist: '$from'."
+    }
+
+    $to = $colour.to
+    if ([string]::IsNullOrWhiteSpace($to)) {
+        throw 'No to path specified.'
+    }
 }

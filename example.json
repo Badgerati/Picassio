@@ -17,7 +17,7 @@
             {
                 "type": "msbuild",
                 "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
-                "project": "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln",
+                "projects": [ "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln" ],
                 "arguments": "/p:Configuration=Debug"
             },
             {

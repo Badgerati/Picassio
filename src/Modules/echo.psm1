@@ -1,17 +1,20 @@
 # Simple echo module to display whatever is written
-Import-Module $env:PicassoTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	$text = $colour.text
-    if ([string]::IsNullOrWhiteSpace($text)) {
-        Write-Error 'No text passed to echo.'
-        return
-    }
+	Validate-Module $colour
 
-	$command = "echo $text"
-    cmd.exe /C $command
+	$text = $colour.text
+	Write-Host $text
     
     if (!$?) {
         throw "Failed to echo: '$text'."
+    }
+}
+
+function Validate-Module($colour) {
+	$text = $colour.text
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        throw 'No text passed to echo.'
     }
 }

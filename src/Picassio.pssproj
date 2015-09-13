@@ -7,7 +7,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>MyApplication</RootNamespace>
     <AssemblyName>MyApplication</AssemblyName>
-    <Name>Picasso</Name>
+    <Name>Picassio</Name>
+    <ProjectHome />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,8 +42,8 @@
     <Compile Include="Modules\software.psm1" />
     <Compile Include="Modules\svn.psm1" />
     <Compile Include="Modules\vagrant.psm1" />
-    <Compile Include="Picasso.ps1" />
-    <Compile Include="Tools\PicassoTools.psm1" />
+    <Compile Include="Picassio.ps1" />
+    <Compile Include="Tools\PicassioTools.psm1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />

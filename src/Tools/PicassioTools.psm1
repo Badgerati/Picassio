@@ -1,10 +1,10 @@
-# Tools for which to utilise in Picasso modules and extensions
+# Tools for which to utilise in Picassio modules and extensions
 
 # Writes the help manual to the console
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
     Write-Host ''
-	Write-Host 'To install picasso use: ".\Picasso.ps1 -install"' -ForegroundColor Yellow
+	Write-Host 'To install Picassio use: ".\Picassio.ps1 -install"' -ForegroundColor Yellow
     Write-Host ''
     Write-Host 'The following is a list of possible colour types:'
     Write-Host "`t- software"
@@ -20,9 +20,9 @@ function Write-Help() {
 	Write-Host ''
 }
 
-# Writes the current version of Picasso to the console
+# Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picasso v0.3.1a' -ForegroundColor Green
+    Write-Host 'Picassio v0.3.1a' -ForegroundColor Green
 }
 
 # Wipes a given directory
@@ -38,6 +38,11 @@ function Backup-Directory($directory) {
     $newDir = $directory + '_' + ([DateTime]::Now.ToString('yyyy-MM-dd_HH-mm-ss'))
     Rename-Item $directory $newDir -Force
     Write-Message "Directory '$directory' renamed to '$newDir'"
+}
+
+# Returns whether Picassio has been installed or not
+function Test-PicassioInstalled() {
+	return !([String]::IsNullOrWhiteSpace($env:PicassioTools) -or [String]::IsNullOrWhiteSpace($env:PicassioModules) -or [String]::IsNullOrWhiteSpace($env:PicassioModules))
 }
 
 # Writes a general message to the console (cyan)
@@ -60,9 +65,28 @@ function Write-Stamp($message) {
 	Write-Host $message -ForegroundColor Magenta
 }
 
+# Writes a header to the console in uppercase (magenta)
+function Write-Header($message) {
+	if ($message -eq $null) {
+		$message = [string]::Empty
+	}
+
+	$count = 65
+	$message = $message.ToUpper()
+
+	if ($message.Length -gt $count) {
+		Write-Host "$message>" -ForegroundColor Magenta
+	}
+	else {
+		$length = $count - $message.Length
+		$padding = ('=' * $length)
+		Write-Host "$message$padding>" -ForegroundColor Magenta
+	}
+}
+
 # Resets the PATH for the current session
 function Reset-Path() {
-    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')
+    $env:Path = (Get-EnvironmentVariable 'Path') + ';' + (Get-EnvironmentVariable 'Path' 'User')
     Write-Message 'Path updated.'
 }
 
@@ -152,4 +176,24 @@ function Install-Chocolatey() {
 function Test-ColourType($json, $type) {
     $list = [array]($json.palette.paint | Where-Object { $_.type.ToLower() -eq $type.ToLower() })
     return ($list.Length -ne 0)
+}
+
+# Return an environment variable
+function Get-EnvironmentVariable($name, $level = 'Machine') {
+	$value = [Environment]::GetEnvironmentVariable($name, $level)
+
+	if (!$?) {
+		throw
+	}
+
+	return $value
+}
+
+# Sets an environment variable
+function Set-EnvironmentVariable($name, $value, $level = 'Machine') {
+	[Environment]::SetEnvironmentVariable($name, $value, $level)
+
+	if (!$?) {
+		throw
+	}
 }

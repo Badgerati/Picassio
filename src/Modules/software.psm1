@@ -1,35 +1,24 @@
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
-Import-Module $env:PicassoTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
+	Validate-Module $colour
+
 	if (!(Test-Software choco.exe)) {
         Install-Chocolatey
     }
 
     # Get list of software names
     $names = $colour.names
-    if ($names -eq $null -or $names.Length -eq 0) {
-        throw 'No names supplied for software colour.'
-    }
     
     # Get ensured operation for installing/uninstalling
-    $operation = $colour.ensure
-    if ([string]::IsNullOrWhiteSpace($operation)) {
-        throw 'No ensure operation supplied for software colour.'
-    }
-
-    $operation = $operation.ToLower().Trim()
-
-    if ($operation.EndsWith('ed')) {
-        $operation = $operation.Substring(0, $colour.ensure.Length - 2)
-    }
+    $operation = $colour.ensure.ToLower().Trim()
+    $operation = $operation.Substring(0, $operation.Length - 2)
 
     # Get list of versions (or single version for all names)
     $versions = $colour.versions
-    if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {
-        throw 'Incorrect number of versions specified. Expected an equal amount to the amount of names speicified.'
-    }
     
+	# Provision software
     for ($i = 0; $i -lt $names.Length; $i++) {
         $name = $names[$i].Trim()
         $this_operation = $operation
@@ -86,5 +75,30 @@ function Start-Module($colour) {
         if ($i -ne ($names.Length - 1)) {
             Write-Host ([string]::Empty)
         }
+    }
+}
+
+function Validate-Module($colour) {
+    $names = $colour.names
+    if ($names -eq $null -or $names.Length -eq 0) {
+        throw 'No names supplied for software.'
+    }
+    
+    # Get ensured operation for installing/uninstalling
+    $operation = $colour.ensure
+    if ([string]::IsNullOrWhiteSpace($operation)) {
+        throw 'No ensure operation supplied for software.'
+    }
+
+    # check we have a valid ensure property
+    $operation = $operation.ToLower().Trim()
+    if ($operation -ne 'installed' -and $operation -ne 'uninstalled') {
+        throw "Invalid ensure parameter supplied for software: '$ensure'."
+    }
+	
+    # Get list of versions (or single version for all names)
+    $versions = $colour.versions
+    if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {
+        throw 'Incorrect number of versions specified. Expected an equal amount to the amount of names speicified.'
     }
 }

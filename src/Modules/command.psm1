@@ -1,13 +1,10 @@
 # Run a passed command using Command Prompt/PowerShell
-Import-Module $env:PicassoTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-    $command = $colour.command
-    if ([string]::IsNullOrWhiteSpace($command)) {
-        Write-Error 'No command passed to run via Command Prompt.'
-        return
-    }
+	Validate-Module $colour
 
+    $command = $colour.command
     $prompt = $colour.prompt
     if ([string]::IsNullOrWhiteSpace($prompt)) {
         Write-Message 'No prompt type passed, defaulting to Command Prompt.'
@@ -39,4 +36,11 @@ function Start-Module($colour) {
     }
 
     Write-Message 'Command ran successfully.'
+}
+
+function Validate-Module($colour) {
+	$command = $colour.command
+    if ([string]::IsNullOrWhiteSpace($command)) {
+        throw 'No command passed to run via Command Prompt.'
+    }
 }

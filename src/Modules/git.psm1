@@ -1,24 +1,22 @@
 # Clones the remote repository into the supplied local path
-Import-Module $env:PicassoTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
+	Validate-Module $colour
+
     if (!(Test-Software git.exe 'git')) {
         Write-Error 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 
-    $url = $colour.remote
+    $url = $colour.remote.Trim()
     if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
         throw "Remote git repository of '$url' is not valid."
     }
 
     $directory = $matches['repo']
     
-    $path = $colour.localpath
-    if ([string]::IsNullOrWhiteSpace($path)) {
-        throw 'No local git repository path specified.'
-    }
-
+    $path = $colour.localpath.Trim()
     if (!(Test-Path $path)) {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
@@ -27,9 +25,19 @@ function Start-Module($colour) {
     if ([string]::IsNullOrWhiteSpace($branch)) {
         $branch = 'master'
     }
+	else {
+		$branch = $branch.Trim()
+	}
 
     $commit = $colour.commit
+	if ($commit -ne $null) {
+		$commit = $commit.Trim()
+	}
+
     $name = $colour.localname
+	if ($name -ne $null) {
+		$name = $name.Trim()
+	}
 
     # delete directory if exists
     Push-Location $path
@@ -82,4 +90,28 @@ function Start-Module($colour) {
     Pop-Location
     Pop-Location
     Write-Message 'Git clone was successful.'
+}
+
+function Validate-Module($colour) {
+    $url = $colour.remote
+
+	if ($url -eq $null) {
+		$url = [string]::Empty
+	}
+
+	$url = $url.Trim()
+
+    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
+        throw "Remote git repository of '$url' is not valid."
+    }
+	    
+    $path = $colour.localpath
+
+	if ($path -ne $null) {
+		$path = $path.Trim()
+	}
+
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        throw 'No local git repository path specified.'
+    }
 }
