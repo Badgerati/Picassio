@@ -4,8 +4,12 @@
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
     Write-Host ''
-	Write-Host 'To install Picassio use: ".\Picassio.ps1 -install"' -ForegroundColor Yellow
-    Write-Host ''
+
+	if (!(Test-PicassioInstalled)) {
+		Write-Host 'To install Picassio use: ".\Picassio.ps1 -install"' -ForegroundColor Yellow
+		Write-Host ''
+	}
+
     Write-Host 'The following is a list of possible colour types:'
     Write-Host "`t- software"
     Write-Host "`t- git"
@@ -22,7 +26,7 @@ function Write-Help() {
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picassio v0.3.1a' -ForegroundColor Green
+    Write-Host 'Picassio v0.8.0a' -ForegroundColor Green
 }
 
 # Wipes a given directory

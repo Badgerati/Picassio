@@ -1,5 +1,5 @@
-Picassio
-========
+Picassio v0.8.0a
+================
 Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
 Picassio is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picassio. The JSON file you pass in is called a 'palette' and this contains a 'paint' object which is an array of 'colours'.
@@ -143,7 +143,7 @@ This will pull down our master branch, an rename the auto-created folder to be "
 
 Building a Project using MSBuild
 --------------------------------
-Picassio is able to build a .NET project/solution using MSBuild (so long as the computer has MSBuild available). One of the required keys for MSBuild is the path to where the MSBuild.exe can be found.
+Picassio is able to build a .NET project/solution using MSBuild (so long as the computer has MSBuild available). One of the keys for MSBuild is the path to where the MSBuild.exe can be found, if one is not supplied a default path is used.
 ```json
 {
 	"palette": {
@@ -151,7 +151,7 @@ Picassio is able to build a .NET project/solution using MSBuild (so long as the 
 			{
 				"type": "msbuild",
 				"path": "C:\\path\\to\\your\\msbuild.exe",
-				"project": "C:\\path\\to\\your\\project.csproj",
+				"projects": [ "C:\\path\\to\\your\\project.csproj" ],
 				"arguments": "/p:Configuration=Debug"
 			}
 		]
