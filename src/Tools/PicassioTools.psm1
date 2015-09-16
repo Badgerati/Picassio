@@ -10,23 +10,18 @@ function Write-Help() {
 		Write-Host ''
 	}
 
-    Write-Host 'The following is a list of possible colour types:'
-    Write-Host "`t- software"
-    Write-Host "`t- git"
-    Write-Host "`t- svn"
-    Write-Host "`t- msbuild"
-    Write-Host "`t- command"
-    Write-Host "`t- service"
-    Write-Host "`t- copy"
-    Write-Host "`t- vagrant"
-    Write-Host "`t- hosts"
-    Write-Host "`t- echo"
+    Write-Host 'The following is a list of possible commands:'
+    Write-Host "`t-help"
+    Write-Host "`t-install"
+    Write-Host "`t-uninstall"
+    Write-Host "`t-reinstall"
+    Write-Host "`t-version"
 	Write-Host ''
 }
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picassio v0.8.0a' -ForegroundColor Green
+    Write-Host 'Picassio v0.8.2a' -ForegroundColor Green
 }
 
 # Wipes a given directory
@@ -67,6 +62,11 @@ function Write-Information($message) {
 # Write a stamp message to the console (magenta)
 function Write-Stamp($message) {
 	Write-Host $message -ForegroundColor Magenta
+}
+
+# Writes a warning to the console (yellow)
+function Write-Warning($message) {
+	Write-Host $message -ForegroundColor Yellow
 }
 
 # Writes a header to the console in uppercase (magenta)

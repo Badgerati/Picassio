@@ -80,12 +80,15 @@ function Validate-Module($colour) {
     }
 
     $state = $colour.state
-    if ([string]::IsNullOrWhiteSpace($state)) {
+    if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'installed') {
         throw 'No state parameter supplied for service.'
     }
 
     # check we have a valid state property
-    $state = $state.ToLower().Trim()
+    if ($state -ne $null) {
+		$state = $state.ToLower().Trim()
+	}
+
     if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'installed') {
         throw "Invalid state parameter supplied for service: '$state'."
     }
@@ -93,5 +96,11 @@ function Validate-Module($colour) {
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
         throw 'No path passed to install service.'
+    }
+	
+    if (![string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
+        if (!(Test-Path $path)) {
+			throw "Path passed to install service does not exist: '$path'"
+		}
     }
 }

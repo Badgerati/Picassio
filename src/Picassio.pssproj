@@ -42,6 +42,8 @@
     <Compile Include="Modules\software.psm1" />
     <Compile Include="Modules\svn.psm1" />
     <Compile Include="Modules\vagrant.psm1" />
+    <Compile Include="Modules\website-binding.psm1" />
+    <Compile Include="Modules\website.psm1" />
     <Compile Include="Picassio.ps1" />
     <Compile Include="Tools\PicassioTools.psm1" />
   </ItemGroup>

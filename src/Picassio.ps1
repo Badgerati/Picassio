@@ -3,7 +3,10 @@ param (
     [switch]$help = $false,
     [switch]$version = $false,
 	[switch]$install = $false,
-	[switch]$uninstall = $false
+	[switch]$uninstall = $false,
+	[switch]$reinstall = $false,
+	[switch]$draw = $false,
+	[switch]$erase = $false
 )
 
 $modulePath = $env:PicassioTools
@@ -235,95 +238,127 @@ function Uninstall-Picassio() {
 	Write-Information 'Picassio has been uninstalled successfully.'
 }
 
-
-
-
-# Ensure we're running against the correct version of PowerShell
-$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
-if ($currentVersion -lt 3) {
-	Write-Error "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
-	return
-}
-
-# Check switches first
-Write-Version
-if ($version) {
-	return
-}
-elseif ($help) {
-	Write-Help
-	return
-}
-elseif ($install) {
-	Install-Picassio
-	return
-}
-elseif ($uninstall) {
-	Uninstall-Picassio
-	return
-}
-
-# Main Picassio logic
-if (!(Test-PicassioInstalled)) {
-	Write-Error 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
-	return
-}
-
-if ([string]::IsNullOrWhiteSpace($config)) {
-	Write-Message 'No config file supplied, using default.'
-	$config = './Picassio.json'
-
-	if (!(Test-Path $config)) {
-		Write-Error 'Default Picassio.json file cannot be found in current directory.'
+# Re-installs Picassio by uninstalling then re-installing
+function Reinstall-Picassio() {
+	if (!(Test-Path .\Picassio.ps1)) {
+		Write-Error 'Re-installation should only be called from where the Picassio scripts actually reside.'
 		return
 	}
-}
-elseif (!(Test-Path $config)) {
-	Write-Error "Passed configuration file does not exist: '$config'."
-	return
-}
 
-$json = Validate-File (Get-Content $config -Raw)
+	Write-Information 'Re-installing Picassio.'
 
-$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
-ForEach ($colour in $json.palette.paint) {
-	Write-Host ([string]::Empty)
-
-	$type = $colour.type.ToLower()
-	$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
-	$description = $colour.description
-	if (![String]::IsNullOrWhiteSpace($description)) {
-		Write-Information $description
+	if (Test-PicassioInstalled) {
+		Uninstall-Picassio
+	}
+	else {
+		Write-Message 'Picassio has not been installed. Skipping uninstall step.'
 	}
 
-	switch ($type) {
-		'extension'
-			{
-				$extensionName = $colour.extension
-				Write-Header "$extensionName (ext)"
-				$extension = "$env:PicassioExtensions\$extensionName.psm1"
-				Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
-				Start-Extension $colour
-				Remove-Module $extensionName
-			}
+	Install-Picassio
+	
+	Write-Information 'Picassio has been re-installed successfully.'
+}
 
-		default
-			{
-				Write-Header $type
-				$module = "$env:PicassioModules\$type.psm1"
-				Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue				
-				Start-Module $colour
-				Remove-Module $type
-			}
+
+
+
+try {
+	# Ensure we're running against the correct version of PowerShell
+	$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
+	if ($currentVersion -lt 3) {
+		Write-Error "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
+		return
 	}
+
+	# Check switches first
+	Write-Version
+	if ($version) {
+		return
+	}
+	elseif ($help) {
+		Write-Help
+		return
+	}
+	elseif ($install) {
+		Install-Picassio
+		return
+	}
+	elseif ($uninstall) {
+		Uninstall-Picassio
+		return
+	}
+	elseif ($reinstall) {
+		Reinstall-Picassio
+		return
+	}
+
+	# Main Picassio logic
+	if (!(Test-PicassioInstalled)) {
+		Write-Error 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
+		return
+	}
+
+	if ([string]::IsNullOrWhiteSpace($config)) {
+		Write-Message 'No config file supplied, using default.'
+		$config = './Picassio.json'
+
+		if (!(Test-Path $config)) {
+			Write-Error 'Default Picassio.json file cannot be found in current directory.'
+			return
+		}
+	}
+	elseif (!(Test-Path $config)) {
+		Write-Error "Passed configuration file does not exist: '$config'."
+		return
+	}
+
+	$json = Validate-File (Get-Content $config -Raw)
+
+	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+	ForEach ($colour in $json.palette.paint) {
+		Write-Host ([string]::Empty)
+
+		$type = $colour.type.ToLower()
+		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+		$description = $colour.description
+		if (![String]::IsNullOrWhiteSpace($description)) {
+			Write-Information $description
+		}
+
+		switch ($type) {
+			'extension'
+				{
+					$extensionName = $colour.extension
+					Write-Header "$extensionName (ext)"
+					$extension = "$env:PicassioExtensions\$extensionName.psm1"
+					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
+					Start-Extension $colour
+					Remove-Module $extensionName
+				}
+
+			default
+				{
+					Write-Header $type
+					$module = "$env:PicassioModules\$type.psm1"
+					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue				
+					Start-Module $colour
+					Remove-Module $type
+				}
+		}
     	
-	Import-Module $modulePath -DisableNameChecking
-	Reset-Path
+		Import-Module $modulePath -DisableNameChecking
+		Reset-Path
 
-	Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
-	Write-Host ([string]::Empty)
+		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
+		Write-Host ([string]::Empty)
+	}
+
+	Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
 }
-
-Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
+finally {
+	if (![string]::IsNullOrWhiteSpace($modulePath)) {
+		Remove-Module 'PicassioTools'
+	}
+}

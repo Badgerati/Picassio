@@ -1,4 +1,4 @@
-Picassio v0.8.0a
+Picassio v0.8.2a
 ================
 Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
@@ -32,6 +32,7 @@ The following are all supported by Picassio:
 * Copy files/folders with inclusions/exclusions
 * Call Vagrant
 * Add/remove entries from the hosts file
+* Add/remove website on IIS
 * Extension modules can be written for third-parties
 
 
@@ -78,6 +79,8 @@ picassio example.json
 picassio -version
 picassio -help
 ```
+
+Calling just 'picassio' in a directory will look for a default 'picassio.json' file.
 
 
 Installing Software
@@ -336,6 +339,76 @@ The following will remove all entries with the passed IP
 	}
 }
 ```
+
+
+Add/remove a website in IIS
+---------------------------
+Picassio can add/remove, start/stop websites and application pools in IIS. You can also set-up binding for http/https IP/port setting.
+
+When a website is created, the default "*:80:" endpoint is removed, if this is required just specify the binding within the bindings array.
+
+Picassio will also add IIS and application pool users to the website path in IIS. This is so the ApplicationPoolIdentity and IIS users have permissions to see the website directory.
+
+The following palette will setup an entry into the hosts file, and also create a website/app pool in IIS. The website will be accessible from 127.0.0.2 or test.site.com.
+```json
+{
+    "palette" : {
+        "paint": [
+        	{
+        		"type": "hosts",
+        		"ensure": "added",
+        		"ip": "127.0.0.2",
+        		"hostname": "test.site.com"
+        	},
+            {
+            	"type": "website",
+            	"ensure": "added",
+            	"state": "started",
+            	"siteName": "Test Website",
+            	"appPoolName": "Test Website",
+            	"hostname": "test.site.com",
+            	"path": "C:\\Website\\TestWebsite",
+            	"bindings": [
+            		{
+            			"ip": "127.0.0.2",
+		            	"port": "80",
+		            	"protocol": "http"
+            		}
+            	]
+            }
+        ]
+    }
+}
+```
+
+If you use a binding of 'https' you'll also need to pass a "certificate" key-value in the bindings. So if above we used https, a possible certificate could be "*.site.com".
+
+
+Add/remove website bindings in IIS
+----------------------------------
+If you already have a website setup in IIS, then Picassio can add/remove binding to an already existing website.
+
+Note: you cannot use this to add bindings to a website you create in the same palette. To setup bindings on a website you're creating as well, use the binding array in the website block.
+
+The following palette will add an http binding to a website. This is rather similar to the binding array for a website:
+```json
+{
+    "palette" : {
+        "paint": [
+            {
+            	"type": "website-binding",
+            	"ensure": "added",
+            	"siteName": "Test Website",
+            	"ip": "127.0.0.2",
+		        "port": "80",
+		        "protocol": "http"
+            }
+        ]
+    }
+}
+```
+
+Again like above, if you use a binding of 'https' you'll also need to pass a "certificate" key-value in the bindings. So if above we used https, a possible certificate could be "*.site.com".
 
 
 Extensions

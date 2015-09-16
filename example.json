@@ -49,6 +49,28 @@
                 "ensure": "added",
                 "ip": "127.0.0.3",
                 "hostname": "test.local.com"
+            },
+            {
+                "type": "hosts",
+                "ensure": "added",
+                "ip": "127.0.0.2",
+                "hostname": "test.site.com"
+            },
+            {
+                "type": "website",
+                "ensure": "added",
+                "state": "started",
+                "siteName": "Test Website",
+                "appPoolName": "Test Website",
+                "hostname": "test.site.com",
+                "path": "C:\\Website\\TestWebsite",
+                "bindings": [
+                    {
+                        "ip": "127.0.0.2",
+                        "port": "80",
+                        "protocol": "http"
+                    }
+                ]
             }
         ]
     }

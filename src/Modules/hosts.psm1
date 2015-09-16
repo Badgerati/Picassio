@@ -25,27 +25,34 @@ function Start-Module($colour) {
 		$hostname = $hostname.Trim()
 	}
 
-    Write-Message "Ensuring $ip/$hostname are $ensure."
+    Write-Message "Ensuring '$ip - $hostname' are $ensure."
+    $regex = ".*?$ip.*?$hostname.*?"
+    $lines = Get-Content $hostFile
 
     switch ($ensure) {
         'added'
             {
-                ("$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
+				$current = ($lines | Where-Object { $_ -match $regex } | Select-Object -First 1)
+				
+				if ([string]::IsNullOrWhiteSpace($current)) { 
+					("$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
+				}
+				else {
+					Write-Message 'Host entry already exists.'
+				}
             }
 
         'removed'
             {
-                $regex = ".*?$ip.*?$hostname.*?"
-                $lines = Get-Content $hostFile
                 $lines | Where-Object { $_ -notmatch $regex } | Out-File -FilePath $hostFile -Encoding ASCII
             }
     }
 
     if (!$?) {
-        throw "Failed to $ensure $ip/$hostname to the hosts file."
+        throw "Failed to $ensure '$ip - $hostname' to the hosts file."
     }
 
-    Write-Message "$ip/$hostname has been $ensure successfully."
+    Write-Message "'$ip - $hostname' has been $ensure successfully."
 }
 
 function Validate-Module($colour) {
