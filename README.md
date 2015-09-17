@@ -1,4 +1,4 @@
-Picassio v0.8.2a
+Picassio v0.8.3a
 ================
 Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
@@ -366,7 +366,6 @@ The following palette will setup an entry into the hosts file, and also create a
             	"state": "started",
             	"siteName": "Test Website",
             	"appPoolName": "Test Website",
-            	"hostname": "test.site.com",
             	"path": "C:\\Website\\TestWebsite",
             	"bindings": [
             		{
@@ -387,8 +386,6 @@ If you use a binding of 'https' you'll also need to pass a "certificate" key-val
 Add/remove website bindings in IIS
 ----------------------------------
 If you already have a website setup in IIS, then Picassio can add/remove binding to an already existing website.
-
-Note: you cannot use this to add bindings to a website you create in the same palette. To setup bindings on a website you're creating as well, use the binding array in the website block.
 
 The following palette will add an http binding to a website. This is rather similar to the binding array for a website:
 ```json

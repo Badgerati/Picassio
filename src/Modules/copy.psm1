@@ -7,6 +7,10 @@ function Start-Module($colour) {
     $from = $colour.from.Trim()
     $to = $colour.to.Trim()
 
+	if (!(Test-Path $from)) {
+        throw "From path specified doesn't exist: '$from'."
+    }
+
     $excludeFiles = $colour.excludeFiles
     $excludeFolders = $colour.excludeFolders
 
@@ -55,13 +59,7 @@ function Validate-Module($colour) {
     if ([string]::IsNullOrWhiteSpace($from)) {
         throw 'No from path specified.'
     }
-
-	$from = $from.Trim()
-    
-    if (!(Test-Path $from)) {
-        throw "From path specified doesn't exist: '$from'."
-    }
-
+	
     $to = $colour.to
     if ([string]::IsNullOrWhiteSpace($to)) {
         throw 'No to path specified.'

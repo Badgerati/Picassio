@@ -19,6 +19,10 @@ function Start-Module($colour) {
 	ForEach ($project in $projects) {
 		$project = $project.Trim()
 
+		if (!(Test-Path $project)) {
+			throw "Path to project for building does not exist: '$project'"
+		}
+
 		Push-Location (Split-Path $project -Parent)
 		$file = (Split-Path $project -Leaf)
 		$command = "$path $args $project"
@@ -51,15 +55,9 @@ function Validate-Module($colour) {
 		throw 'No projects have been supplied for MSBuild.'
 	}
 	
-	$args = $colour.arguments
-
 	ForEach ($project in $projects) {
-		if ($project -ne $null) {
-			$project = $project.Trim()
-		}
-
-		if (!(Test-Path $project)) {
-			throw "Path to project for building does not exist: '$project'"
+		if ([string]::IsNullOrWhiteSpace($project)) {
+			throw 'No from path specified to build project.'
 		}
 	}
 }

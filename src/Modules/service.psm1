@@ -40,6 +40,10 @@ function Start-Module($colour) {
         Write-Message "Service $ensure."
     }
     else {
+		if (!(Test-Path $path)) {
+			throw "Path passed to install service does not exist: '$path'"
+		}
+
         Write-Message "Ensuring service '$name' is $ensure."
         New-Service -Name $name -BinaryPathName $path -StartupType Automatic
         Write-Message "Service $ensure."
@@ -96,11 +100,5 @@ function Validate-Module($colour) {
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
         throw 'No path passed to install service.'
-    }
-	
-    if (![string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
-        if (!(Test-Path $path)) {
-			throw "Path passed to install service does not exist: '$path'"
-		}
     }
 }

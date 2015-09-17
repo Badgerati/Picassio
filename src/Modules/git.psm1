@@ -5,7 +5,7 @@ function Start-Module($colour) {
 	Validate-Module $colour
 
     if (!(Test-Software git.exe 'git')) {
-        Write-Error 'Git is not installed'
+        Write-Errors 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 

@@ -62,7 +62,6 @@
                 "state": "started",
                 "siteName": "Test Website",
                 "appPoolName": "Test Website",
-                "hostname": "test.site.com",
                 "path": "C:\\Website\\TestWebsite",
                 "bindings": [
                     {

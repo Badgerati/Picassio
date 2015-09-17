@@ -6,7 +6,8 @@ param (
 	[switch]$uninstall = $false,
 	[switch]$reinstall = $false,
 	[switch]$draw = $false,
-	[switch]$erase = $false
+	[switch]$erase = $false,
+	[switch]$validate = $false
 )
 
 $modulePath = $env:PicassioTools
@@ -121,7 +122,7 @@ function Validate-File($config) {
 # Installs Picassio
 function Install-Picassio() {
 	if (!(Test-Path .\Picassio.ps1)) {
-		Write-Error 'Installation should only be called from where the Picassio scripts actually reside.'
+		Write-Errors 'Installation should only be called from where the Picassio scripts actually reside.'
 		return
 	}
 
@@ -171,7 +172,7 @@ function Install-Picassio() {
 		}
 
 		Set-EnvironmentVariable 'Path' $current
-		$env:Path = $current
+		Reset-Path
 	}
 	
 	Write-Message 'Creating environment variables.'
@@ -198,7 +199,7 @@ function Install-Picassio() {
 # Uninstalls Picassio
 function Uninstall-Picassio() {
 	if (!(Test-PicassioInstalled)) {
-		Write-Error 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
+		Write-Errors 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
 		return
 	}
 
@@ -241,7 +242,7 @@ function Uninstall-Picassio() {
 # Re-installs Picassio by uninstalling then re-installing
 function Reinstall-Picassio() {
 	if (!(Test-Path .\Picassio.ps1)) {
-		Write-Error 'Re-installation should only be called from where the Picassio scripts actually reside.'
+		Write-Errors 'Re-installation should only be called from where the Picassio scripts actually reside.'
 		return
 	}
 
@@ -266,7 +267,7 @@ try {
 	# Ensure we're running against the correct version of PowerShell
 	$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
 	if ($currentVersion -lt 3) {
-		Write-Error "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
+		Write-Errors "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
 		return
 	}
 
@@ -294,7 +295,7 @@ try {
 
 	# Main Picassio logic
 	if (!(Test-PicassioInstalled)) {
-		Write-Error 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
+		Write-Errors 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
 		return
 	}
 
@@ -303,16 +304,20 @@ try {
 		$config = './Picassio.json'
 
 		if (!(Test-Path $config)) {
-			Write-Error 'Default Picassio.json file cannot be found in current directory.'
+			Write-Errors 'Default Picassio.json file cannot be found in current directory.'
 			return
 		}
 	}
 	elseif (!(Test-Path $config)) {
-		Write-Error "Passed configuration file does not exist: '$config'."
+		Write-Errors "Passed configuration file does not exist: '$config'."
 		return
 	}
 
 	$json = Validate-File (Get-Content $config -Raw)
+
+	if ($validate) {
+		return
+	}
 
 	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 

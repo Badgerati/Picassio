@@ -12,16 +12,28 @@ function Write-Help() {
 
     Write-Host 'The following is a list of possible commands:'
     Write-Host "`t-help"
+	Write-Host "`t Displays the help page"
+	Write-Host ''
+	Write-Host "`t-validate"
+	Write-Host "`t Validates the palette"
+	Write-Host ''
     Write-Host "`t-install"
+	Write-Host "`t Installs Picassio to C:\Picassio"
+	Write-Host ''
     Write-Host "`t-uninstall"
+	Write-Host "`t Uninstalls Picassio"
+	Write-Host ''
     Write-Host "`t-reinstall"
+	Write-Host "`t Uninstalls and then re-installs Picassio"
+	Write-Host ''
     Write-Host "`t-version"
+	Write-Host "`t Displays the current version of Picassio"
 	Write-Host ''
 }
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picassio v0.8.2a' -ForegroundColor Green
+    Write-Host 'Picassio v0.8.3a' -ForegroundColor Green
 }
 
 # Wipes a given directory
@@ -49,8 +61,8 @@ function Write-Message($message) {
     Write-Host $message -ForegroundColor Cyan
 }
 
-# Overrides Write-Error, with one which just outputs text to the console (red)
-function Write-Error($message) {
+# Writes error text to the console (red)
+function Write-Errors($message) {
     Write-Host $message -ForegroundColor Red
 }
 
@@ -65,7 +77,7 @@ function Write-Stamp($message) {
 }
 
 # Writes a warning to the console (yellow)
-function Write-Warning($message) {
+function Write-Warnings($message) {
 	Write-Host $message -ForegroundColor Yellow
 }
 

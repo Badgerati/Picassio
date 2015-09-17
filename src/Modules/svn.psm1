@@ -5,7 +5,7 @@ function Start-Module($colour) {
 	Validate-Module $colour
 
     if (!(Test-Software svn.exe 'svn')) {
-        Write-Error 'SVN is not installed'
+        Write-Errors 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
     }
 

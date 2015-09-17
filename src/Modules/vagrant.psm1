@@ -5,12 +5,16 @@ function Start-Module($colour) {
 	Validate-Module $colour
 
     if (!(Test-Software vagrant.exe 'vagrant')) {
-        Write-Error 'Vagrant is not installed'
+        Write-Errors 'Vagrant is not installed'
         Install-AdhocSoftware 'vagrant' 'Vagrant'
     }
 
     $path = $colour.path.Trim()
     $command = $colour.command.Trim()
+	
+    if (!(Test-Path $path)) {
+        throw "Path specified to Vagrantfile doesn't exist: '$path'."
+    }
 
 	Write-Message "Running vagrant $command."
     Push-Location $path
@@ -29,12 +33,6 @@ function Validate-Module($colour) {
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No path specified to parent directory where the Vagrantfile is located.'
-    }
-    
-	$path = $path.Trim()
-
-    if (!(Test-Path $path)) {
-        throw "Path specified to Vagrantfile doesn't exist: '$path'."
     }
 
     $command = $colour.command

@@ -84,11 +84,16 @@ function Start-Module($colour) {
 					}
 				}
 				else {
-					Write-Warning 'Application pool already exists.'
+					Write-Warnings 'Application pool already exists.'
 				}
 
 				Write-Message 'Application pool created successfully.'
 				Write-Message "`nCreating website: '$siteName'."
+
+				$path = $path.Trim()
+				if (!(Test-Path $path)) {
+					throw "Path passed to add website does not exist: '$path'."
+				}
 
 				if (!$siteExists) {
 					New-Website -Name $siteName -PhysicalPath $path -ApplicationPool $appPoolName -Force | Out-Null
@@ -102,7 +107,7 @@ function Start-Module($colour) {
 					}
 				}
 				else {
-					Write-Warning 'Website already exists, updating.'
+					Write-Warnings 'Website already exists, updating.'
 
 					Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name physicalPath -Value $path
 					Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name applicationPool -Value $appPoolName
@@ -149,7 +154,7 @@ function Start-Module($colour) {
 						}
 					}
 					else {
-						Write-Warning ("Binding already exists: '$ip" + ":" + "$port'.")
+						Write-Warnings ("Binding already exists: '$ip" + ":" + "$port'.")
 					}
 				}
 
@@ -165,7 +170,7 @@ function Start-Module($colour) {
 					$acl.SetAccessRule($iis_ar)
 				}
 				else {
-					Write-Warning 'IIS user already added.'
+					Write-Warnings 'IIS user already added.'
 				}
 
 				$app_user = $acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch "IIS APPPOOL\\$appPoolName" } } | Select-Object -First 1
@@ -175,7 +180,7 @@ function Start-Module($colour) {
 					$acl.SetAccessRule($app_ar)
 				}
 				else {
-					Write-Warning 'Application pool user already added.'
+					Write-Warnings 'Application pool user already added.'
 				}
 
 				Set-Acl -Path $path -AclObject $acl
@@ -228,7 +233,7 @@ function Start-Module($colour) {
 					}
 				}
 				else {
-					Write-Warning 'Website does not exist.'
+					Write-Warnings 'Website does not exist.'
 				}
 				
 				Write-Message 'Website removed successfully.'
@@ -241,7 +246,7 @@ function Start-Module($colour) {
 					}
 				}
 				else {
-					Write-Warning 'Application pool does not exist.'
+					Write-Warnings 'Application pool does not exist.'
 				}
 				
 				Write-Message 'Application pool removed successfully.'
@@ -296,10 +301,6 @@ function Validate-Module($colour) {
 	if ($ensure -eq 'added') {
 		if ([string]::IsNullOrWhiteSpace($path)) {
 			throw 'No path passed to add website.'
-		}
-
-		if (!(Test-Path $path)) {
-			throw "Path passed to add website does not exist: '$path'."
 		}
 	}
 
