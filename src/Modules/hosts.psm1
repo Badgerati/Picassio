@@ -35,7 +35,7 @@ function Start-Module($colour) {
 				$current = ($lines | Where-Object { $_ -match $regex } | Select-Object -First 1)
 				
 				if ([string]::IsNullOrWhiteSpace($current)) { 
-					("$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
+					("`n$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
 				}
 				else {
 					Write-Message 'Host entry already exists.'
