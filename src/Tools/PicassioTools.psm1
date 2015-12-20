@@ -213,3 +213,13 @@ function Set-EnvironmentVariable($name, $value, $level = 'Machine') {
 		throw
 	}
 }
+
+# Tests whether the current shell is open in a 32-bit host
+function Test-Win32() {
+	return [IntPtr]::Size -eq 4;
+}
+
+# Tests whether the current shell is open in a 64-bit host
+function Test-Win64() {
+	return [IntPtr]::Size -eq 8;
+}

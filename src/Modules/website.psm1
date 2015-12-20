@@ -255,6 +255,10 @@ function Start-Module($colour) {
 }
 
 function Validate-Module($colour) {
+	if (!(Test-Win64)) {
+		throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
+	}
+
 	$siteName = $colour.siteName
 	if ([string]::IsNullOrEmpty($siteName)) {
 		throw 'No site name has been supplied for website.'

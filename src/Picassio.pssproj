@@ -32,6 +32,7 @@
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\nodejs.psm1" />
     <Compile Include="Modules\command.psm1" />
     <Compile Include="Modules\copy.psm1" />
     <Compile Include="Modules\echo.psm1" />

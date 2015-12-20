@@ -11,6 +11,15 @@ function Start-Module($colour) {
         $prompt = 'cmd'
     }
 
+	$path = $colour.path
+	if (![string]::IsNullOrWhiteSpace($path)) {
+		if (!(Test-Path $path)) {
+			throw "Path to run command does not exist: '$path'"
+		}
+
+		Push-Location $path
+	}
+
     # determine which prompt in which to run the command
     switch ($prompt.ToLower()) {
         'cmd'
@@ -32,9 +41,11 @@ function Start-Module($colour) {
     }
     
     if (!$?) {
+		Pop-Location
         throw "Failed to run command: '$command'."
     }
-
+	
+	Pop-Location
     Write-Message 'Command ran successfully.'
 }
 
