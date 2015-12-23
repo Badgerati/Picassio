@@ -25,6 +25,7 @@ function Start-Module($colour) {
 	$username = $colour.username
 	$password = $colour.password
 	$bindings = $colour.bindings
+	$syncPaths = $colour.syncPaths
 
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
@@ -117,8 +118,23 @@ function Start-Module($colour) {
 				}
 				else {
 					Write-Warnings 'Website already exists, updating.'
+					
+					if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -eq $true) {
+						$currentPath = (Get-Item "IIS:\Sites\$siteName" | Select-Object -ExpandProperty physicalPath)
+						Write-Message "Current Path: '$currentPath'."
 
-					Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name physicalPath -Value $path
+						$matchingSites = (Get-Website | Select-Object Name, physicalPath | Where-Object { $_.physicalPath -eq $currentPath } | Select-Object -ExpandProperty Name)
+						Write-Message "Found $($matchingSites.Count) matching websites for current path."
+
+						ForEach ($site in $matchingSites) {
+							Write-Information "Updating website: '$site'."
+							Set-ItemProperty -Path "IIS:\Sites\$site" -Name physicalPath -Value $path
+						}
+					}
+					else {
+						Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name physicalPath -Value $path
+					}
+										
 					Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name applicationPool -Value $appPoolName
 				}
 				
@@ -220,7 +236,7 @@ function Start-Module($colour) {
 							if (!$?) {
 								throw
 							}
-
+							
 							Stop-Website -Name $siteName
 							if (!$?) {
 								throw
@@ -246,7 +262,7 @@ function Start-Module($colour) {
 				}
 				
 				Write-Message 'Website removed successfully.'
-				Write-Message "`nRemoving application pool: '$siteName'."
+				Write-Message "`nRemoving application pool: '$appPoolName'."
 
 				if ($poolExists) {
 					Remove-WebAppPool -Name $appPoolName
@@ -315,6 +331,11 @@ function Test-Module($colour) {
 		if ([string]::IsNullOrWhiteSpace($path)) {
 			throw 'No path passed to add website.'
 		}
+	}
+
+	$syncPaths = $colour.syncPaths
+	if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -ne $true -and $syncPaths -ne $false) {
+		throw "Invalid value for syncPaths: '$syncPaths'. Should be either true or false."
 	}
 
 	$runtimeVersion = $colour.runtimeVersion

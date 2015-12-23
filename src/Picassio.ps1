@@ -7,9 +7,9 @@
 # License: MIT (see LICENSE for details)
 #########################################################################
 param (
-    [string]$config,
-    [switch]$help = $false,
-    [switch]$version = $false,
+	[string]$config,
+	[switch]$help = $false,
+	[switch]$version = $false,
 	[switch]$install = $false,
 	[switch]$uninstall = $false,
 	[switch]$reinstall = $false,

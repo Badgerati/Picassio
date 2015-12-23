@@ -359,7 +359,7 @@ The following palette will setup an entry into the hosts file, and also create a
         		"hostname": "test.site.com"
         	},
             {
-            	"type": "website",
+            	"type": "iis",
             	"ensure": "added",
             	"state": "started",
             	"siteName": "Test Website",
@@ -391,7 +391,7 @@ The following palette will add an http binding to a website. This is rather simi
     "palette" : {
         "paint": [
             {
-            	"type": "website-binding",
+            	"type": "iis-binding",
             	"ensure": "added",
             	"siteName": "Test Website",
             	"ip": "127.0.0.2",

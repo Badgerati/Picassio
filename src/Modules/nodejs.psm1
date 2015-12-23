@@ -18,7 +18,7 @@ function Start-Module($colour) {
         Install-AdhocSoftware 'nodejs.install' 'node.js'
     }
 
-	$npm = $colour.npminstall
+	$npm = $colour.npmInstall
 	if (![string]::IsNullOrWhiteSpace($npm) -and $npm -eq $true) {
 		if (!(Test-Software 'npm help' 'npm')) {
 			Write-Errors 'npm is not installed'
@@ -60,4 +60,9 @@ function Test-Module($colour) {
     if ([string]::IsNullOrWhiteSpace($file)) {
         throw 'No file passed to run for node.'
     }
+
+	$npm = $colour.npmInstall
+	if (![string]::IsNullOrWhiteSpace($npm) -and $npm -ne $true -and $npm -ne $false) {
+		throw "Invalid value for npmInstall: '$npm'. Should be either true or false."
+	}
 }

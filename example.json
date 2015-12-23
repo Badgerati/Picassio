@@ -57,7 +57,7 @@
                 "hostname": "test.site.com"
             },
             {
-                "type": "website",
+                "type": "iis",
                 "ensure": "added",
                 "state": "started",
                 "siteName": "Test Website",
