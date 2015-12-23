@@ -1,3 +1,12 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Tools for which to utilise in Picassio modules and extensions
 
 # Writes the help manual to the console
@@ -11,29 +20,21 @@ function Write-Help() {
 	}
 
     Write-Host 'The following is a list of possible commands:'
-    Write-Host "`t-help"
-	Write-Host "`t Displays the help page"
-	Write-Host ''
-	Write-Host "`t-validate"
-	Write-Host "`t Validates the palette"
-	Write-Host ''
-    Write-Host "`t-install"
-	Write-Host "`t Installs Picassio to C:\Picassio"
-	Write-Host ''
-    Write-Host "`t-uninstall"
-	Write-Host "`t Uninstalls Picassio"
-	Write-Host ''
-    Write-Host "`t-reinstall"
-	Write-Host "`t Uninstalls and then re-installs Picassio"
-	Write-Host ''
-    Write-Host "`t-version"
-	Write-Host "`t Displays the current version of Picassio"
+    Write-Host " -help`t`t Displays the help page"
+	Write-Host " -validate`t Validates the palette"
+    Write-Host " -install`t Installs Picassio to C:\Picassio"
+    Write-Host " -uninstall`t Uninstalls Picassio"
+    Write-Host " -reinstall`t Uninstalls and then re-installs Picassio"
+    Write-Host " -version`t Displays the current version of Picassio"
+    Write-Host " -config`t Specifies the picassio config file to use"
+    Write-Host " -paint`t`t Runs the config file's paint section"
+    Write-Host " -erase`t`t Runs the config file's erase section, if one is present"
 	Write-Host ''
 }
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picassio v0.8.3a' -ForegroundColor Green
+    Write-Host 'Picassio v0.9.0a' -ForegroundColor Green
 }
 
 # Wipes a given directory

@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Updates the hosts file
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     $ensure = $colour.ensure.ToLower().Trim()
@@ -55,7 +64,7 @@ function Start-Module($colour) {
     Write-Message "'$ip - $hostname' has been $ensure successfully."
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     if (!(Test-Path $hostFile)) {
         throw "Hosts file does not exist at: '$hostFile'."

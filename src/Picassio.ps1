@@ -1,3 +1,11 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
 param (
     [string]$config,
     [switch]$help = $false,
@@ -5,7 +13,7 @@ param (
 	[switch]$install = $false,
 	[switch]$uninstall = $false,
 	[switch]$reinstall = $false,
-	[switch]$draw = $false,
+	[switch]$paint = $false,
 	[switch]$erase = $false,
 	[switch]$validate = $false
 )
@@ -24,7 +32,7 @@ Import-Module $modulePath -DisableNameChecking
 
 
 # Ensures that the configuration file passed is valid
-function Validate-File($config) {
+function Test-File($config) {
     Write-Message 'Validating configuration file.'
 
     # Ensure file is passed
@@ -39,25 +47,49 @@ function Validate-File($config) {
     catch [exception] {
         throw $_.Exception
     }
-
+	
     # Ensure that there's a palette and paint section
-    if ($json.palette -eq $null) {
+	$palette = $json.palette
+    if ($palette -eq $null) {
         throw 'No palette section found.'
     }
     
-    if ($json.palette.paint -eq $null -or $json.palette.paint.Count -eq 0) {
+	$paint = $palette.paint
+    if ($paint -eq $null -or $paint.Count -eq 0) {
         throw 'No paint array section found within palette.'
     }
     
     # Ensure all paint sections have a type
-    $list = [array]($json.palette.paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
+    $list = [array]($paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
 
     if ($list.Length -ne 0) {
         throw 'All paint colours need a type parameter.'
     }
-    
-	# Ensure all modules exist
-	ForEach ($colour in $json.palette.paint) {
+
+	# Ensure all modules for paint exist
+	Test-Section $paint 'paint'
+	
+	# Ensure that if there's an erase section, it too is valid
+	$erase = $palette.erase
+	if ($erase -ne $null -and $erase.Count -gt 0) {
+		$list = [array]($erase | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
+
+		if ($list.Length -ne 0) {
+			throw 'All erase colours need a type parameter.'
+		}
+		
+		# Ensure all modules for erase exist
+		Test-Section $erase 'erase'
+	}
+    	
+    Write-Message 'Configuration file is valid.'
+
+    # Return config as json
+    return $json
+}
+
+function Test-Section($section, $name) {
+	ForEach ($colour in $section) {
 		$type = $colour.type.ToLower()
 
 		switch ($type) {
@@ -65,13 +97,13 @@ function Validate-File($config) {
 				{
 					$extensionName = $colour.extension
 					if ([String]::IsNullOrWhiteSpace($extensionName)) {
-						throw "Colour extension type does not have an extension key."
+						throw "$name colour extension type does not have an extension key."
 					}
 
 					$extension = "$env:PicassioExtensions\$extensionName.psm1"
 
 					if (!(Test-Path $extension)) {
-						throw "Unrecognised extension found: '$extensionName'."
+						throw "Unrecognised extension found: '$extensionName' in $name section."
 					}
 
 					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
@@ -80,11 +112,11 @@ function Validate-File($config) {
 						throw "Extension module for '$extensionName' does not have a Start-Extension function."
 					}
 					
-					if (!(Get-Command 'Validate-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Extension module for '$extensionName' does not have a Validate-Extension function."
+					if (!(Get-Command 'Test-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
+						throw "Extension module for '$extensionName' does not have a Test-Extension function."
 					}
 
-					Validate-Extension $colour
+					Test-Extension $colour
 					Remove-Module $extensionName
 				}
 
@@ -93,7 +125,7 @@ function Validate-File($config) {
 					$module = "$env:PicassioModules\$type.psm1"
 
 					if (!(Test-Path $module)) {
-						throw "Unrecognised colour type found: '$type'."
+						throw "Unrecognised colour type found: '$type' in $name section."
 					}
 
 					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
@@ -102,21 +134,17 @@ function Validate-File($config) {
 						throw "Module for '$type' does not have a Start-Module function."
 					}
 					
-					if (!(Get-Command 'Validate-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Module for '$type' does not have a Validate-Module function."
+					if (!(Get-Command 'Test-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
+						throw "Module for '$type' does not have a Test-Module function."
 					}
 
-					Validate-Module $colour
+					Test-Module $colour
 					Remove-Module $type
 				}
 		}
 	}
 	
 	Import-Module $modulePath -DisableNameChecking
-    Write-Message 'Configuration file is valid.'
-
-    # Return config as json
-    return $json
 }
 
 # Installs Picassio
@@ -271,7 +299,7 @@ try {
 		return
 	}
 
-	# Check switches first
+	# Check switches
 	Write-Version
 	if ($version) {
 		return
@@ -294,17 +322,19 @@ try {
 	}
 
 	# Main Picassio logic
+	# Check that picassio is installed on the machine
 	if (!(Test-PicassioInstalled)) {
 		Write-Errors 'Picassio has not been installed. Please install Picassio with ".\Picassio.ps1 -install".'
 		return
 	}
 
+	# Check to see if a config file was passed, if not we use the default picassio.json
 	if ([string]::IsNullOrWhiteSpace($config)) {
-		Write-Message 'No config file supplied, using default.'
-		$config = './Picassio.json'
+		Write-Message 'No config file supplied, using default picassio.json.'
+		$config = './picassio.json'
 
 		if (!(Test-Path $config)) {
-			Write-Errors 'Default Picassio.json file cannot be found in current directory.'
+			Write-Errors 'Default picassio.json file cannot be found in current directory.'
 			return
 		}
 	}
@@ -313,15 +343,44 @@ try {
 		return
 	}
 
-	$json = Validate-File (Get-Content $config -Raw)
+	# Validate the config file
+	$json = Test-File (Get-Content $config -Raw)
 
+	# If we're only validating, exit the program now
 	if ($validate) {
 		return
 	}
 
+	# If paint and erase switches are both false or true, exit program
+	if (!$paint -and !$erase) {
+		Write-Warning 'Need to specify either the paint or erase flags.'
+		return
+	}
+
+	if ($paint -and $erase) {
+		Write-Warning 'You can only specify either the paint or erase flag, not both.'
+		return
+	}
+
+	# Start the stopwatch for total time tracking
 	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-	ForEach ($colour in $json.palette.paint) {
+	# Get either the paint or erase section
+	if ($paint) {
+		Write-Information 'Painting the current machine.'
+		$section = $json.palette.paint
+	}
+	elseif ($erase) {
+		Write-Information 'Erasing the current machine.'
+		$section = $json.palette.erase
+	}
+
+	if ($section -eq $null -or $section.Count -eq 0) {
+		throw 'There is no section present.'
+	}
+
+	# Loop through each colour within the config file
+	ForEach ($colour in $section) {
 		Write-Host ([string]::Empty)
 
 		$type = $colour.type.ToLower()
@@ -347,12 +406,13 @@ try {
 				{
 					Write-Header $type
 					$module = "$env:PicassioModules\$type.psm1"
-					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue				
+					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
 					Start-Module $colour
 					Remove-Module $type
 				}
 		}
     	
+		# Report import the picassio tools module
 		Import-Module $modulePath -DisableNameChecking
 		Reset-Path
 
@@ -361,8 +421,14 @@ try {
 	}
 
 	Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
+	Write-Information 'Picassio finished successfully.'
+}
+catch [exception] {
+	Write-Warning 'Picassio failed to finish.'
+	throw
 }
 finally {
+	# Remove the picassio tools module
 	if (![string]::IsNullOrWhiteSpace($modulePath)) {
 		Remove-Module 'PicassioTools'
 	}

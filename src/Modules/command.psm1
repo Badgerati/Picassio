@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Run a passed command using Command Prompt/PowerShell
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     $command = $colour.command
     $prompt = $colour.prompt
@@ -49,7 +58,7 @@ function Start-Module($colour) {
     Write-Message 'Command ran successfully.'
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
 	$command = $colour.command
     if ([string]::IsNullOrWhiteSpace($command)) {
         throw 'No command passed to run via Command Prompt.'

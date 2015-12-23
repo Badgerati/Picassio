@@ -1,9 +1,19 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Adds/removes a binding on a website via IIS
 Import-Module $env:PicassioTools -DisableNameChecking
 Import-Module WebAdministration
+sleep 2
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
 	$siteName = $colour.siteName.Trim()
 	$ensure = $colour.ensure.ToLower().Trim()
@@ -84,7 +94,7 @@ function Start-Module($colour) {
 	}
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS website bindings.'
 	}

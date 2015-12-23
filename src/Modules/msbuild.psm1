@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Use MSBuild to build a project or solution
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     $path = $colour.path
 	if ([String]::IsNullOrWhiteSpace($path)) {
@@ -12,7 +21,7 @@ function Start-Module($colour) {
 	else {
 		$path = $path.Trim()
 	}
-
+	
 	$projects = $colour.projects
 	$args = $colour.arguments
 
@@ -40,7 +49,7 @@ function Start-Module($colour) {
 	}
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $path = $colour.path
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		$path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'

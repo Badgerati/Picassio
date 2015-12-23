@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
 	if (!(Test-Software choco.exe)) {
         Install-Chocolatey
@@ -78,7 +87,7 @@ function Start-Module($colour) {
     }
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $names = $colour.names
     if ($names -eq $null -or $names.Length -eq 0) {
         throw 'No names supplied for software.'

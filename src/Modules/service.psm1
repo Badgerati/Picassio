@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Installs a service onto the system
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     # attempt to retrieve the service
     $name = $colour.name.Trim()
@@ -61,7 +70,7 @@ function Start-Module($colour) {
     }
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $name = $colour.name
     if ([string]::IsNullOrWhiteSpace($name)) {
         throw 'No service name supplied.'

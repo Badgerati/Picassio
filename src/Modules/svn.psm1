@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Checkout a remote repository using svn into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     if (!(Test-Software svn.exe 'svn')) {
         Write-Errors 'SVN is not installed'
@@ -55,7 +64,7 @@ function Start-Module($colour) {
     Write-Message 'SVN checkout was successful.'
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $url = $colour.remote
     if ([string]::IsNullOrWhiteSpace($url)) {
         throw 'No remote SVN repository passed.'

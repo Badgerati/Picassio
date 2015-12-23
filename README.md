@@ -1,15 +1,15 @@
-Picassio v0.8.3a
+Picassio v0.9.0a
 ================
 Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
-Picassio is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picassio. The JSON file you pass in is called a 'palette' and this contains a 'paint' object which is an array of 'colours'.
+Picassio is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picassio. The JSON file you pass in is called a 'palette' and this contains a 'paint' (with optional 'erase') object which is an array of 'colours'.
 
 All of Picassio's features (colours) are modularised, allowing for people to have the ability to create extension modules - explained at the end of this document.
 
 
 Installing
 ==========
-To use Picassio properly, you will need to install the scripts. To do so, once you have downloaded the files, navigate to the "src" folder an run the following command in a PowerShell prompt in administrator mode.
+To use Picassio properly, you will need to install the scripts. To do so, once you have downloaded/checked-out the files, navigate to the "src" folder and run the following command in a PowerShell prompt in administrator mode.
 
 ```shell
 .\Picassio.ps1 -install
@@ -33,6 +33,7 @@ The following are all supported by Picassio:
 * Call Vagrant
 * Add/remove entries from the hosts file
 * Add/remove website on IIS
+* Run node.js applications
 * Extension modules can be written for third-parties
 
 
@@ -40,10 +41,7 @@ Dependencies
 ============
 Picassio only depends on a few applications, and when required will automatically install them for you:
 
-* Chocolatey
-* git
-* svn
-* Vagrant
+* Chocolatey, git, svn, Vagrant, node.js, npm
 
 The above will only be installed when Picassio needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
@@ -59,10 +57,10 @@ To Do
 There are still quite a few things I wish to add to Picassio, the following is a short list:
 
 * Bower and npm support
-* Installing wesbites via IIS
 * SSDT publishing
 * NUnit
 * Network load balancing
+* Ability to install Picassio via Chocolatey
 
 
 Examples
@@ -75,12 +73,12 @@ As a side note, each colour can have an optional "description" key-value. This v
 Running Picassio
 ---------------
 ```bash
-picassio example.json
+picassio -config example.json -paint
 picassio -version
 picassio -help
 ```
 
-Calling just 'picassio' in a directory will look for a default 'picassio.json' file.
+Calling just 'picassio -paint' in a directory will look for a default 'picassio.json' file.
 
 
 Installing Software
@@ -414,7 +412,7 @@ Due to the way Picassio is designed, you have the ability to create extension ps
 
 * Extension modules must be placed within the "C:\Picassio\Extensions" directory
 * The main logic of the extension must be contained within a "Start-Extension($colour)" function
-* Before the main logic is executed, the input must be validated in a "Validate-Extension($colour)" function
+* Before the main logic is executed, the input must be validated in a "Test-Extension($colour)" function
 * You may use the Picassio tools via "Import-Module $env:PicassioTools -DisableNameChecking"
 * The $colour passed in is of JSON format
 
@@ -432,7 +430,7 @@ function Start-Extension($colour) {
 	Write-Host $test
 }
 
-function Validate-Extension($colour) {
+function Test-Extension($colour) {
 	$text = $colour.text
 	if ([string]::IsNullOrWhiteSpace($text)) {
 		throw 'No text supplied to echo.'
@@ -454,7 +452,7 @@ We only require that the user supply us with a "text" key in the palette.
 
 Within the function, all we do is retrieve the text via "$colour.text", and then echo the value using Write-Host.
 
-The Validate-Extension function will be called during the initial validation of the passed JSON file. Here, we should be ensuring the the correct values are passed, and files/folders exist. In the one above, we simply throw an error if no text is supplied to be echoed.
+The Test-Extension function will be called during the initial validation of the passed JSON file. Here, we should be ensuring the the correct values are passed, and files/folders exist. In the one above, we simply throw an error if no text is supplied to be echoed.
 
 The palette for this will look like the following
 

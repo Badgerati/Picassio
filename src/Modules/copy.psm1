@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Copy files/folders from one location to another
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     $from = $colour.from.Trim()
     $to = $colour.to.Trim()
@@ -54,7 +63,7 @@ function Start-Module($colour) {
     Write-Message 'Files/folders copied successfully.'
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $from = $colour.from
     if ([string]::IsNullOrWhiteSpace($from)) {
         throw 'No from path specified.'

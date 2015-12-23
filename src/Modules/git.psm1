@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Clones the remote repository into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     if (!(Test-Software git.exe 'git')) {
         Write-Errors 'Git is not installed'
@@ -92,7 +101,7 @@ function Start-Module($colour) {
     Write-Message 'Git clone was successful.'
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $url = $colour.remote
 
 	if ($url -eq $null) {

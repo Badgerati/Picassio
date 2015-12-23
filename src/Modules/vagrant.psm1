@@ -1,8 +1,17 @@
+##########################################################################
+# Picassio is a provisioning/deployment script which uses a single linear
+# JSON file to determine what commands to execute.
+#
+# Copyright (c) 2015, Matthew Kelly (Badgerati)
+# Company: Cadaeic Studios
+# License: MIT (see LICENSE for details)
+#########################################################################
+
 # Calls vagrant from a specified path where a Vagrantfile can be found
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour) {
-	Validate-Module $colour
+	Test-Module $colour
 
     if (!(Test-Software vagrant.exe 'vagrant')) {
         Write-Errors 'Vagrant is not installed'
@@ -29,7 +38,7 @@ function Start-Module($colour) {
     Write-Message "vagrant $command, successful."
 }
 
-function Validate-Module($colour) {
+function Test-Module($colour) {
     $path = $colour.path
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No path specified to parent directory where the Vagrantfile is located.'
