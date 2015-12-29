@@ -411,7 +411,7 @@ Testing via NUnit
 -----------------
 Picassio supports the ability to test your applications via NUnit from a Picassio palette. You will need to supply a path to where your nunit-console.exe is located in order for the command to work.
 
-The following palette with navigate to NUnit, and then run the tests. Picassio by default will just call NUnit for the specified tests. If you wish to pass any further arguments then you may use the "args" parameter like below:
+The following palette with navigate to NUnit, and then run the tests. Picassio by default will just call NUnit for the specified tests. If you wish to pass any further arguments then you may use the "arguments" parameter like below:
 ```json
 {
 	"palette": {
@@ -419,7 +419,7 @@ The following palette with navigate to NUnit, and then run the tests. Picassio b
 			{
             	"type": "nunit",
             	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
-            	"args": "/include:UnitTest,PeformanceTest /nologo",
+            	"arguments": "/include:UnitTest,PeformanceTest /nologo",
             	"tests": [
             		"Example\\Test1.dll",
             		"Example\\Test2.dll"
