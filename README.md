@@ -34,6 +34,7 @@ The following are all supported by Picassio:
 * Add/remove entries from the hosts file
 * Add/remove website on IIS
 * Run node.js applications
+* Run tests via NUnit
 * Extension modules can be written for third-parties
 
 
@@ -404,6 +405,31 @@ The following palette will add an http binding to a website. This is rather simi
 ```
 
 Again like above, if you use a binding of 'https' you'll also need to pass a "certificate" key-value in the bindings. So if above we used https, a possible certificate could be "*.site.com".
+
+
+Testing via NUnit
+-----------------
+Picassio supports the ability to test your applications via NUnit from a Picassio palette. You will need to supply a path to where your nunit-console.exe is located in order for the command to work.
+
+The following palette with navigate to NUnit, and then run the tests. Picassio by default will just call NUnit for the specified tests. If you wish to pass any further arguments then you may use the "args" parameter like below:
+```json
+{
+	"palette": {
+		"paint": [
+			{
+            	"type": "nunit",
+            	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            	"args": "/include:UnitTest,PeformanceTest /nologo",
+            	"tests": [
+            		"Example\\Test1.dll",
+            		"Example\\Test2.dll"
+            	]
+            }
+		]
+	}
+}
+```
+If any of the tests fail (or NUnit fails), then Picassio will be aborted.
 
 
 Extensions

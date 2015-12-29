@@ -34,7 +34,13 @@ function Write-Help() {
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
-    Write-Host 'Picassio v0.9.0a' -ForegroundColor Green
+	$version = Get-Version
+    Write-Host "Picassio $version" -ForegroundColor Green
+}
+
+# Returns the current version of Picassio
+function Get-Version() {
+	return 'v0.9.0a'
 }
 
 # Wipes a given directory

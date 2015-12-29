@@ -32,6 +32,9 @@
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\iis-app-pool.psm1" />
+    <Compile Include="Modules\iis-website.psm1" />
+    <Compile Include="Modules\nunit.psm1" />
     <Compile Include="Modules\nodejs.psm1" />
     <Compile Include="Modules\command.psm1" />
     <Compile Include="Modules\copy.psm1" />
@@ -43,8 +46,8 @@
     <Compile Include="Modules\software.psm1" />
     <Compile Include="Modules\svn.psm1" />
     <Compile Include="Modules\vagrant.psm1" />
-    <Compile Include="Modules\website-binding.psm1" />
-    <Compile Include="Modules\website.psm1" />
+    <Compile Include="Modules\iis-binding.psm1" />
+    <Compile Include="Modules\iis.psm1" />
     <Compile Include="Picassio.ps1" />
     <Compile Include="Tools\PicassioTools.psm1" />
   </ItemGroup>

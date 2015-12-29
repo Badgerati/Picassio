@@ -34,7 +34,7 @@ function Start-Module($colour) {
 
 		Push-Location (Split-Path $project -Parent)
 		$file = (Split-Path $project -Leaf)
-		$command = "$path $args $project"
+		$command = "`"$path`" $args $project"
 
 		Write-Message "Building project: '$file'."
 		(cmd.exe /C $command) | Out-Null
@@ -66,7 +66,7 @@ function Test-Module($colour) {
 	
 	ForEach ($project in $projects) {
 		if ([string]::IsNullOrWhiteSpace($project)) {
-			throw 'No from path specified to build project.'
+			throw 'No path specified to build project.'
 		}
 	}
 }

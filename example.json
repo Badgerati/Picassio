@@ -70,6 +70,15 @@
                         "protocol": "http"
                     }
                 ]
+            },
+            {
+            	"type": "nunit",
+            	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            	"args": "/include:UnitTest,PeformanceTest /nologo",
+            	"tests": [
+            		"Example\\Test1.dll",
+            		"Example\\Test2.dll"
+            	]
             }
         ]
     }
