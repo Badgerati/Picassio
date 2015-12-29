@@ -364,14 +364,15 @@ try {
 
 	# Start the stopwatch for total time tracking
 	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+	$machine = $env:COMPUTERNAME
 
 	# Get either the paint or erase section
 	if ($paint) {
-		Write-Information 'Painting the current machine.'
+		Write-Information "Painting the current machine: $machine"
 		$section = $json.palette.paint
 	}
 	elseif ($erase) {
-		Write-Information 'Erasing the current machine.'
+		Write-Information "Erasing the current machine: $machine"
 		$section = $json.palette.erase
 	}
 
@@ -420,10 +421,15 @@ try {
 		Write-Host ([string]::Empty)
 	}
 
+	Write-Header ([string]::Empty)
 	Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
 	Write-Information 'Picassio finished successfully.'
 }
 catch [exception] {
+	if ($total_stopwatch -ne $null) {
+		Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
+	}
+
 	Write-Warning 'Picassio failed to finish.'
 	throw
 }

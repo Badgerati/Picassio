@@ -18,7 +18,8 @@
                 "type": "msbuild",
                 "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
                 "projects": [ "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln" ],
-                "arguments": "/p:Configuration=Debug"
+                "arguments": "/p:Configuration=Debug",
+                "clean": true
             },
             {
                 "type": "command",

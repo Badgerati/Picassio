@@ -19,8 +19,8 @@ function Start-Module($colour) {
     }
 	
 	$tests = $colour.tests
-	$args = $colour.arguments
 
+	$args = $colour.arguments
 	if ($args -eq $null) {
 		$args = ""
 	}
@@ -33,13 +33,14 @@ function Start-Module($colour) {
 		}
 	}	
 
-	$test_string = ($tests -join ' ')
-	$command = "`"$path`" $test_string $args"
-
+	Write-Information "Arguments: '$args'."
 	Write-Message 'Running tests.'
-	(cmd.exe /C $command)
-
-	if (!$?) {
+	
+	$test_string = ($tests -join ' ')
+	$output = Run-Command $path "$test_string $args" $true
+	
+	if ($output -ne $null) {
+		$output | ForEach-Object { Write-Host $_ }
 		throw 'Some of the tests have failed.'
 	}
 

@@ -146,6 +146,8 @@ This will pull down our master branch, an rename the auto-created folder to be "
 Building a Project using MSBuild
 --------------------------------
 Picassio is able to build a .NET project/solution using MSBuild (so long as the computer has MSBuild available). One of the keys for MSBuild is the path to where the MSBuild.exe can be found, if one is not supplied a default path is used.
+
+To clean the projects before building, you can pass true to the "clean" parameter:
 ```json
 {
 	"palette": {
@@ -154,7 +156,8 @@ Picassio is able to build a .NET project/solution using MSBuild (so long as the 
 				"type": "msbuild",
 				"path": "C:\\path\\to\\your\\msbuild.exe",
 				"projects": [ "C:\\path\\to\\your\\project.csproj" ],
-				"arguments": "/p:Configuration=Debug"
+				"arguments": "/p:Configuration=Debug",
+				"clean": true
 			}
 		]
 	}

@@ -35,12 +35,20 @@ function Start-Module($colour) {
             {
                 Write-Message 'Running command via Command Prompt.'
                 cmd.exe /C $command
+				if ($LASTEXITCODE -ne 0) {
+					Pop-Location
+					throw "Failed to run command: '$command'."
+				}
             }
 
         'powershell'
             {
                 Write-Message 'Running command via PowerShell.'
                 powershell.exe /C $command
+				if (!$?) {
+					Pop-Location
+					throw "Failed to run command: '$command'."
+				}
             }
 
         default
@@ -48,12 +56,7 @@ function Start-Module($colour) {
                 throw "unrecognised prompt for command colour: '$prompt'."
             }
     }
-    
-    if (!$?) {
-		Pop-Location
-        throw "Failed to run command: '$command'."
-    }
-	
+    	
 	Pop-Location
     Write-Message 'Command ran successfully.'
 }

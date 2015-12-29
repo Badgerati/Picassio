@@ -107,6 +107,25 @@ function Write-Header($message) {
 	}
 }
 
+# Writes a sub-header to the console in uppercase (dark yellow)
+function Write-SubHeader($message) {
+	if ($message -eq $null) {
+		$message = [string]::Empty
+	}
+
+	$count = 65
+	$message = $message.ToUpper()
+
+	if ($message.Length -gt $count) {
+		Write-Host "$message>" -ForegroundColor DarkYellow
+	}
+	else {
+		$length = $count - $message.Length
+		$padding = ('-' * $length)
+		Write-Host "$message$padding>" -ForegroundColor DarkYellow
+	}
+}
+
 # Resets the PATH for the current session
 function Reset-Path() {
     $env:Path = (Get-EnvironmentVariable 'Path') + ';' + (Get-EnvironmentVariable 'Path' 'User')
@@ -229,4 +248,20 @@ function Test-Win32() {
 # Tests whether the current shell is open in a 64-bit host
 function Test-Win64() {
 	return [IntPtr]::Size -eq 8;
+}
+
+# Runs the passed command and arguments. If passes returns null, otherwise returns last 100 lines of output
+function Run-Command($command, $args, $fullOutput = $false) {
+	$output = (cmd.exe /C "`"$command`" $args")
+
+	if ($LASTEXITCODE -ne 0) {
+		if ($fullOutput) {
+			return $output
+		}
+		else {
+			return ($output | Select-Object -Last 100)
+		}
+	}
+
+	return $null
 }

@@ -23,7 +23,11 @@ function Start-Module($colour) {
 	}
 	
 	$projects = $colour.projects
+	$clean = $colour.clean
 	$args = $colour.arguments
+	if ($args -eq $null) {
+		$args = ""
+	}
 
 	ForEach ($project in $projects) {
 		$project = $project.Trim()
@@ -34,18 +38,25 @@ function Start-Module($colour) {
 
 		Push-Location (Split-Path $project -Parent)
 		$file = (Split-Path $project -Leaf)
-		$command = "`"$path`" $args $project"
 
-		Write-Message "Building project: '$file'."
-		(cmd.exe /C $command) | Out-Null
+		Write-SubHeader "$file"
+		Write-Information "Arguments: '$args'."
+		
+		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-		if (!$?) {
-			Pop-Location
-			throw "Failed to build project '$file'."
+		if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true) {
+			Write-Host 'Cleaning...'
+			Build-Project $path "/p:Configuration=Debug /t:Clean $project"
+			Build-Project $path "/p:Configuration=Release /t:Clean $project"
 		}
 
+		Write-Host 'Building...'
+		Build-Project $path "$args $project"
 		Pop-Location
-		Write-Message "Project '$file' built successfully."
+
+		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
+		Write-Message "Project built successfully."
+		Write-Host ([string]::Empty)
 	}
 }
 
@@ -59,6 +70,11 @@ function Test-Module($colour) {
         throw "Path to MSBuild.exe does not exist: '$path'"
     }
 
+	$clean = $colour.clean
+	if (![string]::IsNullOrWhiteSpace($clean) -and $clean -ne $true -and $clean -ne $false) {
+		throw "Invalid value for clean: '$clean'. Should be either true or false."
+	}
+
 	$projects = $colour.projects
 	if ($projects -eq $null -or $projects.Length -eq 0) {
 		throw 'No projects have been supplied for MSBuild.'
@@ -68,5 +84,16 @@ function Test-Module($colour) {
 		if ([string]::IsNullOrWhiteSpace($project)) {
 			throw 'No path specified to build project.'
 		}
+	}
+}
+
+
+function Build-Project($command, $args) {
+	$output = Run-Command $command $args
+	
+	if ($output -ne $null) {
+		Pop-Location
+		$output | ForEach-Object { Write-Errors $_ }
+		throw 'Project failed to build'
 	}
 }
