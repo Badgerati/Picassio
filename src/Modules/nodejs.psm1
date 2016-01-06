@@ -10,15 +10,15 @@
 # Opens a new Powershell host, and runs the node command on the passed file
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
 	if (!(Test-Software 'node.exe -v' 'nodejs')) {
         Write-Errors 'Node.js is not installed'
         Install-AdhocSoftware 'nodejs.install' 'node.js'
     }
 
-	$npm = $colour.npmInstall
+	$npm = Replace-Variables $colour.npmInstall $variables
 	if (![string]::IsNullOrWhiteSpace($npm) -and $npm -eq $true) {
 		if (!(Test-Software 'npm help' 'npm')) {
 			Write-Errors 'npm is not installed'
@@ -26,7 +26,7 @@ function Start-Module($colour) {
 		}
 	}
 
-    $file = $colour.file
+    $file = Replace-Variables $colour.file $variables
 	if (!(Test-Path $file)) {
 		throw "Path to file to run for node does not exist: '$file'"
 	}
@@ -55,13 +55,13 @@ function Start-Module($colour) {
     Write-Message 'Node ran successfully.'
 }
 
-function Test-Module($colour) {
-	$file = $colour.file
+function Test-Module($colour, $variables) {
+	$file = Replace-Variables $colour.file $variables
     if ([string]::IsNullOrWhiteSpace($file)) {
         throw 'No file passed to run for node.'
     }
 
-	$npm = $colour.npmInstall
+	$npm = Replace-Variables $colour.npmInstall $variables
 	if (![string]::IsNullOrWhiteSpace($npm) -and $npm -ne $true -and $npm -ne $false) {
 		throw "Invalid value for npmInstall: '$npm'. Should be either true or false."
 	}

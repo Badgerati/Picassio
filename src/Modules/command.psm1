@@ -10,17 +10,17 @@
 # Run a passed command using Command Prompt/PowerShell
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-    $command = $colour.command
-    $prompt = $colour.prompt
+    $command = (Replace-Variables $colour.command $variables).Trim()
+    $prompt = Replace-Variables $colour.prompt $variables
     if ([string]::IsNullOrWhiteSpace($prompt)) {
         Write-Message 'No prompt type passed, defaulting to Command Prompt.'
         $prompt = 'cmd'
     }
 
-	$path = $colour.path
+	$path = Replace-Variables $colour.path $variables
 	if (![string]::IsNullOrWhiteSpace($path)) {
 		if (!(Test-Path $path)) {
 			throw "Path to run command does not exist: '$path'"
@@ -61,8 +61,8 @@ function Start-Module($colour) {
     Write-Message 'Command ran successfully.'
 }
 
-function Test-Module($colour) {
-	$command = $colour.command
+function Test-Module($colour, $variables) {
+	$command = Replace-Variables $colour.command $variables
     if ([string]::IsNullOrWhiteSpace($command)) {
         throw 'No command passed to run via Command Prompt.'
     }

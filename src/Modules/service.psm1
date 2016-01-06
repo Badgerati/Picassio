@@ -10,22 +10,26 @@
 # Installs a service onto the system
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
     # attempt to retrieve the service
-    $name = $colour.name.Trim()
+    $name = (Replace-Variables $colour.name $variables).Trim()
     $service = (Get-WmiObject -Class Win32_Service -Filter "Name='$name'")
 
     # check if service is already uninstalled
-    $ensure = $colour.ensure.ToLower().Trim()
+    $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
     if ($service -eq $null -and $ensure -eq 'uninstalled') {
         Write-Message "Service '$name' already $ensure."
         return
     }
 
-    $state = $colour.state.ToLower().Trim()
-    $path = $colour.path
+    $state = Replace-Variables $colour.state $variables
+	if ($state -ne $null) {
+		$state = $state.ToLower().Trim()
+	}
+
+    $path = Replace-Variables $colour.path $variables
 
 	if ($path -ne $null) {
 		$path = $path.Trim()
@@ -45,6 +49,7 @@ function Start-Module($colour) {
     }
     elseif ($service -ne $null -and $ensure -eq 'uninstalled') {
         Write-Message "Ensuring service '$name' is $ensure."
+		Stop-Service $name
         $service.delete()
         Write-Message "Service $ensure."
     }
@@ -70,8 +75,8 @@ function Start-Module($colour) {
     }
 }
 
-function Test-Module($colour) {
-    $name = $colour.name
+function Test-Module($colour, $variables) {
+    $name = Replace-Variables $colour.name $variables
     if ([string]::IsNullOrWhiteSpace($name)) {
         throw 'No service name supplied.'
     }
@@ -81,7 +86,7 @@ function Test-Module($colour) {
     # attempt to retrieve the service
     $service = (Get-WmiObject -Class Win32_Service -Filter "Name='$name'")
 
-    $ensure = $colour.ensure
+    $ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for service.'
     }
@@ -92,7 +97,7 @@ function Test-Module($colour) {
         throw "Invalid ensure parameter supplied for service: '$ensure'."
     }
 
-    $state = $colour.state
+    $state = Replace-Variables $colour.state $variables
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'installed') {
         throw 'No state parameter supplied for service.'
     }
@@ -106,7 +111,7 @@ function Test-Module($colour) {
         throw "Invalid state parameter supplied for service: '$state'."
     }
 
-    $path = $colour.path
+    $path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
         throw 'No path passed to install service.'
     }

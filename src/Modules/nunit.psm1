@@ -10,34 +10,34 @@
 # Use NUnit to run tests
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-    $path = $colour.path.Trim()
+    $path = (Replace-Variables $colour.path $variables).Trim()
 	if (!(Test-Path $path)) {
         throw "Path to nunit-console.exe does not exist: '$path'"
     }
 	
 	$tests = $colour.tests
 
-	$args = $colour.arguments
-	if ($args -eq $null) {
-		$args = ""
+	$_args = Replace-Variables $colour.arguments $variables
+	if ($_args -eq $null) {
+		$_args = ""
 	}
 
 	ForEach ($test in $tests) {
-		$test = $test.Trim()
+		$test = (Replace-Variables $test $variables).Trim()
 
 		if (!(Test-Path $test)) {
 			throw "Path to test does not exist: '$test'"
 		}
 	}	
 
-	Write-Information "Arguments: '$args'."
+	Write-Information "Arguments: '$_args'."
 	Write-Message 'Running tests.'
 	
-	$test_string = ($tests -join ' ')
-	$output = Run-Command $path "$test_string $args" $true
+	$test_string = Replace-Variables ($tests -join ' ') $variables
+	$output = Run-Command $path "$test_string $_args" $true
 	
 	if ($output -ne $null) {
 		$output | ForEach-Object { Write-Host $_ }
@@ -47,13 +47,13 @@ function Start-Module($colour) {
 	Write-Message 'Tests ran successfully.'
 }
 
-function Test-Module($colour) {
-    $path = $colour.path
+function Test-Module($colour, $variables) {
+    $path = Replace-Variables $colour.path $variables
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		throw 'No path specified to the location of NUint.'
 	}
 	
-	$tests = $colour.tests
+	$tests = $colour.tests 
 	if ($tests -eq $null -or $tests.Length -eq 0) {
 		throw 'No tests have been supplied for NUnit.'
 	}

@@ -10,11 +10,11 @@
 # Copy files/folders from one location to another
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-    $from = $colour.from.Trim()
-    $to = $colour.to.Trim()
+    $from = (Replace-Variables $colour.from $variables).Trim()
+    $to = (Replace-Variables $colour.to $variables).Trim()
 
 	if (!(Test-Path $from)) {
         throw "From path specified doesn't exist: '$from'."
@@ -24,15 +24,27 @@ function Start-Module($colour) {
     $excludeFolders = $colour.excludeFolders
 
     if ($excludeFolders -ne $null -and $excludeFolders.Length -gt 0) {
-        [Regex]$excludeFoldersRegex = (($excludeFolders | ForEach-Object {[Regex]::Escape($_)}) –Join '|')
+        [Regex]$excludeFoldersRegex = (($excludeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) –Join '|')
     }
+
+	if ($excludeFiles -ne $null) {
+		for ($i = 0; $i -lt $excludeFiles.Length; $i++) {
+			$excludeFiles[$i] = Replace-Variables $excludeFiles[$i] $variables
+		}
+	}
 
     $includeFiles = $colour.includeFiles
     $includeFolders = $colour.includeFolders
     
     if ($includeFolders -ne $null -and $includeFolders.Length -gt 0) {
-        [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape($_)}) –Join '|')
+        [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) –Join '|')
     }
+
+	if ($includeFiles -ne $null) {
+		for ($i = 0; $i -lt $includeFiles.Length; $i++) {
+			$includeFiles[$i] = Replace-Variables $includeFiles[$i] $variables
+		}
+	}
 
     Write-Message "Copying files/folders from '$from' to '$to'."
 
@@ -63,13 +75,13 @@ function Start-Module($colour) {
     Write-Message 'Files/folders copied successfully.'
 }
 
-function Test-Module($colour) {
-    $from = $colour.from
+function Test-Module($colour, $variables) {
+    $from = Replace-Variables $colour.from $variables
     if ([string]::IsNullOrWhiteSpace($from)) {
         throw 'No from path specified.'
     }
 	
-    $to = $colour.to
+    $to = Replace-Variables $colour.to $variables
     if ([string]::IsNullOrWhiteSpace($to)) {
         throw 'No to path specified.'
     }

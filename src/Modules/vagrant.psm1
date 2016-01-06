@@ -10,16 +10,16 @@
 # Calls vagrant from a specified path where a Vagrantfile can be found
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
     if (!(Test-Software vagrant.exe 'vagrant')) {
         Write-Errors 'Vagrant is not installed'
         Install-AdhocSoftware 'vagrant' 'Vagrant'
     }
 
-    $path = $colour.path.Trim()
-    $command = $colour.command.Trim()
+    $path = (Replace-Variables $colour.path $variables).Trim()
+    $command = (Replace-Variables $colour.command $variables).Trim()
 	
     if (!(Test-Path $path)) {
         throw "Path specified to Vagrantfile doesn't exist: '$path'."
@@ -38,13 +38,13 @@ function Start-Module($colour) {
     Write-Message "vagrant $command, successful."
 }
 
-function Test-Module($colour) {
-    $path = $colour.path
+function Test-Module($colour, $variables) {
+    $path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No path specified to parent directory where the Vagrantfile is located.'
     }
 
-    $command = $colour.command
+    $command = Replace-Variables $colour.command $variables
     if ([string]::IsNullOrWhiteSpace($command)) {
         throw 'No command specified for which to call vagrant.'
     }

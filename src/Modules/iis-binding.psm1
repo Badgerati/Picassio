@@ -12,15 +12,15 @@ Import-Module $env:PicassioTools -DisableNameChecking
 Import-Module WebAdministration
 sleep 2
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-	$siteName = $colour.siteName.Trim()
-	$ensure = $colour.ensure.ToLower().Trim()
-	$protocol = $colour.protocol.ToLower().Trim()
-	$certificate = $colour.certificate
-	$ip = $colour.ip.Trim()
-	$port = $colour.port.Trim()
+	$siteName = (Replace-Variables $colour.siteName $variables).Trim()
+	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+	$protocol = (Replace-Variables $colour.protocol $variables).ToLower().Trim()
+	$certificate = Replace-Variables $colour.certificate $variables
+	$ip = (Replace-Variables $colour.ip $variables).Trim()
+	$port = (Replace-Variables $colour.port $variables).Trim()
 	$binding = ("*$ip" + ":" + "$port*")
 
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
@@ -45,7 +45,7 @@ function Start-Module($colour) {
 
 					if ($protocol -eq 'https') {
 						$certificate = $certificate.Trim()
-						$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+						$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
 						$thumb = $certs.Thumbprint.ToString()
 
 						Push-Location IIS:\SslBindings
@@ -94,17 +94,17 @@ function Start-Module($colour) {
 	}
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS website bindings.'
 	}
 
-	$siteName = $colour.siteName
+	$siteName = Replace-Variables $colour.siteName $variables
 	if ([string]::IsNullOrEmpty($siteName)) {
 		throw 'No site name has been supplied for website.'
 	}
 
-	$ensure = $colour.ensure
+	$ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for website binding.'
     }
@@ -115,18 +115,17 @@ function Test-Module($colour) {
         throw "Invalid ensure parameter supplied for website binding: '$ensure'."
     }
 
-	$ip = $colour.ip
+	$ip = Replace-Variables $colour.ip $variables
 	if([string]::IsNullOrWhiteSpace($ip)) {
 		throw 'No IP address passed to add website binding.'
 	}
 
-	$port = $colour.port
+	$port = Replace-Variables $colour.port $variables
 	if([string]::IsNullOrWhiteSpace($port)) {
 		throw 'No port number passed to add website binding.'
 	}
 
-	$protocol = $colour.protocol
-		
+	$protocol = Replace-Variables $colour.protocol $variables
 	if ([string]::IsNullOrWhiteSpace($protocol)) {
 		throw 'No protocol passed for adding website binding.'
 	}
@@ -138,13 +137,13 @@ function Test-Module($colour) {
 	
 	if ($ensure -eq 'added') {
 		if ($protocol -eq 'https') {
-			$certificate = $colour.certificate
+			$certificate = Replace-Variables $colour.certificate $variables
 			if ([string]::IsNullOrWhiteSpace($certificate)) {
 				throw 'No certificate passed for setting up website binding https protocol.'
 			}
 
 			$certificate = $certificate.Trim()
-			$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+			$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
 
 			if ([string]::IsNullOrWhiteSpace($certExists)) {
 				throw "Certificate passed cannot be found when setting up website binding: '$certificate'."

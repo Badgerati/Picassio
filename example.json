@@ -1,6 +1,13 @@
 {
     "palette" : {
         "paint": [
+    		{
+    			"type": "variables",
+    			"variables": [
+    				{ "value1": true },
+    				{ "value2": "added" }
+    			]
+			},
             {
             	"type": "software",
             	"names": [ "git", "curl" ],
@@ -80,6 +87,19 @@
             		"Example\\Test1.dll",
             		"Example\\Test2.dll"
             	]
+            }
+        ],
+        "erase": [
+        	{
+            	"type": "software",
+            	"names": [ "git", "curl" ],
+            	"ensure": "uninstalled"
+            },
+            {
+                "type": "hosts",
+                "ensure": "removed",
+                "ip": "127.0.0.3",
+                "hostname": "test.local.com"
             }
         ]
     }

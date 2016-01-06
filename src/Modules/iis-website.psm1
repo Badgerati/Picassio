@@ -12,12 +12,12 @@ Import-Module $env:PicassioTools -DisableNameChecking
 Import-Module WebAdministration
 sleep 2
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-	$siteName = $colour.siteName.Trim()
-	$ensure = $colour.ensure.ToLower().Trim()
-	$state = $colour.state
+	$siteName = (Replace-Variables $colour.siteName $variables).Trim()
+	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+	$state = Replace-Variables $colour.state $variables
 
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 
@@ -79,12 +79,12 @@ function Start-Module($colour) {
 	}
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
 	}
 
-	$siteName = $colour.siteName
+	$siteName = Replace-Variables $colour.siteName $variables
 	if ([string]::IsNullOrEmpty($siteName)) {
 		throw 'No site name has been supplied for website.'
 	}
@@ -92,7 +92,7 @@ function Test-Module($colour) {
 	$siteName = $siteName.Trim()
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 
-	$ensure = $colour.ensure
+	$ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for website.'
     }
@@ -103,7 +103,7 @@ function Test-Module($colour) {
         throw "Invalid ensure parameter supplied for website: '$ensure'."
     }
 
-	$state = $colour.state
+	$state = Replace-Variables $colour.state $variables
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied for website.'
     }

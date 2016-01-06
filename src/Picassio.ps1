@@ -67,6 +67,7 @@ function Test-File($config) {
     }
 
 	# Ensure all modules for paint exist
+	$variables = @{}
 	Test-Section $paint 'paint'
 	
 	# Ensure that if there's an erase section, it too is valid
@@ -79,6 +80,7 @@ function Test-File($config) {
 		}
 		
 		# Ensure all modules for erase exist
+		$variables = @{}
 		Test-Section $erase 'erase'
 	}
     	
@@ -116,7 +118,7 @@ function Test-Section($section, $name) {
 						throw "Extension module for '$extensionName' does not have a Test-Extension function."
 					}
 
-					Test-Extension $colour
+					Test-Extension $colour $variables
 					Remove-Module $extensionName
 				}
 
@@ -138,7 +140,7 @@ function Test-Section($section, $name) {
 						throw "Module for '$type' does not have a Test-Module function."
 					}
 
-					Test-Module $colour
+					Test-Module $colour $variables
 					Remove-Module $type
 				}
 		}
@@ -343,6 +345,9 @@ try {
 		return
 	}
 
+	# Setup main variables hashtable
+	$variables = @{}
+
 	# Validate the config file
 	$json = Test-File (Get-Content $config -Raw)
 
@@ -380,6 +385,8 @@ try {
 		throw 'There is no section present.'
 	}
 
+	$variables = @{}
+
 	# Loop through each colour within the config file
 	ForEach ($colour in $section) {
 		Write-Host ([string]::Empty)
@@ -399,7 +406,7 @@ try {
 					Write-Header "$extensionName (ext)"
 					$extension = "$env:PicassioExtensions\$extensionName.psm1"
 					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Extension $colour
+					Start-Extension $colour $variables
 					Remove-Module $extensionName
 				}
 
@@ -408,7 +415,7 @@ try {
 					Write-Header $type
 					$module = "$env:PicassioModules\$type.psm1"
 					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Module $colour
+					Start-Module $colour $variables
 					Remove-Module $type
 				}
 		}
@@ -434,6 +441,8 @@ catch [exception] {
 	throw
 }
 finally {
+	$variables = @{}
+
 	# Remove the picassio tools module
 	if (![string]::IsNullOrWhiteSpace($modulePath)) {
 		Remove-Module 'PicassioTools'

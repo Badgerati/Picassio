@@ -10,8 +10,8 @@
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
 	if (!(Test-Software choco.exe)) {
         Install-Chocolatey
@@ -21,7 +21,7 @@ function Start-Module($colour) {
     $names = $colour.names
     
     # Get ensured operation for installing/uninstalling
-    $operation = $colour.ensure.ToLower().Trim()
+    $operation = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
     $operation = $operation.Substring(0, $operation.Length - 2)
 
     # Get list of versions (or single version for all names)
@@ -29,7 +29,7 @@ function Start-Module($colour) {
     
 	# Provision software
     for ($i = 0; $i -lt $names.Length; $i++) {
-        $name = $names[$i].Trim()
+        $name = (Replace-Variables $names[$i] $variables).Trim()
         $this_operation = $operation
 
         # Work out what version we're trying to install
@@ -37,10 +37,10 @@ function Start-Module($colour) {
             $version = 'latest'
         }
         elseif ($versions.Length -eq 1) {
-            $version = $versions[0].Trim()
+            $version = (Replace-Variables $versions[0] $variables).Trim()
         }
         else {
-            $version = $versions[$i].Trim()
+            $version = (Replace-Variables $versions[$i] $variables).Trim()
         }
 
         if ($this_operation -eq 'install') {
@@ -87,14 +87,14 @@ function Start-Module($colour) {
     }
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
     $names = $colour.names
     if ($names -eq $null -or $names.Length -eq 0) {
         throw 'No names supplied for software.'
     }
     
     # Get ensured operation for installing/uninstalling
-    $operation = $colour.ensure
+    $operation = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($operation)) {
         throw 'No ensure operation supplied for software.'
     }

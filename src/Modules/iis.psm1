@@ -12,20 +12,20 @@ Import-Module $env:PicassioTools -DisableNameChecking
 Import-Module WebAdministration
 sleep 2
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-	$siteName = $colour.siteName.Trim()
-	$appPoolName = $colour.appPoolName.Trim()
-	$ensure = $colour.ensure.ToLower().Trim()
-	$state = $colour.state
-	$path = $colour.path
-	$runtimeVersion = $colour.runtimeVersion
-	$appPoolIdentity = $colour.appPoolIdentity
-	$username = $colour.username
-	$password = $colour.password
-	$bindings = $colour.bindings
-	$syncPaths = $colour.syncPaths
+	$siteName = (Replace-Variables $colour.siteName $variables).Trim()
+	$appPoolName = (Replace-Variables $colour.appPoolName $variables).Trim()
+	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+	$state = Replace-Variables $colour.state $variables
+	$path = Replace-Variables $colour.path $variables
+	$runtimeVersion = Replace-Variables $colour.runtimeVersion $variables
+	$appPoolIdentity = Replace-Variables $colour.appPoolIdentity $variables
+	$username = Replace-Variables $colour.username $variables
+	$password = Replace-Variables $colour.password $variables
+	$bindings = Replace-Variables $colour.bindings $variables
+	$syncPaths = Replace-Variables $colour.syncPaths $variables
 
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
@@ -147,9 +147,9 @@ function Start-Module($colour) {
 				}
 
 				ForEach ($binding in $bindings) {
-					$protocol = $binding.protocol.ToLower().Trim()
-					$ip = $binding.ip.Trim()
-					$port = $binding.port.Trim()
+					$protocol = (Replace-Variables $binding.protocol $variables).ToLower().Trim()
+					$ip = (Replace-Variables $binding.ip $variables).Trim()
+					$port = (Replace-Variables $binding.port $variables).Trim()
 
 					$col = $web.Bindings.Collection | Where-Object { $_.protocol -eq $protocol }
 					$endpoint = ("*$ip" + ":" + "$port*")
@@ -163,8 +163,8 @@ function Start-Module($colour) {
 						}
 
 						if ($protocol -eq 'https') {
-							$certificate = $binding.certificate.Trim()
-							$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+							$certificate = (Replace-Variables $binding.certificate $variables).Trim()
+							$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
 							$thumb = $certs.Thumbprint.ToString()
 
 							Push-Location IIS:\SslBindings
@@ -279,19 +279,19 @@ function Start-Module($colour) {
 	}
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
 	}
 
-	$siteName = $colour.siteName
+	$siteName = Replace-Variables $colour.siteName $variables
 	if ([string]::IsNullOrEmpty($siteName)) {
 		throw 'No site name has been supplied for website.'
 	}
 
 	$siteName = $siteName.Trim()
 
-	$appPoolName = $colour.appPoolName
+	$appPoolName = Replace-Variables $colour.appPoolName $variables
 	if ([string]::IsNullOrEmpty($appPoolName)) {
 		throw 'No app pool name has been supplied for website.'
 	}
@@ -301,7 +301,7 @@ function Test-Module($colour) {
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
-	$ensure = $colour.ensure
+	$ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for website.'
     }
@@ -312,7 +312,7 @@ function Test-Module($colour) {
         throw "Invalid ensure parameter supplied for website: '$ensure'."
     }
 
-	$state = $colour.state
+	$state = Replace-Variables $colour.state $variables
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied for website.'
     }
@@ -326,26 +326,26 @@ function Test-Module($colour) {
         throw "Invalid state parameter supplied for website: '$state'."
     }
 
-    $path = $colour.path
+    $path = Replace-Variables $colour.path $variables
 	if ($ensure -eq 'added') {
 		if ([string]::IsNullOrWhiteSpace($path)) {
 			throw 'No path passed to add website.'
 		}
 	}
 
-	$syncPaths = $colour.syncPaths
+	$syncPaths = Replace-Variables $colour.syncPaths $variables
 	if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -ne $true -and $syncPaths -ne $false) {
 		throw "Invalid value for syncPaths: '$syncPaths'. Should be either true or false."
 	}
 
-	$runtimeVersion = $colour.runtimeVersion
+	$runtimeVersion = Replace-Variables $colour.runtimeVersion $variables
 	if (![string]::IsNullOrWhiteSpace($runtimeVersion) -and $ensure -eq 'added') {
 		if ($runtimeVersion -notmatch 'v(1.1|2.0|4.0)') {
 			throw "Invalid runtime version value supplied. Can only be v1.1, v2.0 or v4.0. Got: $runtimeVersion"
 		}
 	}
 
-	$appPoolIdentity = $colour.appPoolIdentity
+	$appPoolIdentity = Replace-Variables $colour.appPoolIdentity $variables
 	if (![string]::IsNullOrWhiteSpace($appPoolIdentity) -and $ensure -eq 'added') {
 		$appPoolIdentity = $appPoolIdentity.ToLower().Trim()
 
@@ -370,17 +370,17 @@ function Test-Module($colour) {
 
 	if ($ensure -eq 'added' -and $bindings.Length -gt 0) {
 		ForEach ($binding in $bindings) {
-			$ip = $binding.ip
+			$ip = Replace-Variables $binding.ip $variables
 			if([string]::IsNullOrWhiteSpace($ip)) {
 				throw 'No IP address passed to add website binding.'
 			}
 
-			$port = $binding.port
+			$port = Replace-Variables $binding.port $variables
 			if([string]::IsNullOrWhiteSpace($port)) {
 				throw 'No port number passed to add website binding.'
 			}
 
-			$protocol = $binding.protocol	
+			$protocol = Replace-Variables $binding.protocol $variables
 			if ([string]::IsNullOrWhiteSpace($protocol)) {
 				throw 'No protocol passed for adding website binding.'
 			}
@@ -391,13 +391,13 @@ function Test-Module($colour) {
 			}
 
 			if ($protocol -eq 'https') {
-				$certificate = $binding.certificate
+				$certificate = Replace-Variables $binding.certificate $variables
 				if ([string]::IsNullOrWhiteSpace($certificate)) {
 					throw 'No certificate passed for setting up website binding https protocol.'
 				}
 
 				$certificate = $certificate.Trim()
-				$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+				$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
 
 				if ([string]::IsNullOrWhiteSpace($certExists)) {
 					throw "Certificate passed cannot be found when setting up website binding: '$certificate'."

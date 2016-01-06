@@ -12,12 +12,12 @@ Import-Module $env:PicassioTools -DisableNameChecking
 Import-Module WebAdministration
 sleep 2
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-	$appPoolName = $colour.appPoolName.Trim()
-	$ensure = $colour.ensure.ToLower().Trim()
-	$state = $colour.state
+	$appPoolName = (Replace-Variables $colour.appPoolName $variables).Trim()
+	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+	$state = Replace-Variables $colour.state $variables
 
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
@@ -71,12 +71,12 @@ function Start-Module($colour) {
 	}
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
 	}
 
-	$appPoolName = $colour.appPoolName
+	$appPoolName = Replace-Variables $colour.appPoolName $variables
 	if ([string]::IsNullOrEmpty($appPoolName)) {
 		throw 'No app pool name has been supplied.'
 	}
@@ -84,7 +84,7 @@ function Test-Module($colour) {
 	$appPoolName = $appPoolName.Trim()
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
-	$ensure = $colour.ensure
+	$ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for app pool.'
     }
@@ -95,7 +95,7 @@ function Test-Module($colour) {
         throw "Invalid ensure parameter supplied for app pool: '$ensure'."
     }
 
-	$state = $colour.state
+	$state = Replace-Variables $colour.state $variables
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied for app pool.'
     }

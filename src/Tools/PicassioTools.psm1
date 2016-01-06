@@ -40,7 +40,7 @@ function Write-Version() {
 
 # Returns the current version of Picassio
 function Get-Version() {
-	return 'v0.9.0a'
+	return 'v0.9.1a'
 }
 
 # Wipes a given directory
@@ -251,8 +251,8 @@ function Test-Win64() {
 }
 
 # Runs the passed command and arguments. If passes returns null, otherwise returns last 100 lines of output
-function Run-Command($command, $args, $fullOutput = $false) {
-	$output = (cmd.exe /C "`"$command`" $args")
+function Run-Command($command, $_args, $fullOutput = $false) {
+	$output = (cmd.exe /C "`"$command`" $_args")
 
 	if ($LASTEXITCODE -ne 0) {
 		if ($fullOutput) {
@@ -262,6 +262,38 @@ function Run-Command($command, $args, $fullOutput = $false) {
 			return ($output | Select-Object -Last 100)
 		}
 	}
-
+	
 	return $null
+}
+
+# Returns the regex for variables
+function Get-VariableRegex() {
+	return '(?<var>[a-zA-Z0-9_]+)'
+}
+
+# Replaces a passed value with variable substitutes
+function Replace-Variables($value, $variables) {
+	if ($variables -eq $null -or $variables.Count -eq 0 -or [string]::IsNullOrWhiteSpace($value)) {
+		return $value
+	}
+
+	$varregex = Get-VariableRegex
+	$pattern = "#\($varregex\)"
+	$varnames = ($value | Select-String -Pattern $pattern -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups['var'].Value })
+
+	if ($varnames -eq $null -or $varnames.Count -eq 0) {
+		return $value
+	}
+
+	ForEach ($varname in $varnames) {
+		if (!$variables.ContainsKey($varname)) {
+			continue
+		}
+
+		$val = $variables[$varname]
+		$var = "#\($varname\)"
+		$value = ($value -replace $var, $val)
+	}
+
+	return $value
 }

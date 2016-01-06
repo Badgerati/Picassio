@@ -10,23 +10,23 @@
 # Checkout a remote repository using svn into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
     if (!(Test-Software svn.exe 'svn')) {
         Write-Errors 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
     }
 
-    $url = $colour.remote.Trim()
-    $path = $colour.localpath.Trim()
+    $url = (Replace-Variables $colour.remote $variables).Trim()
+    $path = (Replace-Variables $colour.localpath $variables).Trim()
 
     if (!(Test-Path $path)) {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
-    $name = $colour.localname.Trim()
-    $revision = $colour.revision
+    $name = (Replace-Variables $colour.localname $variables).Trim()
+    $revision = Replace-Variables $colour.revision $variables
 	if ($revision -ne $null) {
 		$revision = $revision.Trim()
 	}
@@ -64,18 +64,18 @@ function Start-Module($colour) {
     Write-Message 'SVN checkout was successful.'
 }
 
-function Test-Module($colour) {
-    $url = $colour.remote
+function Test-Module($colour, $variables) {
+    $url = Replace-Variables $colour.remote $variables
     if ([string]::IsNullOrWhiteSpace($url)) {
         throw 'No remote SVN repository passed.'
     }
 
-    $path = $colour.localpath
+    $path = Replace-Variables $colour.localpath $variables
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No local SVN repository path specified.'
     }
 
-    $name = $colour.localname
+    $name = Replace-Variables $colour.localname $variables
     if ([string]::IsNullOrWhiteSpace($name)) {
         throw 'No local name supplied for local repository.'
     }

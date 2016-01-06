@@ -10,10 +10,10 @@
 # Use MSBuild to build a project or solution
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
-    $path = $colour.path
+    $path = Replace-Variables $colour.path $variables
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		Write-Message 'No path supplied, using default.'
 		$path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
@@ -23,14 +23,14 @@ function Start-Module($colour) {
 	}
 	
 	$projects = $colour.projects
-	$clean = $colour.clean
-	$args = $colour.arguments
-	if ($args -eq $null) {
-		$args = ""
+	$clean = Replace-Variables $colour.clean $variables
+	$_args = Replace-Variables $colour.arguments $variables
+	if ($_args -eq $null) {
+		$_args = ""
 	}
 
 	ForEach ($project in $projects) {
-		$project = $project.Trim()
+		$project = (Replace-Variables $project $variables).Trim()
 
 		if (!(Test-Path $project)) {
 			throw "Path to project for building does not exist: '$project'"
@@ -40,7 +40,7 @@ function Start-Module($colour) {
 		$file = (Split-Path $project -Leaf)
 
 		Write-SubHeader "$file"
-		Write-Information "Arguments: '$args'."
+		Write-Information "Arguments: '$_args'."
 		
 		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
@@ -51,7 +51,7 @@ function Start-Module($colour) {
 		}
 
 		Write-Host 'Building...'
-		Build-Project $path "$args $project"
+		Build-Project $path "$_args $project"
 		Pop-Location
 
 		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
@@ -60,8 +60,8 @@ function Start-Module($colour) {
 	}
 }
 
-function Test-Module($colour) {
-    $path = $colour.path
+function Test-Module($colour, $variables) {
+    $path = Replace-Variables $colour.path $variables
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		$path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
 	}
@@ -70,7 +70,7 @@ function Test-Module($colour) {
         throw "Path to MSBuild.exe does not exist: '$path'"
     }
 
-	$clean = $colour.clean
+	$clean = Replace-Variables $colour.clean $variables
 	if (![string]::IsNullOrWhiteSpace($clean) -and $clean -ne $true -and $clean -ne $false) {
 		throw "Invalid value for clean: '$clean'. Should be either true or false."
 	}
@@ -88,8 +88,8 @@ function Test-Module($colour) {
 }
 
 
-function Build-Project($command, $args) {
-	$output = Run-Command $command $args
+function Build-Project($command, $_args) {
+	$output = Run-Command $command $_args
 	
 	if ($output -ne $null) {
 		Pop-Location

@@ -10,14 +10,14 @@
 # Updates the hosts file
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
-    $ensure = $colour.ensure.ToLower().Trim()
+    $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 
     # check IP
-    $ip = $colour.ip
+    $ip = Replace-Variables $colour.ip $variables
     if ([String]::IsNullOrWhiteSpace($ip)) {
         $ip = [String]::Empty
     }
@@ -26,7 +26,7 @@ function Start-Module($colour) {
 	}
 
     # check hostname
-    $hostname = $colour.hostname
+    $hostname = Replace-Variables $colour.hostname $variables
     if ([String]::IsNullOrWhiteSpace($hostname)) {
         $hostname = [String]::Empty
     }
@@ -64,13 +64,13 @@ function Start-Module($colour) {
     Write-Message "'$ip - $hostname' has been $ensure successfully."
 }
 
-function Test-Module($colour) {
+function Test-Module($colour, $variables) {
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     if (!(Test-Path $hostFile)) {
         throw "Hosts file does not exist at: '$hostFile'."
     }
 
-    $ensure = $colour.ensure
+    $ensure = Replace-Variables $colour.ensure $variables
     if ([String]::IsNullOrWhiteSpace($ensure)) {
         throw 'No ensure parameter supplied for hosts update.'
     }
@@ -82,13 +82,13 @@ function Test-Module($colour) {
     }
 
     # check IP
-    $ip = $colour.ip
+    $ip = Replace-Variables $colour.ip $variables
     if ([String]::IsNullOrWhiteSpace($ip)) {
         $ip = [String]::Empty
     }
 
     # check hostname
-    $hostname = $colour.hostname
+    $hostname = Replace-Variables $colour.hostname $variables
     if ([String]::IsNullOrWhiteSpace($hostname)) {
         $hostname = [String]::Empty
     }

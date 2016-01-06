@@ -10,27 +10,27 @@
 # Clones the remote repository into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Module($colour) {
-	Test-Module $colour
+function Start-Module($colour, $variables) {
+	Test-Module $colour $variables
 
     if (!(Test-Software git.exe 'git')) {
         Write-Errors 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 
-    $url = $colour.remote.Trim()
+    $url = (Replace-Variables $colour.remote $variables).Trim()
     if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
         throw "Remote git repository of '$url' is not valid."
     }
 
     $directory = $matches['repo']
     
-    $path = $colour.localpath.Trim()
+    $path = (Replace-Variables $colour.localpath $variables).Trim()
     if (!(Test-Path $path)) {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
-    $branch = $colour.branchname
+    $branch = Replace-Variables $colour.branchname $variables
     if ([string]::IsNullOrWhiteSpace($branch)) {
         $branch = 'master'
     }
@@ -38,12 +38,12 @@ function Start-Module($colour) {
 		$branch = $branch.Trim()
 	}
 
-    $commit = $colour.commit
+    $commit = Replace-Variables $colour.commit $variables
 	if ($commit -ne $null) {
 		$commit = $commit.Trim()
 	}
 
-    $name = $colour.localname
+    $name = Replace-Variables $colour.localname $variables
 	if ($name -ne $null) {
 		$name = $name.Trim()
 	}
@@ -101,9 +101,8 @@ function Start-Module($colour) {
     Write-Message 'Git clone was successful.'
 }
 
-function Test-Module($colour) {
-    $url = $colour.remote
-
+function Test-Module($colour, $variables) {
+    $url = Replace-Variables $colour.remote $variables
 	if ($url -eq $null) {
 		$url = [string]::Empty
 	}
@@ -114,8 +113,7 @@ function Test-Module($colour) {
         throw "Remote git repository of '$url' is not valid."
     }
 	    
-    $path = $colour.localpath
-
+    $path = Replace-Variables $colour.localpath $variables
 	if ($path -ne $null) {
 		$path = $path.Trim()
 	}
