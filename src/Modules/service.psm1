@@ -30,11 +30,30 @@ function Start-Module($colour, $variables) {
 	}
 
     $path = Replace-Variables $colour.path $variables
-
 	if ($path -ne $null) {
 		$path = $path.Trim()
 	}
     
+	# Deal with exists logic
+	if ($ensure -eq 'exists') {
+		if ($service -eq $null) {
+			Write-Message 'Service does not exist, skipping state logic.'
+			return
+		}
+
+		Write-Message "Ensuring service '$name' is $state."
+
+        if ($state -eq 'started') {
+            Restart-Service $name
+        }
+        else {
+            Stop-Service $name
+        }
+
+        Write-Message "Service $state."
+		return
+	}
+
     if ($service -ne $null -and $ensure -eq 'installed') {
         Write-Message "Ensuring service '$name' is $state."
 
@@ -100,12 +119,12 @@ function Test-Module($colour, $variables) {
 
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled') {
+    if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled' -and $ensure -ne 'exists') {
         throw "Invalid ensure parameter supplied for service: '$ensure'."
     }
 
     $state = Replace-Variables $colour.state $variables
-    if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'installed') {
+    if ([string]::IsNullOrWhiteSpace($state) -and ($ensure -eq 'installed' -or $ensure -eq 'exists')) {
         throw 'No state parameter supplied for service.'
     }
 
@@ -114,7 +133,7 @@ function Test-Module($colour, $variables) {
 		$state = $state.ToLower().Trim()
 	}
 
-    if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'installed') {
+    if ($state -ne 'started' -and $state -ne 'stopped' -and ($ensure -eq 'installed' -or $ensure -eq 'exists')) {
         throw "Invalid state parameter supplied for service: '$state'."
     }
 
