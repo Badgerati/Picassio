@@ -48,6 +48,16 @@ function Start-Module($colour, $variables) {
 						$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
 						$thumb = $certs.Thumbprint.ToString()
 
+						$sslBindingsPath = 'hklm:\SYSTEM\CurrentControlSet\services\HTTP\Parameters\SslBindingInfo\'
+						$registryItems = Get-ChildItem -Path $sslBindingsPath | Where-Object -FilterScript { $_.Property -eq 'DefaultSslCtlStoreName' }
+
+						If ($registryItems.Count -gt 0) {
+							ForEach ($item in $registryItems) {
+								$item | Remove-ItemProperty -Name DefaultSslCtlStoreName
+								Write-Host "Deleted DefaultSslCtlStoreName in " $item.Name
+							}
+						}
+
 						Push-Location IIS:\SslBindings
 
 						Get-Item Cert:\LocalMachine\My\$thumb | New-Item $ip!$port -Force

@@ -49,6 +49,13 @@ function Start-Module($colour, $variables) {
     }
     elseif ($service -ne $null -and $ensure -eq 'uninstalled') {
         Write-Message "Ensuring service '$name' is $ensure."
+
+		$tasks = (tasklist /FI "IMAGENAME eq mmc.exe")
+		$t = ($tasks | Where-Object { $_ -match "mmc.exe" })
+		if ($tasks.Count -gt 0) {
+			taskkill /F /IM mmc.exe | Out-Null
+		}
+
 		Stop-Service $name
         $service.delete()
         Write-Message "Service $ensure."
