@@ -29,7 +29,11 @@ function Start-Module($colour, $variables) {
 		throw "Website does not exist in IIS: '$siteName'."
 	}
 
-	$web = Get-Website -Name $siteName
+	$web = Get-Item "IIS:\Sites\$siteName"
+	if (!$?) {
+		throw
+	}
+
 	$col = $web.Bindings.Collection | Where-Object { $_.protocol -eq $protocol }
 
 	switch ($ensure) {

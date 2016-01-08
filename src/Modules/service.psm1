@@ -41,29 +41,15 @@ function Start-Module($colour, $variables) {
 			return
 		}
 
-		Write-Message "Ensuring service '$name' is $state."
-
-        if ($state -eq 'started') {
-            Restart-Service $name
-        }
-        else {
-            Stop-Service $name
-        }
-
+		Write-Message "Ensuring service '$name' is $state."		
+		Toggle-Service $name $state
         Write-Message "Service $state."
 		return
 	}
 
     if ($service -ne $null -and $ensure -eq 'installed') {
         Write-Message "Ensuring service '$name' is $state."
-
-        if ($state -eq 'started') {
-            Restart-Service $name
-        }
-        else {
-            Stop-Service $name
-        }
-
+		Toggle-Service $name $state
         Write-Message "Service $state."
     }
     elseif ($service -ne $null -and $ensure -eq 'uninstalled') {
@@ -76,7 +62,15 @@ function Start-Module($colour, $variables) {
 		}
 
 		Stop-Service $name
+		if (!$?) {
+			throw 'Failed to stop service before deletion.'
+		}
+
         $service.delete()
+		if (!$?) {
+			throw 'Failed to delete service.'
+		}
+
         Write-Message "Service $ensure."
     }
     else {
@@ -85,18 +79,16 @@ function Start-Module($colour, $variables) {
 		}
 
         Write-Message "Ensuring service '$name' is $ensure."
+
         New-Service -Name $name -BinaryPathName $path -StartupType Automatic
+		if (!$?) {
+			throw 'Failed to create the service.'
+		}
+
         Write-Message "Service $ensure."
 
         Write-Message "Ensuring service '$name' is $state."
-
-        if ($state -eq 'started') {
-            Start-Service $name
-        }
-        else {
-            Stop-Service $name
-        }
-
+		Toggle-Service $name $state $false
         Write-Message "Service $state."
     }
 }
@@ -141,4 +133,24 @@ function Test-Module($colour, $variables) {
     if ([string]::IsNullOrWhiteSpace($path) -and $service -eq $null -and $ensure -eq 'installed') {
         throw 'No path passed to install service.'
     }
+}
+
+
+function Toggle-Service($name, $state, $restart = $true)
+{
+	if ($state -eq 'started') {
+		if ($restart) {
+			Restart-Service $name
+		}
+		else {
+			Start-Service $name
+		}
+	}
+	else {
+		Stop-Service $name
+	}
+
+	if (!$?) {
+		throw "Failed to update service state."
+	}
 }

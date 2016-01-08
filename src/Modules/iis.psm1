@@ -141,7 +141,7 @@ function Start-Module($colour, $variables) {
 				Write-Message 'Website created successfully.'
 				Write-Message "`nSetting up website binding."
 				
-				$web = Get-Website -Name $siteName
+				$web = Get-Item "IIS:\Sites\$siteName"
 				if (!$?) {
 					throw
 				}
