@@ -34,6 +34,7 @@
   <ItemGroup>
     <Compile Include="Modules\iis-app-pool.psm1" />
     <Compile Include="Modules\iis-website.psm1" />
+    <Compile Include="Modules\mssql.psm1" />
     <Compile Include="Modules\variables.psm1" />
     <Compile Include="Modules\nunit.psm1" />
     <Compile Include="Modules\nodejs.psm1" />

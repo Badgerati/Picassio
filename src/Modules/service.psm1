@@ -37,7 +37,7 @@ function Start-Module($colour, $variables) {
 	# Deal with exists logic
 	if ($ensure -eq 'exists') {
 		if ($service -eq $null) {
-			Write-Message 'Service does not exist, skipping state logic.'
+			Write-Message 'Service does not exist, skipping exists state logic.'
 			return
 		}
 
