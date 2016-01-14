@@ -61,12 +61,12 @@ function Start-Module($colour, $variables) {
 			taskkill /F /IM mmc.exe | Out-Null
 		}
 
-		Stop-Service $name
+		Stop-Service $name | Out-Null
 		if (!$?) {
 			throw 'Failed to stop service before deletion.'
 		}
 
-        $service.delete()
+        $service.delete() | Out-Null
 		if (!$?) {
 			throw 'Failed to delete service.'
 		}

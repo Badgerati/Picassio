@@ -72,7 +72,7 @@ function Test-Module($colour, $variables) {
 	}
 
 	$timeout = Replace-Variables $colour.timeout $variables
-	if (![string]::IsNullOrWhiteSpace($timeout) -and ($timeout.Trim() -notmatch "^[0-9]+$")) {
+	if (![string]::IsNullOrWhiteSpace($timeout) -and ($timeout -notmatch "^[0-9]+$")) {
 		throw "Invalid value for timeout: '$timeout'. Should be an integer value."
 	}
 

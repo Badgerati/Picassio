@@ -285,6 +285,29 @@ function Start-Module($colour, $variables) {
 				}
 				
 				Write-Message 'Application pool removed successfully.'
+				Write-Message "`nRemoving SSL bindings."
+
+				if ($siteExists) {
+					Push-Location IIS:\SslBindings
+
+					$site = (Get-ChildItem | Select-Object -ExpandProperty Sites | Where-Object { $_.Value -eq $siteName } | Select-Object -First 1)
+					if (!$?) {
+						Pop-Location
+						throw
+					}
+
+					if ($site -ne $null) {
+						Get-ChildItem | Where-Object { $_.Sites -eq $site } | ForEach-Object { Remove-Item -Force }
+						if (!$?) {
+							Pop-Location
+							throw
+						}
+					}
+
+					Pop-Location
+				}
+
+				Write-Message 'SSL binding removed successfully.'
 			}
 	}
 }
