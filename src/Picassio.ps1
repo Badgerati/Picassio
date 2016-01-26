@@ -438,6 +438,7 @@ catch [exception] {
 	}
 
 	Write-Warning 'Picassio failed to finish.'
+	Pop-Location -ErrorAction SilentlyContinue
 	throw
 }
 finally {
