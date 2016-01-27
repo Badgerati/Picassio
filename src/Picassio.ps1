@@ -7,7 +7,7 @@
 # License: MIT (see LICENSE for details)
 #########################################################################
 param (
-	[string]$config,
+	[string]$palette,
 	[switch]$help = $false,
 	[switch]$version = $false,
 	[switch]$install = $false,
@@ -31,37 +31,31 @@ Import-Module $modulePath -DisableNameChecking
 
 
 
-# Ensures that the configuration file passed is valid
-function Test-File($config) {
-    Write-Message 'Validating configuration file.'
+# Ensures that the palette file passed is valid
+function Test-File($palette) {
+    Write-Message 'Validating palette file.'
 
     # Ensure file is passed
-    if ([string]::IsNullOrWhiteSpace($config)) {
-        throw 'Configuration file supplied cannot be empty.'
+    if ([string]::IsNullOrWhiteSpace($palette)) {
+        throw 'Palette file supplied cannot be empty.'
     }
 
     # Ensure file is of valid json format
     try {
-        $json = $config | ConvertFrom-Json
+        $json = $palette | ConvertFrom-Json
     }
     catch [exception] {
         throw $_.Exception
     }
 	
-    # Ensure that there's a palette and paint section
-	$palette = $json.palette
-    if ($palette -eq $null) {
-        throw 'No palette section found.'
-    }
-    
-	$paint = $palette.paint
+    # Ensure that there's a paint section
+	$paint = $json.paint
     if ($paint -eq $null -or $paint.Count -eq 0) {
         throw 'No paint array section found within palette.'
     }
     
     # Ensure all paint sections have a type
     $list = [array]($paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
-
     if ($list.Length -ne 0) {
         throw 'All paint colours need a type parameter.'
     }
@@ -71,10 +65,9 @@ function Test-File($config) {
 	Test-Section $paint 'paint'
 	
 	# Ensure that if there's an erase section, it too is valid
-	$erase = $palette.erase
+	$erase = $json.erase
 	if ($erase -ne $null -and $erase.Count -gt 0) {
 		$list = [array]($erase | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
-
 		if ($list.Length -ne 0) {
 			throw 'All erase colours need a type parameter.'
 		}
@@ -84,7 +77,7 @@ function Test-File($config) {
 		Test-Section $erase 'erase'
 	}
     	
-    Write-Message 'Configuration file is valid.'
+    Write-Message 'Palette file is valid.'
 
     # Return config as json
     return $json
@@ -330,18 +323,25 @@ try {
 		return
 	}
 
-	# Check to see if a config file was passed, if not we use the default picassio.json
-	if ([string]::IsNullOrWhiteSpace($config)) {
-		Write-Message 'No config file supplied, using default picassio.json.'
-		$config = './picassio.json'
+	# Check to see if a palette file was passed, if not we use the default picassio.palette
+	if ([string]::IsNullOrWhiteSpace($palette)) {
+		Write-Message "No palette file supplied, using default 'picassio.palette'."
+		$palette = './picassio.palette'
 
-		if (!(Test-Path $config)) {
-			Write-Errors 'Default picassio.json file cannot be found in current directory.'
+		if (!(Test-Path $palette)) {
+			Write-Errors "Default 'picassio.palette' file cannot be found in current directory."
 			return
 		}
 	}
-	elseif (!(Test-Path $config)) {
-		Write-Errors "Passed configuration file does not exist: '$config'."
+	elseif (!(Test-Path $palette)) {
+		Write-Errors "Passed palette file does not exist: '$palette'."
+		return
+	}
+
+	# Palette exists, but is the extension correct?
+	$extension = [System.IO.Path]::GetExtension($palette)
+	if ($extension -ne '.palette') {
+		Write-Errors "Passed palette file is not a valid '.palette' file, extension passed was: '$extension'"
 		return
 	}
 
@@ -349,7 +349,7 @@ try {
 	$variables = @{}
 
 	# Validate the config file
-	$json = Test-File (Get-Content $config -Raw)
+	$json = Test-File (Get-Content $palette -Raw)
 
 	# If we're only validating, exit the program now
 	if ($validate) {
@@ -374,11 +374,11 @@ try {
 	# Get either the paint or erase section
 	if ($paint) {
 		Write-Information "Painting the current machine: $machine"
-		$section = $json.palette.paint
+		$section = $json.paint
 	}
 	elseif ($erase) {
 		Write-Information "Erasing the current machine: $machine"
-		$section = $json.palette.erase
+		$section = $json.erase
 	}
 
 	if ($section -eq $null -or $section.Count -eq 0) {

@@ -1,4 +1,4 @@
-Picassio v0.9.0a
+Picassio v0.9.2a
 ================
 Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
 
@@ -59,7 +59,6 @@ There are still quite a few things I wish to add to Picassio, the following is a
 
 * Bower and npm support
 * SSDT publishing
-* NUnit
 * Network load balancing
 * Ability to install Picassio via Chocolatey
 
@@ -74,12 +73,12 @@ As a side note, each colour can have an optional "description" key-value. This v
 Running Picassio
 ---------------
 ```bash
-picassio -config example.json -paint
+picassio -palette example.palette -paint
 picassio -version
 picassio -help
 ```
 
-Calling just 'picassio -paint' in a directory will look for a default 'picassio.json' file.
+Calling just 'picassio -paint' in a directory will look for a default 'picassio.palette' file.
 
 
 Installing Software
@@ -87,16 +86,14 @@ Installing Software
 This example palette will install Git onto the computer that Picassio is run:
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "software",
-				"names": [ "git" ],
-				"ensure": "installed",
-				"versions": [ "latest" ]
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "software",
+			"names": [ "git" ],
+			"ensure": "installed",
+			"versions": [ "latest" ]
+		}
+	]
 }
 ```
 The above palette will ensure that Git is installed, and is installed up to the latest version (that is available to Chocolatey). If you wish to install a specific version of Git, then you would supply the version such as "versions": [ "1.8.3" ].
@@ -108,15 +105,13 @@ If you specify multiple names to install such as '"names": [ "git", "curl" ]', t
 If you instead wish to uninstall some software (so long as it was originally installed by Chocolately), then the following example palette will uninstall, say, Git
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "software",
-				"names": [ "git" ],
-				"ensure": "uninstalled"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "software",
+			"names": [ "git" ],
+			"ensure": "uninstalled"
+		}
+	]
 }
 ```
 Here you'll notice that the version key is not required, as you're uninstalling software.
@@ -127,17 +122,15 @@ Cloning a Branch from Git
 Picassio has the ability to clone a branch from any Git server. Simply supply the remote path to your branch as well as the branch's name, along with a local path/name to which to clone, and Picassio will pull down the branch for you.
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "git",
-				"remote": "https://path/to/some/branch.git",
-				"localpath": "C:\\path\\to\\place\\branch",
-				"localname": "NewBranch",
-				"branchname": "master"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "git",
+			"remote": "https://path/to/some/branch.git",
+			"localpath": "C:\\path\\to\\place\\branch",
+			"localname": "NewBranch",
+			"branchname": "master"
+		}
+	]
 }
 ```
 This will pull down our master branch, an rename the auto-created folder to be "NewBranch" at the specified local path. If Picassio sees that the local folder already exists, the current one is renamed with the current date appended.
@@ -150,17 +143,15 @@ Picassio is able to build a .NET project/solution using MSBuild (so long as the 
 To clean the projects before building, you can pass true to the "clean" parameter:
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "msbuild",
-				"path": "C:\\path\\to\\your\\msbuild.exe",
-				"projects": [ "C:\\path\\to\\your\\project.csproj" ],
-				"arguments": "/p:Configuration=Debug",
-				"clean": true
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "msbuild",
+			"path": "C:\\path\\to\\your\\msbuild.exe",
+			"projects": [ "C:\\path\\to\\your\\project.csproj" ],
+			"arguments": "/p:Configuration=Debug",
+			"clean": true
+		}
+	]
 }
 ```
 
@@ -170,20 +161,18 @@ Running Specific Commands
 For the things that Picassio doesn't do, such as renaming folders or if you wish to run an inhouse script, you can use the command type colour to run commands from the prompt. You have the option of either Command Prompt or PowerShell, and you can run any command you wish.
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "command",
-				"prompt": "cmd",
-				"command": "echo Hello, world!"
-			},
-			{
-				"type": "command",
-				"prompt": "powershell",
-				"command": "echo 'Hello, world again!'"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "command",
+			"prompt": "cmd",
+			"command": "echo Hello, world!"
+		},
+		{
+			"type": "command",
+			"prompt": "powershell",
+			"command": "echo 'Hello, world again!'"
+		}
+	]
 }
 ```
 
@@ -195,32 +184,28 @@ Something else Picassio can do it install/uninstall and stop/start Windows servi
 The following palette will install and start a service.
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "service",
-				"name": "Test Service",
-				"path": "C:\\absolute\\path\\to\\your\\service.exe",
-				"ensure": "installed",
-				"state": "started"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "service",
+			"name": "Test Service",
+			"path": "C:\\absolute\\path\\to\\your\\service.exe",
+			"ensure": "installed",
+			"state": "started"
+		}
+	]
 }
 ```
 
 The following palette will uninstall a service.
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "service",
-				"name": "Test Service",
-				"ensure": "uninstalled"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "service",
+			"name": "Test Service",
+			"ensure": "uninstalled"
+		}
+	]
 }
 ```
 
@@ -242,37 +227,33 @@ You can also specify files/folders to include/exclude using:
 The following palette will copy a folder, and then backup a file within it:
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "copy",
-				"from": "C:\\path\\to\\some\\folder",
-				"to": "C:\\path\\to\\some\\other\\folder"
-			},
-			{
-				"type": "copy",
-				"from": "C:\\path\\to\\some\\other\\folder\\test.txt",
-				"to": "C:\\path\\to\\some\\other\\folder\\backups\\test.txt"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "copy",
+			"from": "C:\\path\\to\\some\\folder",
+			"to": "C:\\path\\to\\some\\other\\folder"
+		},
+		{
+			"type": "copy",
+			"from": "C:\\path\\to\\some\\other\\folder\\test.txt",
+			"to": "C:\\path\\to\\some\\other\\folder\\backups\\test.txt"
+		}
+	]
 }
 ```
 
 The following palette will copy a folder, excluding html/js files; but including a src folder only:
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "copy",
-				"from": "C:\\path\\to\\some\\folder",
-				"to": "C:\\path\\to\\some\\other\\folder",
-				"excludeFiles": [ "*.html", "*.js" ],
-				"includeFolders": [ "src" ]
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "copy",
+			"from": "C:\\path\\to\\some\\folder",
+			"to": "C:\\path\\to\\some\\other\\folder",
+			"excludeFiles": [ "*.html", "*.js" ],
+			"includeFolders": [ "src" ]
+		}
+	]
 }
 ```
 
@@ -292,15 +273,13 @@ from with a Picassio palette. You will need to supply a path to where a Vagrantf
 The following palette with navigate to a folder, and call "vagrant up":
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "vagrant",
-				"path": "C:\\path\\to\\project",
-				"command": "up"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "vagrant",
+			"path": "C:\\path\\to\\project",
+			"command": "up"
+		}
+	]
 }
 ```
 
@@ -314,31 +293,27 @@ When removing, if you supply only either the IP or Hostname, all lines with that
 The following palette will add an entry to the hosts
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "hosts",
-				"ensure": "added",
-				"ip": "127.0.0.3",
-				"hostname": "test.local.com"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "hosts",
+			"ensure": "added",
+			"ip": "127.0.0.3",
+			"hostname": "test.local.com"
+		}
+	]
 }
 ```
 
 The following will remove all entries with the passed IP
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-				"type": "hosts",
-				"ensure": "removed",
-				"ip": "127.0.0.3"
-			}
-		]
-	}
+	"paint": [
+		{
+			"type": "hosts",
+			"ensure": "removed",
+			"ip": "127.0.0.3"
+		}
+	]
 }
 ```
 
@@ -354,31 +329,29 @@ Picassio will also add IIS and application pool users to the website path in IIS
 The following palette will setup an entry into the hosts file, and also create a website/app pool in IIS. The website will be accessible from 127.0.0.2 or test.site.com.
 ```json
 {
-    "palette" : {
-        "paint": [
-        	{
-        		"type": "hosts",
-        		"ensure": "added",
-        		"ip": "127.0.0.2",
-        		"hostname": "test.site.com"
-        	},
-            {
-            	"type": "iis",
-            	"ensure": "added",
-            	"state": "started",
-            	"siteName": "Test Website",
-            	"appPoolName": "Test Website",
-            	"path": "C:\\Website\\TestWebsite",
-            	"bindings": [
-            		{
-            			"ip": "127.0.0.2",
-		            	"port": "80",
-		            	"protocol": "http"
-            		}
-            	]
-            }
-        ]
-    }
+    "paint": [
+    	{
+    		"type": "hosts",
+    		"ensure": "added",
+    		"ip": "127.0.0.2",
+    		"hostname": "test.site.com"
+    	},
+        {
+        	"type": "iis",
+        	"ensure": "added",
+        	"state": "started",
+        	"siteName": "Test Website",
+        	"appPoolName": "Test Website",
+        	"path": "C:\\Website\\TestWebsite",
+        	"bindings": [
+        		{
+        			"ip": "127.0.0.2",
+	            	"port": "80",
+	            	"protocol": "http"
+        		}
+        	]
+        }
+    ]
 }
 ```
 
@@ -392,18 +365,16 @@ If you already have a website setup in IIS, then Picassio can add/remove binding
 The following palette will add an http binding to a website. This is rather similar to the binding array for a website:
 ```json
 {
-    "palette" : {
-        "paint": [
-            {
-            	"type": "iis-binding",
-            	"ensure": "added",
-            	"siteName": "Test Website",
-            	"ip": "127.0.0.2",
-		        "port": "80",
-		        "protocol": "http"
-            }
-        ]
-    }
+    "paint": [
+        {
+        	"type": "iis-binding",
+        	"ensure": "added",
+        	"siteName": "Test Website",
+        	"ip": "127.0.0.2",
+	        "port": "80",
+	        "protocol": "http"
+        }
+    ]
 }
 ```
 
@@ -417,19 +388,17 @@ Picassio supports the ability to test your applications via NUnit from a Picassi
 The following palette with navigate to NUnit, and then run the tests. Picassio by default will just call NUnit for the specified tests. If you wish to pass any further arguments then you may use the "arguments" parameter like below:
 ```json
 {
-	"palette": {
-		"paint": [
-			{
-            	"type": "nunit",
-            	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
-            	"arguments": "/include:UnitTest,PeformanceTest /nologo",
-            	"tests": [
-            		"Example\\Test1.dll",
-            		"Example\\Test2.dll"
-            	]
-            }
-		]
-	}
+	"paint": [
+		{
+        	"type": "nunit",
+        	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+        	"arguments": "/include:UnitTest,PeformanceTest /nologo",
+        	"tests": [
+        		"Example\\Test1.dll",
+        		"Example\\Test2.dll"
+        	]
+        }
+	]
 }
 ```
 If any of the tests fail (or NUnit fails), then Picassio will be aborted.
@@ -440,8 +409,8 @@ Extensions
 Due to the way Picassio is designed, you have the ability to create extension psm1 modules. If you wish to create your own module, there are a few things you need to ensure:
 
 * Extension modules must be placed within the "C:\Picassio\Extensions" directory
-* The main logic of the extension must be contained within a "Start-Extension($colour)" function
-* Before the main logic is executed, the input must be validated in a "Test-Extension($colour)" function
+* The main logic of the extension must be contained within a "Start-Extension($colour, $variables)" function
+* Before the main logic is executed, the input must be validated in a "Test-Extension($colour, $variables)" function
 * You may use the Picassio tools via "Import-Module $env:PicassioTools -DisableNameChecking"
 * The $colour passed in is of JSON format
 
@@ -453,13 +422,13 @@ So, let's have an example. Say we want to have a simple echo extension which ech
 # File name: echo.psm1
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Extension($colour) {
+function Start-Extension($colour, $variables) {
 	Write-Message 'Echo text supplied.'
 	$text = $colour.text
 	Write-Host $test
 }
 
-function Test-Extension($colour) {
+function Test-Extension($colour, $variables) {
 	$text = $colour.text
 	if ([string]::IsNullOrWhiteSpace($text)) {
 		throw 'No text supplied to echo.'
@@ -475,7 +444,7 @@ Here, you'll noticed that we import the Picassio tools module. This module conta
 * Backing-up directories
 * and more
 
-Next, we have the mandatory "Start-Extension($colour)" function. This is the main point-of-call for your modules, and and JSON supplied by the user for your extension will be passed through.
+Next, we have the "Start-Extension($colour, $variables)" function. This is the main point-of-call for your modules, and any JSON supplied by the user for your extension will be passed through.
 
 We only require that the user supply us with a "text" key in the palette.
 
@@ -487,15 +456,13 @@ The palette for this will look like the following
 
 ```json
 {
-    "palette" : {
-        "paint": [
-            {
-            	"type": "extension",
-            	"extension": "echo",
-            	"text": "Hello, world!"
-            }
-        ]
-    }
+    "paint": [
+        {
+        	"type": "extension",
+        	"extension": "echo",
+        	"text": "Hello, world!"
+        }
+    ]
 }
 
 ```

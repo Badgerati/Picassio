@@ -26,7 +26,7 @@ function Write-Help() {
     Write-Host " -uninstall`t Uninstalls Picassio"
     Write-Host " -reinstall`t Uninstalls and then re-installs Picassio"
     Write-Host " -version`t Displays the current version of Picassio"
-    Write-Host " -config`t Specifies the picassio config file to use"
+    Write-Host " -palette`t Specifies the picassio palette file to use"
     Write-Host " -paint`t`t Runs the config file's paint section"
     Write-Host " -erase`t`t Runs the config file's erase section, if one is present"
 	Write-Host ''
@@ -40,7 +40,7 @@ function Write-Version() {
 
 # Returns the current version of Picassio
 function Get-Version() {
-	return 'v0.9.1a'
+	return 'v0.9.2a'
 }
 
 # Wipes a given directory
