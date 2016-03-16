@@ -157,7 +157,7 @@ function Test-Module($colour, $variables) {
 			}
 
 			$certificate = $certificate.Trim()
-			$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
+			$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
 
 			if ([string]::IsNullOrWhiteSpace($certExists)) {
 				throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
