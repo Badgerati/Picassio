@@ -164,7 +164,7 @@ function Start-Module($colour, $variables) {
 
 						if ($protocol -eq 'https') {
 							$certificate = (Replace-Variables $binding.certificate $variables).Trim()
-							$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -like $certificate } | Select-Object -First 1)
+							$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
 							$thumb = $certs.Thumbprint.ToString()
 
 							$sslBindingsPath = 'hklm:\SYSTEM\CurrentControlSet\services\HTTP\Parameters\SslBindingInfo\'
