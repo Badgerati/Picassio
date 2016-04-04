@@ -251,17 +251,31 @@ function Test-Win64() {
 }
 
 # Runs the passed command and arguments. If passes returns null, otherwise returns last 100 lines of output
-function Run-Command($command, $_args, $fullOutput = $false) {
-	$output = (cmd.exe /C "`"$command`" $_args")
+function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $false) {
+	if ($isPowershell) {
+		$output = (powershell.exe /C "`"$command`" $_args")
 
-	if ($LASTEXITCODE -ne 0) {
-		if ($fullOutput) {
-			return $output
-		}
-		else {
-			return ($output | Select-Object -Last 100)
+		if (!$?) {
+			if ($fullOutput) {
+				return $output
+			}
+			else {
+				return ($output | Select-Object -Last 100)
+			}
 		}
 	}
+	else {
+		$output = (cmd.exe /C "`"$command`" $_args")
+
+		if ($LASTEXITCODE -ne 0) {
+			if ($fullOutput) {
+				return $output
+			}
+			else {
+				return ($output | Select-Object -Last 100)
+			}
+		}
+	}	
 	
 	return $null
 }

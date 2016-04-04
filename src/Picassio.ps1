@@ -392,18 +392,19 @@ try {
 		Write-Host ([string]::Empty)
 
 		$type = $colour.type.ToLower()
-		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
 		$description = $colour.description
-		if (![String]::IsNullOrWhiteSpace($description)) {
-			Write-Information $description
-		}
+		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 		switch ($type) {
 			'extension'
 				{
 					$extensionName = $colour.extension
 					Write-Header "$extensionName (ext)"
+
+					if (![String]::IsNullOrWhiteSpace($description)) {
+						Write-Information $description
+					}
+
 					$extension = "$env:PicassioExtensions\$extensionName.psm1"
 					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
 					Start-Extension $colour $variables
@@ -413,6 +414,11 @@ try {
 			default
 				{
 					Write-Header $type
+
+					if (![String]::IsNullOrWhiteSpace($description)) {
+						Write-Information $description
+					}
+
 					$module = "$env:PicassioModules\$type.psm1"
 					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
 					Start-Module $colour $variables

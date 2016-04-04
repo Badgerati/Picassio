@@ -140,14 +140,14 @@ function Toggle-Service($name, $state, $restart = $true)
 {
 	if ($state -eq 'started') {
 		if ($restart) {
-			Restart-Service $name
+			Restart-Service $name -Force
 		}
 		else {
-			Start-Service $name
+			Start-Service $name -Force
 		}
 	}
 	else {
-		Stop-Service $name
+		Stop-Service $name -Force
 	}
 
 	if (!$?) {

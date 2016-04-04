@@ -123,6 +123,22 @@
         	"sql": {
         		"query": ""
         	}
+        },
+        {
+            "type": "certificate",
+            "ensure": "exported",
+            "certStoreType": "LocalMachine",
+            "certStoreName": "My",
+            "certificate": "SomeCert",
+            "certType": "CERT",
+            "certPath": "C:\\some-cert.cer"
+        },
+        {
+            "type": "certificate",
+            "ensure": "imported",
+            "certStoreType": "LocalMachine",
+            "certStoreName": "Root",
+            "certPath": "C:\\some-cert.cer"
         }
     ],
     "erase": [

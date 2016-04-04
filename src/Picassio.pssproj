@@ -32,7 +32,9 @@
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\picassio.psm1" />
     <Compile Include="Modules\iis-app-pool.psm1" />
+    <Compile Include="Modules\certificate.psm1" />
     <Compile Include="Modules\iis-website.psm1" />
     <Compile Include="Modules\mssql.psm1" />
     <Compile Include="Modules\variables.psm1" />

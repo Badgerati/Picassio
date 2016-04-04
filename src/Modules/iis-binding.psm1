@@ -18,7 +18,7 @@ function Start-Module($colour, $variables) {
 	$siteName = (Replace-Variables $colour.siteName $variables).Trim()
 	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 	$protocol = (Replace-Variables $colour.protocol $variables).ToLower().Trim()
-	$certificate = Replace-Variables $colour.certificate $variables
+	
 	$ip = (Replace-Variables $colour.ip $variables).Trim()
 	$port = (Replace-Variables $colour.port $variables).Trim()
 	$binding = ("*$ip" + ":" + "$port*")
@@ -39,7 +39,7 @@ function Start-Module($colour, $variables) {
 	switch ($ensure) {
 		'added'
 			{
-				Write-Message ("Setting up website $protocol binding for '$ip" + ":" + "$port'.")
+				Write-Message "Setting up website $protocol binding for '$ip" + ":" + "$port'."
 				
 				if ($col -eq $null -or $col.Length -eq 0 -or $col.bindingInformation -notlike $binding) {
 					New-WebBinding -Name $siteName -IPAddress $ip -Port $port -Protocol $protocol
@@ -48,8 +48,13 @@ function Start-Module($colour, $variables) {
 					}
 
 					if ($protocol -eq 'https') {
-						$certificate = $certificate.Trim()
+						$certificate = (Replace-Variables $colour.certificate $variables).Trim()
 						$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+
+						if ([string]::IsNullOrWhiteSpace($certs)) {
+							throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
+						}
+
 						$thumb = $certs.Thumbprint.ToString()
 
 						$sslBindingsPath = 'hklm:\SYSTEM\CurrentControlSet\services\HTTP\Parameters\SslBindingInfo\'
@@ -82,7 +87,7 @@ function Start-Module($colour, $variables) {
 
 		'removed'
 			{
-				Write-Message ("Removing website $protocol binding for '$ip" + ":" + "$port'.")
+				Write-Message "Removing website $protocol binding for '$ip" + ":" + "$port'."
 
 				if ($col -ne $null -and $col.Length -gt 0 -and $colour.bindingInformation -like $binding) {
 					Remove-WebBinding -Name $siteName -IPAddress $ip -Port $port -Protocol $protocol
@@ -126,7 +131,7 @@ function Test-Module($colour, $variables) {
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
     if ($ensure -ne 'added' -and $ensure -ne 'removed') {
-        throw "Invalid ensure parameter supplied for website binding: '$ensure'."
+        throw "Invalid ensure supplied for website binding: '$ensure'."
     }
 
 	$ip = Replace-Variables $colour.ip $variables
@@ -154,13 +159,6 @@ function Test-Module($colour, $variables) {
 			$certificate = Replace-Variables $colour.certificate $variables
 			if ([string]::IsNullOrWhiteSpace($certificate)) {
 				throw 'No certificate passed for setting up website binding https protocol.'
-			}
-
-			$certificate = $certificate.Trim()
-			$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
-
-			if ([string]::IsNullOrWhiteSpace($certExists)) {
-				throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
 			}
 		}
 

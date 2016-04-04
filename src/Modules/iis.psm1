@@ -165,6 +165,11 @@ function Start-Module($colour, $variables) {
 						if ($protocol -eq 'https') {
 							$certificate = (Replace-Variables $binding.certificate $variables).Trim()
 							$certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
+
+							if ([string]::IsNullOrWhiteSpace($certs)) {
+								throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
+							}
+
 							$thumb = $certs.Thumbprint.ToString()
 
 							$sslBindingsPath = 'hklm:\SYSTEM\CurrentControlSet\services\HTTP\Parameters\SslBindingInfo\'
@@ -342,7 +347,7 @@ function Test-Module($colour, $variables) {
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
     if ($ensure -ne 'added' -and $ensure -ne 'removed') {
-        throw "Invalid ensure parameter supplied for website: '$ensure'."
+        throw "Invalid ensure supplied for website: '$ensure'."
     }
 
 	$state = Replace-Variables $colour.state $variables
@@ -427,13 +432,6 @@ function Test-Module($colour, $variables) {
 				$certificate = Replace-Variables $binding.certificate $variables
 				if ([string]::IsNullOrWhiteSpace($certificate)) {
 					throw 'No certificate passed for setting up website binding https protocol.'
-				}
-
-				$certificate = $certificate.Trim()
-				$certExists = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
-
-				if ([string]::IsNullOrWhiteSpace($certExists)) {
-					throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
 				}
 			}
 
