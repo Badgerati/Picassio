@@ -43,22 +43,42 @@ function Start-Module($colour, $variables) {
             $version = (Replace-Variables $versions[$i] $variables).Trim()
         }
 
-        if ($this_operation -eq 'install') {
-            if ($version.ToLower() -ne 'latest') {
-				$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*$version*" } | Select-Object -First 1)
+		$continue = $false
+		switch ($this_operation) {
+			'install'
+				{
+					if ($version.ToLower() -ne 'latest') {
+						$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*$version*" } | Select-Object -First 1)
 
-				if (![string]::IsNullOrWhiteSpace($result)) {
-					Write-Information "$name $version is already installed."
-					continue
+						if (![string]::IsNullOrWhiteSpace($result)) {
+							Write-Information "$name $version is already installed."
+							$continue = $true
+						}
+					}
+
+					if (!$continue) {
+						$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
+
+						if (![string]::IsNullOrWhiteSpace($result)) {
+							$this_operation = 'upgrade'
+						}
+					}
 				}
-			}
-			
-			$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
 
-            if (![string]::IsNullOrWhiteSpace($result)) {
-                $this_operation = 'upgrade'
-            }
-        }
+			'uninstall'
+				{
+					$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
+
+					if ([string]::IsNullOrWhiteSpace($result)) {
+						Write-Information "$name is already uninstalled"
+						$continue = $true
+					}
+				}
+		}
+
+		if ($continue) {
+			continue
+		}
 
         if ([string]::IsNullOrWhiteSpace($version) -or $version.ToLower() -eq 'latest' -or $this_operation -eq 'uninstall') {
             $versionTag = [string]::Empty
@@ -78,11 +98,10 @@ function Start-Module($colour, $variables) {
         }
     
         Write-Message "$this_operation on $name application successful."
-
-        Reset-Path
+        Reset-Path $false
 
         if ($i -ne ($names.Length - 1)) {
-            Write-Host ([string]::Empty)
+            Write-NewLine
         }
     }
 }

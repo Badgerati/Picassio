@@ -1,4 +1,6 @@
 {
+	"rollbackOnFail": false,
+	"eraseBeforePaint": false,
     "paint": [
 		{
 			"type": "variables",
@@ -139,6 +141,13 @@
             "certStoreType": "LocalMachine",
             "certStoreName": "Root",
             "certPath": "C:\\some-cert.cer"
+        },
+        {
+        	"type": "windows-feature",
+        	"ensure": "installed",
+        	"name": "Web-Server",
+        	"includeSubFeatures": true,
+        	"includeManagementTools": true
         }
     ],
     "erase": [

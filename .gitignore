@@ -19,6 +19,14 @@ bld/
 [Bb]in/
 [Oo]bj/
 
+# Vagrant
+.vagrant/
+Vagrantfile
+*.box
+
+# Tests
+[Tt]ests/
+
 # Roslyn cache directories
 *.ide/
 

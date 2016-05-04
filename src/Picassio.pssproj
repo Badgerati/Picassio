@@ -33,6 +33,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Modules\picassio.psm1" />
+    <Compile Include="Modules\mkdir.psm1" />
+    <Compile Include="Modules\windows-feature.psm1" />
     <Compile Include="Modules\iis-app-pool.psm1" />
     <Compile Include="Modules\certificate.psm1" />
     <Compile Include="Modules\iis-website.psm1" />

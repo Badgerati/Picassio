@@ -86,18 +86,18 @@ function Test-Module($colour, $variables) {
 
 	$ensure = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($ensure)) {
-        throw 'No ensure parameter supplied for app pool.'
+        throw 'No ensure parameter supplied.'
     }
 
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
     if ($ensure -ne 'added' -and $ensure -ne 'removed') {
-        throw "Invalid ensure parameter supplied for app pool: '$ensure'."
+        throw "Invalid ensure parameter supplied: '$ensure'."
     }
 
 	$state = Replace-Variables $colour.state $variables
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
-        throw 'No state parameter supplied for app pool.'
+        throw 'No state parameter supplied.'
     }
 	
     # check we have a valid state property
@@ -106,6 +106,6 @@ function Test-Module($colour, $variables) {
 	}
 
     if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'added') {
-        throw "Invalid state parameter supplied for app pool: '$state'."
+        throw "Invalid state parameter supplied: '$state'."
     }
 }

@@ -184,7 +184,7 @@ function Start-Module($colour, $variables) {
 
 							Push-Location IIS:\SslBindings
 
-							Get-Item Cert:\LocalMachine\My\$thumb | New-Item $ip!$port -Force
+							Get-Item Cert:\LocalMachine\My\$thumb | New-Item $ip!$port -Force | Out-Null
 							if (!$?) {
 								Pop-Location
 								throw

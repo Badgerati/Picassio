@@ -56,7 +56,7 @@ function Start-Module($colour, $variables) {
 
 		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
 		Write-Message "Project built successfully."
-		Write-Host ([string]::Empty)
+		Write-NewLine
 	}
 }
 

@@ -283,12 +283,93 @@ function Reinstall-Picassio() {
 	Write-Information 'Picassio has been re-installed successfully.'
 }
 
+# Runs the palette, determining the section to be executed
+function Run-Palette($paint, $erase) {
+	if ($paint) { Run-Paint }
+	elseif ($erase) { Run-Erase }
+}
+
+# Runs the paint section
+function Run-Paint() {
+	if ($json -ne $null) {
+		Write-Information "Painting the current machine: $env:COMPUTERNAME"
+		Run-Section $json.paint
+	}
+}
+
+# Runs the erase section
+function Run-Erase() {
+	if ($json -ne $null) {
+		Write-Information "Erasing the current machine: $env:COMPUTERNAME"
+		Run-Section $json.erase
+	}
+}
+
+# Runs the steps defined in the passed section
+function Run-Section($section) {
+	if ($section -eq $null -or $section.Count -eq 0) {
+		throw 'There is no section present.'
+	}
+
+	# Setup variables
+	$variables = @{}
+
+	# Loop through each colour within the config file
+	ForEach ($colour in $section) {
+		Write-NewLine
+
+		$type = $colour.type.ToLower()
+		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+		$description = $colour.description
+		if (![String]::IsNullOrWhiteSpace($description)) {
+			Write-Information $description
+		}
+
+		switch ($type) {
+			'extension'
+				{
+					$extensionName = $colour.extension
+					Write-Header "$extensionName (ext)"
+					$extension = "$env:PicassioExtensions\$extensionName.psm1"
+					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
+					Start-Extension $colour $variables
+					Remove-Module $extensionName
+				}
+
+			default
+				{
+					Write-Header $type
+					$module = "$env:PicassioModules\$type.psm1"
+					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
+					Start-Module $colour $variables
+					Remove-Module $type
+				}
+		}
+    	
+		# Report import the picassio tools module
+		Import-Module $modulePath -DisableNameChecking
+		Reset-Path
+
+		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
+		Write-NewLine
+	}
+
+	Write-Header ([string]::Empty)
+}
+
 
 
 
 try {
 	# Ensure we're running against the correct version of PowerShell
-	$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
+	try {
+		$currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
+	}
+	catch {
+		$currentVersion = [decimal]((Get-Host).Version.Major)
+	}
+
 	if ($currentVersion -lt 3) {
 		Write-Errors "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
 		return
@@ -366,75 +447,19 @@ try {
 		Write-Warning 'You can only specify either the paint or erase flag, not both.'
 		return
 	}
-
+	
 	# Start the stopwatch for total time tracking
 	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-	$machine = $env:COMPUTERNAME
 
+	# Check to see if we need to erase first, and only if we're painting
+	if (![string]::IsNullOrWhiteSpace($json.eraseBeforePaint) -and $json.eraseBeforePaint -eq $true -and $paint) {
+		Run-Erase
+		Write-NewLine
+	}
+	
 	# Get either the paint or erase section
-	if ($paint) {
-		Write-Information "Painting the current machine: $machine"
-		$section = $json.paint
-	}
-	elseif ($erase) {
-		Write-Information "Erasing the current machine: $machine"
-		$section = $json.erase
-	}
+	Run-Palette $paint $erase
 
-	if ($section -eq $null -or $section.Count -eq 0) {
-		throw 'There is no section present.'
-	}
-
-	$variables = @{}
-
-	# Loop through each colour within the config file
-	ForEach ($colour in $section) {
-		Write-Host ([string]::Empty)
-
-		$type = $colour.type.ToLower()
-		$description = $colour.description
-		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-
-		switch ($type) {
-			'extension'
-				{
-					$extensionName = $colour.extension
-					Write-Header "$extensionName (ext)"
-
-					if (![String]::IsNullOrWhiteSpace($description)) {
-						Write-Information $description
-					}
-
-					$extension = "$env:PicassioExtensions\$extensionName.psm1"
-					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Extension $colour $variables
-					Remove-Module $extensionName
-				}
-
-			default
-				{
-					Write-Header $type
-
-					if (![String]::IsNullOrWhiteSpace($description)) {
-						Write-Information $description
-					}
-
-					$module = "$env:PicassioModules\$type.psm1"
-					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Module $colour $variables
-					Remove-Module $type
-				}
-		}
-    	
-		# Report import the picassio tools module
-		Import-Module $modulePath -DisableNameChecking
-		Reset-Path
-
-		Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
-		Write-Host ([string]::Empty)
-	}
-
-	Write-Header ([string]::Empty)
 	Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
 	Write-Information 'Picassio finished successfully.'
 }
@@ -445,6 +470,21 @@ catch [exception] {
 
 	Write-Warning 'Picassio failed to finish.'
 	Pop-Location -ErrorAction SilentlyContinue
+
+	# Rollback
+	try {
+		if (![string]::IsNullOrWhiteSpace($json.rollbackOnFail) -and $json.rollbackOnFail -eq $true) {
+			Write-Information "`nRolling back the palette.`n"
+			Run-Palette $erase $paint
+		}
+	}
+	catch [exception] {
+		Write-Errors 'Failed to rollback the palette. Rollback exception:'
+		Write-Exception $_.Exception
+		Write-NewLine
+		Write-Notice 'Main failure exception:'
+	}
+
 	throw
 }
 finally {

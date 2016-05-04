@@ -34,6 +34,7 @@ function Start-Module($colour, $variables) {
         'cmd'
             {
                 Write-Message 'Running command via Command Prompt.'
+				Write-Information "Command: $command"
                 cmd.exe /C $command
 				if ($LASTEXITCODE -ne 0) {
 					Pop-Location
@@ -44,6 +45,7 @@ function Start-Module($colour, $variables) {
         'powershell'
             {
                 Write-Message 'Running command via PowerShell.'
+				Write-Information "Command: $command"
                 powershell.exe /C $command
 				if (!$?) {
 					Pop-Location
@@ -53,7 +55,7 @@ function Start-Module($colour, $variables) {
 
         default
             {
-                throw "unrecognised prompt for command colour: '$prompt'."
+                throw "Unrecognised prompt for command colour: '$prompt'."
             }
     }
     	

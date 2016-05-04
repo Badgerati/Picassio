@@ -40,7 +40,7 @@ function Write-Version() {
 
 # Returns the current version of Picassio
 function Get-Version() {
-	return 'v0.9.2a'
+	return 'v0.9.3a'
 }
 
 # Wipes a given directory
@@ -68,9 +68,20 @@ function Write-Message($message) {
     Write-Host $message -ForegroundColor Cyan
 }
 
+# Writes a new line to the console
+function Write-NewLine() {
+	Write-Host ([string]::Empty)
+}
+
 # Writes error text to the console (red)
 function Write-Errors($message) {
     Write-Host $message -ForegroundColor Red
+}
+
+# Writes the exception to the console (red)
+function Write-Exception($exception) {
+	Write-Host $exception.GetType().FullName -ForegroundColor Red
+	Write-Host $exception.Message -ForegroundColor Red
 }
 
 # Write informative text to the console (green)
@@ -127,9 +138,12 @@ function Write-SubHeader($message) {
 }
 
 # Resets the PATH for the current session
-function Reset-Path() {
+function Reset-Path($showMessage = $true) {
     $env:Path = (Get-EnvironmentVariable 'Path') + ';' + (Get-EnvironmentVariable 'Path' 'User')
-    Write-Message 'Path updated.'
+
+	if ($showMessage) {
+		Write-Message 'Path updated.'
+	}
 }
 
 # Check to see if a piece of software is installed
