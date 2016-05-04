@@ -1,6 +1,6 @@
-Picassio v0.9.2a
-================
-Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single linear JSON file to determine what commands to execute.
+Picassio
+========
+Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single JSON file to determine what commands to execute.
 
 Picassio is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picassio. The JSON file you pass in is called a 'palette' and this contains a 'paint' (with optional 'erase') object which is an array of 'colours'.
 
@@ -35,6 +35,8 @@ The following are all supported by Picassio:
 * Add/remove website on IIS
 * Run node.js applications
 * Run tests via NUnit
+* Install/uninstall Windows features such as IIS
+* Ability to setup certificates
 * Extension modules can be written for third-parties
 
 
@@ -61,6 +63,7 @@ There are still quite a few things I wish to add to Picassio, the following is a
 * SSDT publishing
 * Network load balancing
 * Ability to install Picassio via Chocolatey
+* Setup the wiki properly for better docs
 
 
 Examples
@@ -68,6 +71,8 @@ Examples
 To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it.
 
 As a side note, each colour can have an optional "description" key-value. This value get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
+
+Note: You can few more examples in the `examples.palette` file bundled with the source code.
 
 
 Running Picassio

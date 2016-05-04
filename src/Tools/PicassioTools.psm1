@@ -40,7 +40,7 @@ function Write-Version() {
 
 # Returns the current version of Picassio
 function Get-Version() {
-	return 'v0.9.3a'
+	return 'v0.9.5a'
 }
 
 # Wipes a given directory
