@@ -5,6 +5,18 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "command",
+#			"prompt": "powershell",
+#			"command": "Write-Host 'Hello, world!'"
+#		}
+#	]
+# }
 #########################################################################
 
 # Run a passed command using Command Prompt/PowerShell
@@ -58,7 +70,7 @@ function Start-Module($colour, $variables) {
                 throw "Unrecognised prompt for command colour: '$prompt'."
             }
     }
-    	
+
 	Pop-Location
     Write-Message 'Command ran successfully.'
 }

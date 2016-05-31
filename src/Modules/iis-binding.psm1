@@ -5,6 +5,22 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "iis-binding",
+#			"ensure": "added",
+#			"siteName": "Example Site",
+#			"ip": "127.0.0.3",
+#			"port": 443,
+#			"protocol": "https",
+#			"certificate": "\*.local.com"
+#		}
+#	]
+# }
 #########################################################################
 
 # Adds/removes a binding on a website via IIS
@@ -18,7 +34,7 @@ function Start-Module($colour, $variables) {
 	$siteName = (Replace-Variables $colour.siteName $variables).Trim()
 	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 	$protocol = (Replace-Variables $colour.protocol $variables).ToLower().Trim()
-	
+
 	$ip = (Replace-Variables $colour.ip $variables).Trim()
 	$port = (Replace-Variables $colour.port $variables).Trim()
 	$binding = ("*$ip" + ":" + "$port*")
@@ -40,7 +56,7 @@ function Start-Module($colour, $variables) {
 		'added'
 			{
 				Write-Message "Setting up website $protocol binding for '$ip" + ":" + "$port'."
-				
+
 				if ($col -eq $null -or $col.Length -eq 0 -or $col.bindingInformation -notlike $binding) {
 					New-WebBinding -Name $siteName -IPAddress $ip -Port $port -Protocol $protocol
 					if (!$?) {
@@ -107,7 +123,7 @@ function Start-Module($colour, $variables) {
 						Pop-Location
 					}
 				}
-				
+
 				Write-Message 'Website binding removed successfully.'
 			}
 	}
@@ -148,12 +164,12 @@ function Test-Module($colour, $variables) {
 	if ([string]::IsNullOrWhiteSpace($protocol)) {
 		throw 'No protocol passed for adding website binding.'
 	}
-		
+
 	$protocol = $protocol.ToLower().Trim()
 	if ($protocol -ne 'http' -and $protocol -ne 'https') {
 		throw "Protocol for website binding is not valid. Expected http(s) but got: '$protocol'."
 	}
-	
+
 	if ($ensure -eq 'added') {
 		if ($protocol -eq 'https') {
 			$certificate = Replace-Variables $colour.certificate $variables

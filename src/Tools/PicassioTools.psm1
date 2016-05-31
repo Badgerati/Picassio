@@ -40,7 +40,7 @@ function Write-Version() {
 
 # Returns the current version of Picassio
 function Get-Version() {
-	return 'v0.9.5a'
+	return 'v0.9.6'
 }
 
 # Wipes a given directory
@@ -166,7 +166,7 @@ function Test-Software($command, $name = $null) {
         # attempt to call the program, see if we get a response back
         $value = [string]::Empty
         $value = & $command
-		
+
         if (![string]::IsNullOrWhiteSpace($value)) {
             return $true
         }
@@ -199,7 +199,7 @@ function Test-Url($url) {
 
 # Installs software via Chocolatey on an adhoc basis
 function Install-AdhocSoftware($packageName, $name) {
-    if (!(Test-Software choco.exe)) {
+    if (!(Test-Software 'choco.exe --version')) {
         Install-Chocolatey
     }
 
@@ -209,17 +209,17 @@ function Install-AdhocSoftware($packageName, $name) {
     if (!$?) {
         throw "Failed to install $name."
     }
-    
+
     Write-Message "Installation of $name successful."
 }
 
 # Install Chocolatey - if already installed, will just update
 function Install-Chocolatey() {
-    if (Test-Software choco.exe) {
+    if (Test-Software 'choco.exe --version') {
         Write-Message 'Chocolatey is already installed.'
         return
     }
-    
+
     Write-Message 'Installing Chocolately.'
     Set-ExecutionPolicy Unrestricted
     Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
@@ -289,8 +289,8 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
 				return ($output | Select-Object -Last 100)
 			}
 		}
-	}	
-	
+	}
+
 	return $null
 }
 

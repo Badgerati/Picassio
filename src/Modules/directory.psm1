@@ -5,6 +5,18 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "directory",
+#			"ensure": "exists",
+#			"path": "C:\\path\\to\\some\\where\\to\\make"
+#		}
+#	]
+# }
 #########################################################################
 
 # Creates or removes a directory
@@ -15,7 +27,7 @@ function Start-Module($colour, $variables) {
 
     $path = (Replace-Variables $colour.path $variables).Trim()
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
-	
+
 	Write-Message "`nEnsuring '$path' $ensure."
 
 	switch ($ensure) {

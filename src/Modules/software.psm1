@@ -5,6 +5,19 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "software",
+#			"names": [ "git.install", "atom" ],
+#			"ensure": "installed",
+#			"versions": [ "latest" ]
+#		}
+#	]
+# }
 #########################################################################
 
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
@@ -19,14 +32,14 @@ function Start-Module($colour, $variables) {
 
     # Get list of software names
     $names = $colour.names
-    
+
     # Get ensured operation for installing/uninstalling
     $operation = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
     $operation = $operation.Substring(0, $operation.Length - 2)
 
     # Get list of versions (or single version for all names)
     $versions = $colour.versions
-    
+
 	# Provision software
     for ($i = 0; $i -lt $names.Length; $i++) {
         $name = (Replace-Variables $names[$i] $variables).Trim()
@@ -96,7 +109,7 @@ function Start-Module($colour, $variables) {
         if (!$?) {
             throw "Failed to $this_operation the $name software."
         }
-    
+
         Write-Message "$this_operation on $name application successful."
         Reset-Path $false
 
@@ -111,7 +124,7 @@ function Test-Module($colour, $variables) {
     if ($names -eq $null -or $names.Length -eq 0) {
         throw 'No names supplied for software.'
     }
-    
+
     # Get ensured operation for installing/uninstalling
     $operation = Replace-Variables $colour.ensure $variables
     if ([string]::IsNullOrWhiteSpace($operation)) {
@@ -123,7 +136,7 @@ function Test-Module($colour, $variables) {
     if ($operation -ne 'installed' -and $operation -ne 'uninstalled') {
         throw "Invalid ensure parameter supplied for software: '$ensure'."
     }
-	
+
     # Get list of versions (or single version for all names)
     $versions = $colour.versions
     if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {

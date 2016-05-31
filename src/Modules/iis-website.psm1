@@ -5,6 +5,19 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "iis",
+#			"ensure": "updated",
+#			"state": "started",
+#			"siteName": "Example Site"
+#		}
+#	]
+# }
 #########################################################################
 
 # Add/removes a website on IIS
@@ -49,14 +62,14 @@ function Start-Module($colour, $variables) {
 						}
 
 					'stopped'
-						{							
+						{
 							Stop-Website -Name $siteName
 							if (!$?) {
 								throw
 							}
 						}
 				}
-				
+
 				Write-Message "Website has been $state."
 			}
 
@@ -73,7 +86,7 @@ function Start-Module($colour, $variables) {
 				else {
 					Write-Warnings 'Website does not exist.'
 				}
-				
+
 				Write-Message 'Website removed successfully.'
 			}
 	}
@@ -107,7 +120,7 @@ function Test-Module($colour, $variables) {
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied for website.'
     }
-	
+
     # check we have a valid state property
 	if ($state -ne $null) {
 		$state = $state.ToLower().Trim()

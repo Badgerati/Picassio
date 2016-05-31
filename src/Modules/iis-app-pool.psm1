@@ -5,6 +5,19 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "iis-app-pool",
+#			"ensure": "added",
+#			"state": "started",
+#			"appPoolName": "Example Site"
+#		}
+#	]
+# }
 #########################################################################
 
 # Add/removes an application pool on IIS
@@ -48,7 +61,7 @@ function Start-Module($colour, $variables) {
 							}
 						}
 				}
-				
+
 				Write-Message "Application Pool has been $state."
 			}
 
@@ -65,7 +78,7 @@ function Start-Module($colour, $variables) {
 				else {
 					Write-Warnings 'Application pool does not exist.'
 				}
-				
+
 				Write-Message 'Application pool removed successfully.'
 			}
 	}
@@ -80,7 +93,7 @@ function Test-Module($colour, $variables) {
 	if ([string]::IsNullOrEmpty($appPoolName)) {
 		throw 'No app pool name has been supplied.'
 	}
-	
+
 	$appPoolName = $appPoolName.Trim()
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
@@ -99,7 +112,7 @@ function Test-Module($colour, $variables) {
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied.'
     }
-	
+
     # check we have a valid state property
 	if ($state -ne $null) {
 		$state = $state.ToLower().Trim()

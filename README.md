@@ -15,7 +15,7 @@ To use Picassio properly, you will need to install the scripts. To do so, once y
 .\Picassio.ps1 -install
 ```
 
-This will install all scripts for you, setting up the Path/environment variables. You will will be able to use the "picassio" command straight away.
+This will install all scripts for you, setting up the Path/environment variables. You will be able to use the "picassio" command straight away.
 
 Scripts are installed to "C:\Picassio".
 
@@ -35,8 +35,10 @@ The following are all supported by Picassio:
 * Add/remove website on IIS
 * Run node.js applications
 * Run tests via NUnit
-* Install/uninstall Windows features such as IIS
+* Install/uninstall Windows (optional) features such as IIS
 * Ability to setup certificates
+* Run cake build scripts
+* Run SQL Server scripts or create/restore backups
 * Extension modules can be written for third-parties
 
 
@@ -44,7 +46,7 @@ Dependencies
 ============
 Picassio only depends on a few applications, and when required will automatically install them for you:
 
-* Chocolatey, git, svn, Vagrant, node.js, npm
+* Chocolatey, git, svn, Vagrant, node.js, npm, cake
 
 The above will only be installed when Picassio needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
@@ -72,7 +74,7 @@ To chain them together, just append more colour objects within the paint array. 
 
 As a side note, each colour can have an optional "description" key-value. This value get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
 
-Note: You can few more examples in the `examples.palette` file bundled with the source code.
+Note: You can few more examples in the `examples.palette` file bundled with the source code, or view each psm1 module for an example of how to use each one in the header.
 
 
 Running Picassio
@@ -439,7 +441,7 @@ function Test-Extension($colour, $variables) {
 		throw 'No text supplied to echo.'
 	}
 }
-``` 
+```
 
 Here, you'll noticed that we import the Picassio tools module. This module contains some useful tools such as
 

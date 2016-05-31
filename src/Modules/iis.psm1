@@ -5,6 +5,35 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "iis",
+#			"ensure": "added",
+#			"state": "started",
+#			"siteName": "Example Site",
+#			"appPoolName": "Example Site",
+#			"appPoolIdentity": "LocalSystem",
+#			"path": "C:\\path\\to\\website",
+#			"bindings": [
+#				{
+#					"ip": "127.0.0.3",
+#					"port": 80,
+#					"protocol": "http"
+#				},
+#				{
+#					"ip": "127.0.0.3",
+#					"port": 443,
+#					"protocol": "https",
+#					"certificate": "\*.local.com"
+#				}
+#			]
+#		}
+#	]
+# }
 #########################################################################
 
 # Add/removes a website on IIS
@@ -118,7 +147,7 @@ function Start-Module($colour, $variables) {
 				}
 				else {
 					Write-Warnings 'Website already exists, updating.'
-					
+
 					if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -eq $true) {
 						$currentPath = (Get-Item "IIS:\Sites\$siteName" | Select-Object -ExpandProperty physicalPath)
 						Write-Message "Current Path: '$currentPath'."
@@ -134,13 +163,13 @@ function Start-Module($colour, $variables) {
 					else {
 						Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name physicalPath -Value $path
 					}
-										
+
 					Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name applicationPool -Value $appPoolName
 				}
-				
+
 				Write-Message 'Website created successfully.'
 				Write-Message "`nSetting up website binding."
-				
+
 				$web = Get-Item "IIS:\Sites\$siteName"
 				if (!$?) {
 					throw
@@ -155,7 +184,7 @@ function Start-Module($colour, $variables) {
 					$endpoint = ("*$ip" + ":" + "$port*")
 
 					Write-Message ("Setting up website $protocol binding for '$ip" + ":" + "$port'.")
-					
+
 					if ($col -eq $null -or $col.Length -eq 0 -or $col.bindingInformation -notlike $endpoint) {
 						New-WebBinding -Name $siteName -IPAddress $ip -Port $port -Protocol $protocol
 						if (!$?) {
@@ -200,7 +229,7 @@ function Start-Module($colour, $variables) {
 
 				Write-Message 'Website binding setup successfully.'
 				Write-Message "`nSetting up website folder user security permissions."
-				
+
 				$acl = Get-Acl -Path $path
 
 				$iis_user = $acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch 'NT AUTHORITY\\IUSR' } } | Select-Object -First 1
@@ -251,14 +280,14 @@ function Start-Module($colour, $variables) {
 							if (!$?) {
 								throw
 							}
-							
+
 							Stop-Website -Name $siteName
 							if (!$?) {
 								throw
 							}
 						}
 				}
-				
+
 				Write-Message "Application Pool and Website have been $state."
 			}
 
@@ -298,7 +327,7 @@ function Start-Module($colour, $variables) {
 				else {
 					Write-Warnings 'Website does not exist.'
 				}
-				
+
 				Write-Message 'Website removed successfully.'
 				Write-Message "`nRemoving application pool: '$appPoolName'."
 
@@ -311,7 +340,7 @@ function Start-Module($colour, $variables) {
 				else {
 					Write-Warnings 'Application pool does not exist.'
 				}
-				
+
 				Write-Message 'Application pool removed successfully.'
 			}
 	}
@@ -333,9 +362,9 @@ function Test-Module($colour, $variables) {
 	if ([string]::IsNullOrEmpty($appPoolName)) {
 		throw 'No app pool name has been supplied for website.'
 	}
-	
+
 	$appPoolName = $appPoolName.Trim()
-	
+
 	$siteExists = (Test-Path "IIS:\Sites\$siteName")
 	$poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
@@ -354,7 +383,7 @@ function Test-Module($colour, $variables) {
     if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
         throw 'No state parameter supplied for website.'
     }
-	
+
     # check we have a valid state property
 	if ($state -ne $null) {
 		$state = $state.ToLower().Trim()

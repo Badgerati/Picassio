@@ -5,6 +5,17 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "echo",
+#			"text": "Hello, world!"
+#		}
+#	]
+# }
 #########################################################################
 
 # Simple echo module to display whatever is written
@@ -15,7 +26,7 @@ function Start-Module($colour, $variables) {
 
 	$text = Replace-Variables $colour.text $variables
 	Write-Host $text
-    
+
     if (!$?) {
         throw "Failed to echo: '$text'."
     }

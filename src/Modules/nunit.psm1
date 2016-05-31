@@ -5,6 +5,22 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "nunit",
+#			"path": "C:\\path\\to\\nunit-console.exe",
+#			"arguments": "/include:UnitTest /nologo",
+#			"tests": [
+#				"Example\\Test1.dll",
+#				"Example\\Test2.dll"
+#			]
+#		}
+#	]
+# }
 #########################################################################
 
 # Use NUnit to run tests
@@ -17,7 +33,7 @@ function Start-Module($colour, $variables) {
 	if (!(Test-Path $path)) {
         throw "Path to nunit-console.exe does not exist: '$path'"
     }
-	
+
 	$tests = $colour.tests
 
 	$_args = Replace-Variables $colour.arguments $variables
@@ -31,14 +47,14 @@ function Start-Module($colour, $variables) {
 		if (!(Test-Path $test)) {
 			throw "Path to test does not exist: '$test'"
 		}
-	}	
+	}
 
 	Write-Information "Arguments: '$_args'."
 	Write-Message 'Running tests.'
-	
+
 	$test_string = Replace-Variables ($tests -join ' ') $variables
 	$output = Run-Command $path "$test_string $_args" $true
-	
+
 	if ($output -ne $null) {
 		$output | ForEach-Object { Write-Host $_ }
 		throw 'Some of the tests have failed.'
@@ -52,12 +68,12 @@ function Test-Module($colour, $variables) {
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		throw 'No path specified to the location of NUint.'
 	}
-	
-	$tests = $colour.tests 
+
+	$tests = $colour.tests
 	if ($tests -eq $null -or $tests.Length -eq 0) {
 		throw 'No tests have been supplied for NUnit.'
 	}
-	
+
 	ForEach ($test in $tests) {
 		if ([string]::IsNullOrWhiteSpace($test)) {
 			throw 'No path specified for tests.'

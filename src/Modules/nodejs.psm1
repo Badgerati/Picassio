@@ -5,6 +5,18 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "nodejs",
+#			"file": "C:\\path\\to\\app.js",
+#			"npmInstall": true
+#		}
+#	]
+# }
 #########################################################################
 
 # Opens a new Powershell host, and runs the node command on the passed file
@@ -20,7 +32,7 @@ function Start-Module($colour, $variables) {
 
 	$npm = Replace-Variables $colour.npmInstall $variables
 	if (![string]::IsNullOrWhiteSpace($npm) -and $npm -eq $true) {
-		if (!(Test-Software 'npm help' 'npm')) {
+		if (!(Test-Software 'npm -v' 'npm')) {
 			Write-Errors 'npm is not installed'
 			Install-AdhocSoftware 'npm' 'npm'
 		}
@@ -34,7 +46,7 @@ function Start-Module($colour, $variables) {
 	Push-Location (Split-Path -Parent $file)
 
 	if ($npm -eq $true) {
-		Write-Information 'Installing nodejs modules.'
+		Write-Information 'Installing npm modules.'
 		npm install
 
 		if (!$?) {
@@ -43,14 +55,14 @@ function Start-Module($colour, $variables) {
 		}
 	}
 
-	$_file = (Split-Path -Leaf $file)
-	Start-Process powershell.exe -ArgumentList "node $_file"
-	    
+	$mainfile = (Split-Path -Leaf $file)
+	Start-Process powershell.exe -ArgumentList "node $mainfile"
+
     if (!$?) {
 		Pop-Location
         throw "Failed to run node for: '$file'."
     }
-	
+
 	Pop-Location
     Write-Message 'Node ran successfully.'
 }

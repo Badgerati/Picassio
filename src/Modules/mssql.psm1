@@ -5,6 +5,28 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example (still in dev, only works for sql and backups):
+#
+# {
+#	"paint": [
+#		{
+#			"type": "mssql",
+#			"timeout": 60,
+#			"server": "192.130.1.90\INSTANCE",
+#			"backup": {
+#				"type": "restore",
+#				"location": "C:\\path\\to\\backup.bac",
+#				"database": "DatabaseName",
+#				"sqlpath": "C:\\path\\to\\put\\mdf_and_ldf"
+#			},
+#			"sql": {
+#				"query": "SELECT * FROM [Example]",
+#				"file": "C:\\path\\to\\script.sql"
+#			}
+#		}
+#	]
+# }
 #########################################################################
 
 # Run specific SQL commands, or general functions
@@ -52,6 +74,13 @@ function Start-Module($colour, $variables) {
 	}
 
 	# SQL
+	$sql = $colour.sql
+	if ($sql -ne $null) {
+		$query = Replace-Variables $sql.query $variables
+		$file = Replace-Variables $sql.file $variables
+
+		Run-Sql $query $file $server $timeout
+	}
 }
 
 function Test-Module($colour, $variables) {
@@ -113,7 +142,15 @@ function Test-Module($colour, $variables) {
 
 	# SQL
 	if ($sql -ne $null) {
+		$query = Replace-Variables $sql.query $variables
+		$file = Replace-Variables $sql.file $variables
 
+		if ([string]::IsNullOrWhiteSpace($query) -and [string]::IsNullOrWhiteSpace($file)) {
+			throw 'Either a SQL query or file path need to be supplied.'
+		}
+		elseif (![string]::IsNullOrWhiteSpace($query) -and ![string]::IsNullOrWhiteSpace($file)) {
+			throw 'Only one of either a SQL query or file path can be supplied.'
+		}
 	}
 }
 
@@ -144,7 +181,7 @@ function Start-SqlPs($sqlpsPath) {
 	# Preload the assemblies. Note that most assemblies will be loaded when the provider
 	# is used. if you work only within the provider this may not be needed. It will reduce
 	# the shell's footprint if you leave these out.
-	$assemblylist = 
+	$assemblylist =
 		"Microsoft.SqlServer.Smo",
 		"Microsoft.SqlServer.Dmf ",
 		"Microsoft.SqlServer.SqlWmiManagement ",
@@ -193,7 +230,7 @@ function Start-SqlPs($sqlpsPath) {
 ###################
 function Create-Shapshot($snapshotName, $snapshotLocation, $databaseName, $server, $timeoutSeconds) {
     Write-Message "Creating snapshot of [$databaseName]"
-	
+
     $query = "
         USE [$databaseName];
         SELECT FILE_NAME(1);"
@@ -240,11 +277,11 @@ function Restore-Shapshot($snapshotName, $databaseName, $server, $timeoutSeconds
 ###################
 function Create-Backup($backupLocation, $databaseName, $server, $timeoutSeconds) {
     Write-Message "Creating backup of [$databaseName]"
-		
+
 	$query = "
         BACKUP DATABASE [$databaseName]
 		TO DISK = '$backupLocation';"
-	
+
 	$result = Run-Sql -query $query -server $server -timeout $timeoutSeconds
 	if (!$?) {
         throw 'Failed to create backup of the database.'
@@ -290,7 +327,7 @@ function Restore-Backup($backupLocation, $databaseName, $sqlPath, $server, $time
 		SET @logical_data = (SELECT LogicalName FROM @FileList WHERE Type = 'D' AND FileID = 1);
 		SET @logical_log = (SELECT LogicalName FROM @FileList WHERE Type = 'L' AND FileID = 2);
 
-		RESTORE DATABASE [$databaseName] 
+		RESTORE DATABASE [$databaseName]
 		FROM DISK = N'$backupLocation'
 		WITH MOVE @logical_data TO '$sqlPath\$databaseName.mdf',
 			 MOVE @logical_log TO '$sqlPath\$databaseName.ldf';"
@@ -315,6 +352,11 @@ function Run-Sql($query, $file, $server, $timeoutSeconds = 60) {
 	}
 	else {
 		Write-Host 'Running SQL file'
+
+		if (!(Test-Path $file)) {
+			throw "SQL file path does not exist: '$file'."
+		}
+
 		Write-Information "File: '$file'"
 		$value = Invoke-Sqlcmd -InputFile $file -ServerInstance $server -QueryTimeout $timeoutSeconds
 	}

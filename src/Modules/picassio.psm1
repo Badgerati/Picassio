@@ -5,6 +5,18 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "picassio",
+#			"ensure": "paint",
+#			"palette": "C:\\path\\to\\palette.picassio"
+#		}
+#	]
+# }
 #########################################################################
 
 # Paints/Erases a machine using a passed Picassio script
@@ -12,7 +24,7 @@ Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour, $variables) {
 	Test-Module $colour $variables
-	
+
 	$palette = (Replace-Variables $colour.palette $variables)
 	if (!(Test-Path $palette)) {
 		throw "Palette does not exist '$palette'."
@@ -24,7 +36,7 @@ function Start-Module($colour, $variables) {
 		'paint'
 			{
 				Write-Message "Painting current machine."
-				
+
 				powershell.exe /C "picassio -palette `"$palette`" -paint"
 				if (!$?) {
 					throw 'Painting palette failed.'
@@ -36,12 +48,12 @@ function Start-Module($colour, $variables) {
 		'erase'
 			{
 				Write-Message "Erasing current machine."
-				
+
 				powershell.exe /C "picassio -palette `"$palette`" -erase"
 				if (!$?) {
 					throw 'Erasing palette failed.'
 				}
-				
+
 				Write-Message 'Erasing successfully.'
 			}
 	}

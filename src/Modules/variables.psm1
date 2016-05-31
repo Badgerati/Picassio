@@ -5,6 +5,23 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "variables",
+#			"variables": [
+#				{ "value1": true },
+#				{ "value2": "added" }
+#			]
+#		}
+#	]
+# }
+#
+# Variables are used in other values by doing: { "ensure": "#(value2)" }
+# which using the example above will be replaced by "added"
 #########################################################################
 
 # Parses the passed variables colour and inserts/updates them
@@ -31,7 +48,7 @@ function Test-Module($colour, $variables) {
 	}
 
 	$vars | ForEach-Object { $variables[$_.PSObject.Properties.Name] = $_.PSObject.Properties.Value }
-	
+
 	if (!$?) {
 		throw 'Variables failed to setup.'
 	}

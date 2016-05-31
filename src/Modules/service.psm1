@@ -5,6 +5,20 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "service",
+#			"name": "Example Service",
+#			"path": "C:\\absolute\\path\\to\\service.exe",
+#			"ensure": "installed",
+#			"state": "started"
+#		}
+#	]
+# }
 #########################################################################
 
 # Installs a service onto the system
@@ -33,7 +47,7 @@ function Start-Module($colour, $variables) {
 	if ($path -ne $null) {
 		$path = $path.Trim()
 	}
-    
+
 	# Deal with exists logic
 	if ($ensure -eq 'exists') {
 		if ($service -eq $null) {
@@ -41,7 +55,7 @@ function Start-Module($colour, $variables) {
 			return
 		}
 
-		Write-Message "Ensuring service '$name' is $state."		
+		Write-Message "Ensuring service '$name' is $state."
 		Toggle-Service $name $state
         Write-Message "Service $state."
 		return

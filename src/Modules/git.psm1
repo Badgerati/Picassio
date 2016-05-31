@@ -5,6 +5,20 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "git",
+#			"remote": "https://path//to/some/branch.git"
+#			"branchname": "master",
+#			"localpath": "C:\\path\\to\\place",
+#			"localname": "NewBranch"
+#		}
+#	]
+# }
 #########################################################################
 
 # Clones the remote repository into the supplied local path
@@ -24,7 +38,7 @@ function Start-Module($colour, $variables) {
     }
 
     $directory = $matches['repo']
-    
+
     $path = (Replace-Variables $colour.localpath $variables).Trim()
     if (!(Test-Path $path)) {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
@@ -88,7 +102,7 @@ function Start-Module($colour, $variables) {
     if (![string]::IsNullOrWhiteSpace($commit)) {
         Write-Message "Resetting local repository to the $commit commit."
         git.exe reset --hard $commit
-    
+
         if (!$?) {
             Pop-Location
             Pop-Location
@@ -112,7 +126,7 @@ function Test-Module($colour, $variables) {
     if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
         throw "Remote git repository of '$url' is not valid."
     }
-	    
+
     $path = Replace-Variables $colour.localpath $variables
 	if ($path -ne $null) {
 		$path = $path.Trim()

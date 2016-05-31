@@ -47,13 +47,13 @@ function Test-File($palette) {
     catch [exception] {
         throw $_.Exception
     }
-	
+
     # Ensure that there's a paint section
 	$paint = $json.paint
     if ($paint -eq $null -or $paint.Count -eq 0) {
         throw 'No paint array section found within palette.'
     }
-    
+
     # Ensure all paint sections have a type
     $list = [array]($paint | Where-Object { [string]::IsNullOrWhiteSpace($_.type) })
     if ($list.Length -ne 0) {
@@ -63,7 +63,7 @@ function Test-File($palette) {
 	# Ensure all modules for paint exist
 	$variables = @{}
 	Test-Section $paint 'paint'
-	
+
 	# Ensure that if there's an erase section, it too is valid
 	$erase = $json.erase
 	if ($erase -ne $null -and $erase.Count -gt 0) {
@@ -71,12 +71,12 @@ function Test-File($palette) {
 		if ($list.Length -ne 0) {
 			throw 'All erase colours need a type parameter.'
 		}
-		
+
 		# Ensure all modules for erase exist
 		$variables = @{}
 		Test-Section $erase 'erase'
 	}
-    	
+
     Write-Message 'Palette file is valid.'
 
     # Return config as json
@@ -87,58 +87,70 @@ function Test-Section($section, $name) {
 	ForEach ($colour in $section) {
 		$type = $colour.type.ToLower()
 
-		switch ($type) {
-			'extension'
-				{
-					$extensionName = $colour.extension
-					if ([String]::IsNullOrWhiteSpace($extensionName)) {
-						throw "$name colour extension type does not have an extension key."
+		try {
+			switch ($type) {
+				'extension'
+					{
+						$extensionName = $colour.extension
+						if ([String]::IsNullOrWhiteSpace($extensionName)) {
+							throw "$name colour extension type does not have an extension key."
+						}
+
+						$extension = "$env:PicassioExtensions\$extensionName.psm1"
+
+						if (!(Test-Path $extension)) {
+							throw "Unrecognised extension found: '$extensionName' in $name section."
+						}
+
+						Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
+
+						if (!(Get-Command 'Start-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
+							throw "Extension module for '$extensionName' does not have a Start-Extension function."
+						}
+
+						if (!(Get-Command 'Test-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
+							throw "Extension module for '$extensionName' does not have a Test-Extension function."
+						}
+
+						Test-Extension $colour $variables
+						Remove-Module $extensionName
 					}
 
-					$extension = "$env:PicassioExtensions\$extensionName.psm1"
+				default
+					{
+						$module = "$env:PicassioModules\$type.psm1"
 
-					if (!(Test-Path $extension)) {
-						throw "Unrecognised extension found: '$extensionName' in $name section."
+						if (!(Test-Path $module)) {
+							throw "Unrecognised colour type found: '$type' in $name section."
+						}
+
+						Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
+
+						if (!(Get-Command 'Start-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
+							throw "Module for '$type' does not have a Start-Module function."
+						}
+
+						if (!(Get-Command 'Test-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
+							throw "Module for '$type' does not have a Test-Module function."
+						}
+
+						Test-Module $colour $variables
+						Remove-Module $type
 					}
+			}
+		}
+		catch [exception] {
+			if ($type -eq 'extension') {
+				Write-Information "Validation of $extensionName extension failed in $name section."
+			}
+			else {
+				Write-Information "Validation of $type failed in $name section."
+			}
 
-					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
-				
-					if (!(Get-Command 'Start-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Extension module for '$extensionName' does not have a Start-Extension function."
-					}
-					
-					if (!(Get-Command 'Test-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Extension module for '$extensionName' does not have a Test-Extension function."
-					}
-
-					Test-Extension $colour $variables
-					Remove-Module $extensionName
-				}
-
-			default
-				{
-					$module = "$env:PicassioModules\$type.psm1"
-
-					if (!(Test-Path $module)) {
-						throw "Unrecognised colour type found: '$type' in $name section."
-					}
-
-					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
-				
-					if (!(Get-Command 'Start-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Module for '$type' does not have a Start-Module function."
-					}
-					
-					if (!(Get-Command 'Test-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
-						throw "Module for '$type' does not have a Test-Module function."
-					}
-
-					Test-Module $colour $variables
-					Remove-Module $type
-				}
+			throw
 		}
 	}
-	
+
 	Import-Module $modulePath -DisableNameChecking
 }
 
@@ -155,12 +167,12 @@ function Install-Picassio() {
 	$tools = "$main\Tools"
 	$modules = "$main\Modules"
 	$extensions = "$main\Extensions"
-	
+
 	if (!(Test-Path $main)) {
 		Write-Message "Creating '$main' directory."
 		New-Item -ItemType Directory -Force -Path $main | Out-Null
 	}
-	
+
 	if (!(Test-Path $tools)) {
 		Write-Message "Creating '$tools' directory."
 		New-Item -ItemType Directory -Force -Path $tools | Out-Null
@@ -197,13 +209,13 @@ function Install-Picassio() {
 		Set-EnvironmentVariable 'Path' $current
 		Reset-Path
 	}
-	
+
 	Write-Message 'Creating environment variables.'
 	if ($env:PicassioModules -ne $modules) {
 		$env:PicassioModules = $modules
 		Set-EnvironmentVariable 'PicassioModules' $env:PicassioModules
 	}
-	
+
 	if ($env:PicassioExtensions -ne $extensions) {
 		$env:PicassioExtensions = $extensions
 		Set-EnvironmentVariable 'PicassioExtensions' $env:PicassioExtensions
@@ -229,7 +241,7 @@ function Uninstall-Picassio() {
 	Write-Information 'Uninstalling Picassio.'
 
 	$main = 'C:\Picassio'
-	
+
 	if ((Test-Path $main)) {
 		Write-Message "Deleting '$main' directory."
 		Remove-Item -Path $main -Force -Recurse | Out-Null
@@ -242,13 +254,13 @@ function Uninstall-Picassio() {
 		Set-EnvironmentVariable 'Path' $current
 		$env:Path = $current
 	}
-	
+
 	Write-Message 'Removing environment variables.'
 	if (![String]::IsNullOrWhiteSpace($env:PicassioModules)) {
 		Remove-Item env:\PicassioModules
 		Set-EnvironmentVariable 'PicassioModules' $null
 	}
-	
+
 	if (![String]::IsNullOrWhiteSpace($env:PicassioExtensions)) {
 		Remove-Item env:\PicassioExtensions
 		Set-EnvironmentVariable 'PicassioExtensions' $null
@@ -279,7 +291,7 @@ function Reinstall-Picassio() {
 	}
 
 	Install-Picassio
-	
+
 	Write-Information 'Picassio has been re-installed successfully.'
 }
 
@@ -346,7 +358,7 @@ function Run-Section($section) {
 					Remove-Module $type
 				}
 		}
-    	
+
 		# Report import the picassio tools module
 		Import-Module $modulePath -DisableNameChecking
 		Reset-Path
@@ -447,7 +459,7 @@ try {
 		Write-Warning 'You can only specify either the paint or erase flag, not both.'
 		return
 	}
-	
+
 	# Start the stopwatch for total time tracking
 	$total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
@@ -456,7 +468,7 @@ try {
 		Run-Erase
 		Write-NewLine
 	}
-	
+
 	# Get either the paint or erase section
 	Run-Palette $paint $erase
 

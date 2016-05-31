@@ -5,6 +5,20 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "copy",
+#			"from": "C:\\path\\to\\folder",
+#			"to": "C:\\path\\to\\other\\folder",
+#			"excludeFiles": [ "*.html", "*.js" ],
+#			"includeFolders": [ "src" ]
+#		}
+#	]
+# }
 #########################################################################
 
 # Copy files/folders from one location to another
@@ -35,7 +49,7 @@ function Start-Module($colour, $variables) {
 
     $includeFiles = $colour.includeFiles
     $includeFolders = $colour.includeFolders
-    
+
     if ($includeFolders -ne $null -and $includeFolders.Length -gt 0) {
         [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) –Join '|')
     }
@@ -60,14 +74,14 @@ function Start-Module($colour, $variables) {
                 $path = Join-Path $to $_.FullName.Substring($from.Length)
                 $temp = Split-Path -Parent $path
             }
-			
+
             if (!(Test-Path $temp)) {
                 New-Item -ItemType Directory -Force -Path $temp | Out-Null
             }
-            
+
             $path
         } -Force -Exclude $excludeFiles -Include $includeFiles
-    
+
     if (!$?) {
         throw 'Failed to copy files/folders.'
     }
@@ -80,7 +94,7 @@ function Test-Module($colour, $variables) {
     if ([string]::IsNullOrWhiteSpace($from)) {
         throw 'No from path specified.'
     }
-	
+
     $to = Replace-Variables $colour.to $variables
     if ([string]::IsNullOrWhiteSpace($to)) {
         throw 'No to path specified.'

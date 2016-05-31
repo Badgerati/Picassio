@@ -5,6 +5,19 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "hosts",
+#			"ensure": "added",
+#			"ip": "127.0.0.3",
+#			"hostname": "test.local.com"
+#		}
+#	]
+# }
 #########################################################################
 
 # Updates the hosts file
@@ -42,8 +55,8 @@ function Start-Module($colour, $variables) {
         'added'
             {
 				$current = ($lines | Where-Object { $_ -match $regex } | Select-Object -First 1)
-				
-				if ([string]::IsNullOrWhiteSpace($current)) { 
+
+				if ([string]::IsNullOrWhiteSpace($current)) {
 					("`n$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
 				}
 				else {

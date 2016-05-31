@@ -5,6 +5,23 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "msbuild",
+#			"path": "C:\\path\\to\\msbuild.exe",
+#			"projects": [
+#				"C:\\path\\to\\project.csproj",
+#				"C:\\path\\to\\solution.sln"
+#			],
+#			"arguments": "/p:Configuration=Debug",
+#			"clean": true
+#		}
+#	]
+# }
 #########################################################################
 
 # Use MSBuild to build a project or solution
@@ -21,7 +38,7 @@ function Start-Module($colour, $variables) {
 	else {
 		$path = $path.Trim()
 	}
-	
+
 	$projects = $colour.projects
 	$clean = Replace-Variables $colour.clean $variables
 	$_args = Replace-Variables $colour.arguments $variables
@@ -41,7 +58,7 @@ function Start-Module($colour, $variables) {
 
 		Write-SubHeader "$file"
 		Write-Information "Arguments: '$_args'."
-		
+
 		$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 		if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true) {
@@ -79,7 +96,7 @@ function Test-Module($colour, $variables) {
 	if ($projects -eq $null -or $projects.Length -eq 0) {
 		throw 'No projects have been supplied for MSBuild.'
 	}
-	
+
 	ForEach ($project in $projects) {
 		if ([string]::IsNullOrWhiteSpace($project)) {
 			throw 'No path specified to build project.'
@@ -90,7 +107,7 @@ function Test-Module($colour, $variables) {
 
 function Build-Project($command, $_args) {
 	$output = Run-Command $command $_args
-	
+
 	if ($output -ne $null) {
 		Pop-Location
 		$output | ForEach-Object { Write-Errors $_ }

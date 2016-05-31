@@ -5,6 +5,20 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "windows-feature",
+#			"ensure": "installed",
+#			"name": "Web-Server",
+#			"includeSubFeatures": true,
+#			"includeManagementTools": true
+#		}
+#	]
+# }
 #########################################################################
 
 # Installs/uninstalled windows features
@@ -18,7 +32,7 @@ function Start-Module($colour, $variables) {
 	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 	$includeSubFeatures = Replace-Variables $colour.includeSubFeatures $variables
 	$includeManagementTools = Replace-Variables $colour.includeManagementTools $variables
-	
+
 	Write-Message "`nEnsuring '$name' is $ensure."
 
 	switch ($ensure) {
@@ -50,7 +64,7 @@ function Start-Module($colour, $variables) {
 				else {
 					Remove-WindowsFeature -Name $name
 				}
-				
+
 				if (!$?) {
 					throw 'Failed to uninstall Windows feature.'
 				}
@@ -58,6 +72,7 @@ function Start-Module($colour, $variables) {
 	}
 
 	Write-Message "'$name' has been $ensure."
+	Write-Information 'It is suggested that you restart your computer.'
 }
 
 function Test-Module($colour, $variables) {
@@ -65,9 +80,10 @@ function Test-Module($colour, $variables) {
 	if ([string]::IsNullOrEmpty($name)) {
 		throw 'No feature name has been supplied.'
 	}
-	
+
+	# ensure the feature exists
 	$name = $name.Trim()
-	$featureExists = (Get-WindowsFeature -Name $name | Measure-Object)
+	$featureExists = (Get-WindowsFeature -Name $name | Measure-Object).Count
 
 	if ($featureExists -eq 0) {
 		throw "Windows feature does not exist: '$name'."

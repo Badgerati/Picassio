@@ -5,6 +5,20 @@
 # Copyright (c) 2015, Matthew Kelly (Badgerati)
 # Company: Cadaeic Studios
 # License: MIT (see LICENSE for details)
+#
+# Example:
+#
+# {
+#	"paint": [
+#		{
+#			"type": "svn",
+#			"url": "https://url.to.some.svn",
+#			"path": "C:\\path\\to\\local\\svn",
+#			"name": "LocalName",
+#			"revision": "12345"
+#		}
+#	]
+# }
 #########################################################################
 
 # Checkout a remote repository using svn into the supplied local path
@@ -30,7 +44,7 @@ function Start-Module($colour, $variables) {
 	if ($revision -ne $null) {
 		$revision = $revision.Trim()
 	}
-    
+
     # Delete existing directory
     Push-Location $path
     if ((Test-Path $name)) {
@@ -51,7 +65,7 @@ function Start-Module($colour, $variables) {
         Write-Message "Resetting local repository to revision $revision."
         Push-Location $name
         svn.exe up -r $revision
-    
+
         if (!$?) {
             Pop-Location
             Pop-Location

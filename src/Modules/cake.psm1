@@ -11,53 +11,59 @@
 # {
 #	"paint": [
 #		{
-#			"type": "vagrant",
+#			"type": "cake",
 #			"path": "C:\\path\\to\\project",
-#			"command": "up"
+#			"name": "build.cake"
 #		}
 #	]
 # }
 #########################################################################
 
-# Calls vagrant from a specified path where a Vagrantfile can be found
+# Calls cake buid from the specified path where a cake script can be found
 Import-Module $env:PicassioTools -DisableNameChecking
 
 function Start-Module($colour, $variables) {
 	Test-Module $colour $variables
 
-    if (!(Test-Software vagrant.exe 'vagrant')) {
-        Write-Errors 'Vagrant is not installed'
-        Install-AdhocSoftware 'vagrant' 'Vagrant'
+    if (!(Test-Software 'cake.exe -version' 'cake')) {
+        Write-Errors 'Cake is not installed'
+        Install-AdhocSoftware 'cake.portable' 'Cake'
     }
 
     $path = (Replace-Variables $colour.path $variables).Trim()
-    $command = (Replace-Variables $colour.command $variables).Trim()
-
     if (!(Test-Path $path)) {
-        throw "Path specified to Vagrantfile doesn't exist: '$path'."
+        throw "Path specified to project doesn't exist: '$path'."
     }
 
-	Write-Message "Running vagrant $command."
+    $name = (Replace-Variables $colour.name $variables).Trim()
+	if ([string]::IsNullOrWhiteSpace($name)) {
+		$name = 'build.cake'
+	}
+
+	if (!(Test-Path (Join-Path $path $name))) {
+		throw "Cake build script does not exist at path: '$name'."
+	}
+
+	Write-Message "Running Cake."
     Push-Location $path
-    vagrant.exe $command
 
-    if (!$?) {
-        Pop-Location
-        throw 'Failed to call vagrant.'
-    }
+	try {
+		cake.exe $name
 
-    Pop-Location
-    Write-Message "vagrant $command, successful."
+		if (!$?) {
+			throw 'Failed to call cake.'
+		}
+	}
+	finally {
+		Pop-Location
+	}
+
+    Write-Message "Cake build was successful."
 }
 
 function Test-Module($colour, $variables) {
     $path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path)) {
-        throw 'No path specified to parent directory where the Vagrantfile is located.'
-    }
-
-    $command = Replace-Variables $colour.command $variables
-    if ([string]::IsNullOrWhiteSpace($command)) {
-        throw 'No command specified for which to call vagrant.'
+        throw 'No path specified to a directory where the project is located.'
     }
 }
