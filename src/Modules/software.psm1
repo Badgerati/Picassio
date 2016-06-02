@@ -21,10 +21,10 @@
 #########################################################################
 
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	if (!(Test-Software choco.exe)) {
         Install-Chocolatey
@@ -119,7 +119,7 @@ function Start-Module($colour, $variables) {
     }
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $names = $colour.names
     if ($names -eq $null -or $names.Length -eq 0) {
         throw 'No names supplied for software.'

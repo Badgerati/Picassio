@@ -21,10 +21,10 @@
 #########################################################################
 
 # Installs/uninstalled windows optional features
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	$name = (Replace-Variables $colour.name $variables).Trim()
 	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
@@ -61,7 +61,7 @@ function Start-Module($colour, $variables) {
 	Write-Information 'It is suggested that you restart your computer.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$name = Replace-Variables $colour.name $variables
 	if ([string]::IsNullOrEmpty($name)) {
 		throw 'No optional feature name has been supplied.'

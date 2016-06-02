@@ -25,15 +25,24 @@
 #########################################################################
 
 # Parses the passed variables colour and inserts/updates them
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Write-Message 'Setting up variables.'
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+    Test-Module $colour $variables $credentials
+
+    Write-Message 'Setting up variables.'
+
+    $vars = $colour.variables
+	$vars | ForEach-Object { $variables[$_.PSObject.Properties.Name] = $_.PSObject.Properties.Value }
+
+	if (!$?) {
+		throw 'Variables failed to setup.'
+	}
+
 	Write-Message 'Variables setup successfully.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$vars = $colour.variables
 	if ($vars -eq $null -or $vars.Length -eq 0) {
 		return
@@ -45,11 +54,5 @@ function Test-Module($colour, $variables) {
 	if ($invalid -ne $null -and $invalid.Length -ne 0) {
 		Write-Errors "Invalid variable names found. Variable names can only be alphanumeric`n$invalid"
 		throw
-	}
-
-	$vars | ForEach-Object { $variables[$_.PSObject.Properties.Name] = $_.PSObject.Properties.Value }
-
-	if (!$?) {
-		throw 'Variables failed to setup.'
 	}
 }

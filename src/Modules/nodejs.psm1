@@ -20,10 +20,10 @@
 #########################################################################
 
 # Opens a new Powershell host, and runs the node command on the passed file
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	if (!(Test-Software 'node.exe -v' 'nodejs')) {
         Write-Errors 'Node.js is not installed'
@@ -67,7 +67,7 @@ function Start-Module($colour, $variables) {
     Write-Message 'Node ran successfully.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$file = Replace-Variables $colour.file $variables
     if ([string]::IsNullOrWhiteSpace($file)) {
         throw 'No file passed to run for node.'

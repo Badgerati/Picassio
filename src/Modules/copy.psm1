@@ -22,10 +22,10 @@
 #########################################################################
 
 # Copy files/folders from one location to another
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     $from = (Replace-Variables $colour.from $variables).Trim()
     $to = (Replace-Variables $colour.to $variables).Trim()
@@ -38,7 +38,7 @@ function Start-Module($colour, $variables) {
     $excludeFolders = $colour.excludeFolders
 
     if ($excludeFolders -ne $null -and $excludeFolders.Length -gt 0) {
-        [Regex]$excludeFoldersRegex = (($excludeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) –Join '|')
+        [Regex]$excludeFoldersRegex = (($excludeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) -join '|')
     }
 
 	if ($excludeFiles -ne $null) {
@@ -51,7 +51,7 @@ function Start-Module($colour, $variables) {
     $includeFolders = $colour.includeFolders
 
     if ($includeFolders -ne $null -and $includeFolders.Length -gt 0) {
-        [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) –Join '|')
+        [Regex]$includeFoldersRegex = (($includeFolders | ForEach-Object {[Regex]::Escape((Replace-Variables $_ $variables))}) -join '|')
     }
 
 	if ($includeFiles -ne $null) {
@@ -89,7 +89,7 @@ function Start-Module($colour, $variables) {
     Write-Message 'Files/folders copied successfully.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $from = Replace-Variables $colour.from $variables
     if ([string]::IsNullOrWhiteSpace($from)) {
         throw 'No from path specified.'

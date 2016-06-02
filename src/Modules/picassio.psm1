@@ -20,10 +20,10 @@
 #########################################################################
 
 # Paints/Erases a machine using a passed Picassio script
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	$palette = (Replace-Variables $colour.palette $variables)
 	if (!(Test-Path $palette)) {
@@ -59,7 +59,7 @@ function Start-Module($colour, $variables) {
 	}
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	# check we have a valid palette path
 	$palette = (Replace-Variables $colour.palette $variables)
 	if ([string]::IsNullOrEmpty($palette)) {

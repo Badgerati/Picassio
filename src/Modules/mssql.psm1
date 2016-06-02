@@ -30,10 +30,10 @@
 #########################################################################
 
 # Run specific SQL commands, or general functions
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 	Start-SqlPs $colour.sqlpsPath
 
 	$server = Replace-Variables $colour.server $variables
@@ -83,7 +83,7 @@ function Start-Module($colour, $variables) {
 	}
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     Test-SqlPs
 
 	# General server/timeout

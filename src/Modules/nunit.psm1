@@ -24,10 +24,10 @@
 #########################################################################
 
 # Use NUnit to run tests
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     $path = (Replace-Variables $colour.path $variables).Trim()
 	if (!(Test-Path $path)) {
@@ -38,7 +38,7 @@ function Start-Module($colour, $variables) {
 
 	$_args = Replace-Variables $colour.arguments $variables
 	if ($_args -eq $null) {
-		$_args = ""
+		$_args = [string]::Empty
 	}
 
 	ForEach ($test in $tests) {
@@ -63,7 +63,7 @@ function Start-Module($colour, $variables) {
 	Write-Message 'Tests ran successfully.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $path = Replace-Variables $colour.path $variables
 	if ([String]::IsNullOrWhiteSpace($path)) {
 		throw 'No path specified to the location of NUint.'

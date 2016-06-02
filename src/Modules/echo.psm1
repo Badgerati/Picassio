@@ -19,10 +19,10 @@
 #########################################################################
 
 # Simple echo module to display whatever is written
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	$text = Replace-Variables $colour.text $variables
 	Write-Host $text
@@ -32,7 +32,7 @@ function Start-Module($colour, $variables) {
     }
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$text = Replace-Variables $colour.text $variables
     if ([string]::IsNullOrWhiteSpace($text)) {
         throw 'No text passed to echo.'

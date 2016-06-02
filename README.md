@@ -39,6 +39,9 @@ The following are all supported by Picassio:
 * Ability to setup certificates
 * Run cake build scripts
 * Run SQL Server scripts or create/restore backups
+* Can send emails
+* Ability to publish/generate scripts for SSDT
+* Support for Network Load Balancer
 * Extension modules can be written for third-parties
 
 
@@ -62,8 +65,6 @@ To Do
 There are still quite a few things I wish to add to Picassio, the following is a short list:
 
 * Bower and npm support
-* SSDT publishing
-* Network load balancing
 * Ability to install Picassio via Chocolatey
 * Setup the wiki properly for better docs
 
@@ -86,6 +87,16 @@ picassio -help
 ```
 
 Calling just 'picassio -paint' in a directory will look for a default 'picassio.palette' file.
+
+
+Passing Credentials
+-------------------
+Picassio does have support for username/password credentials should you require them. There are two ways to set these credentials:
+
+* Specify the `-username` and `-password` arguments from the CLI
+* Add a colour of singular `{ "type": "credentials" }` somewhere in your paint/erase palette sections. When Picassio gets to this type, assuming you haven't already set the credentials, then the user is prompted to enter them
+
+The credentials are passed to every `Start-Module`, `Test-Module`, `Start-Extension` and `Test-Extension` call, and does have the possibility of being null.
 
 
 Installing Software
@@ -416,8 +427,8 @@ Extensions
 Due to the way Picassio is designed, you have the ability to create extension psm1 modules. If you wish to create your own module, there are a few things you need to ensure:
 
 * Extension modules must be placed within the "C:\Picassio\Extensions" directory
-* The main logic of the extension must be contained within a "Start-Extension($colour, $variables)" function
-* Before the main logic is executed, the input must be validated in a "Test-Extension($colour, $variables)" function
+* The main logic of the extension must be contained within a "Start-Extension($colour, $variables, $credentials)" function
+* Before the main logic is executed, the input must be validated in a "Test-Extension($colour, $variables, $credentials)" function
 * You may use the Picassio tools via "Import-Module $env:PicassioTools -DisableNameChecking"
 * The $colour passed in is of JSON format
 
@@ -429,15 +440,18 @@ So, let's have an example. Say we want to have a simple echo extension which ech
 # File name: echo.psm1
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Extension($colour, $variables) {
+function Start-Extension($colour, $variables, $credentials) {
+    # Although tested already, variables could have changed since then
+    Test-Extension $colour $variables $credentials
+
+    # Main logic
 	Write-Message 'Echo text supplied.'
 	$text = $colour.text
 	Write-Host $test
 }
 
-function Test-Extension($colour, $variables) {
-	$text = $colour.text
-	if ([string]::IsNullOrWhiteSpace($text)) {
+function Test-Extension($colour, $variables, $credentials) {
+	if ([string]::IsNullOrWhiteSpace($colour.text)) {
 		throw 'No text supplied to echo.'
 	}
 }
@@ -449,15 +463,16 @@ Here, you'll noticed that we import the Picassio tools module. This module conta
 * Writing messages
 * Testing if software is installed
 * Backing-up directories
+* Running commands via cmd/powershell
 * and more
 
-Next, we have the "Start-Extension($colour, $variables)" function. This is the main point-of-call for your modules, and any JSON supplied by the user for your extension will be passed through.
+Next, we have the "Start-Extension($colour, $variables, $credentials)" function. This is the main point-of-call for your modules, and any JSON supplied by the user for your extension will be passed through.
 
 We only require that the user supply us with a "text" key in the palette.
 
 Within the function, all we do is retrieve the text via "$colour.text", and then echo the value using Write-Host.
 
-The Test-Extension function will be called during the initial validation of the passed JSON file. Here, we should be ensuring the the correct values are passed, and files/folders exist. In the one above, we simply throw an error if no text is supplied to be echoed.
+The Test-Extension function will be called during the initial validation of the passed JSON file. Here, we should be ensuring the correct values are passed, and files/folders exist. In the one above, we simply throw an error if no text is supplied to be echoed.
 
 The palette for this will look like the following
 

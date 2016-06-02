@@ -9,38 +9,40 @@
 
 # Tools for which to utilise in Picassio modules and extensions
 
+# Returns the current version of Picassio
+function Get-Version() {
+	return 'v0.9.7a'
+}
+
 # Writes the help manual to the console
 function Write-Help() {
     Write-Host 'Help Manual' -ForegroundColor Green
-    Write-Host ''
+    Write-Host ([string]::Empty)
 
 	if (!(Test-PicassioInstalled)) {
 		Write-Host 'To install Picassio use: ".\Picassio.ps1 -install"' -ForegroundColor Yellow
-		Write-Host ''
+		Write-Host ([string]::Empty)
 	}
 
     Write-Host 'The following is a list of possible commands:'
     Write-Host " -help`t`t Displays the help page"
 	Write-Host " -validate`t Validates the palette"
-    Write-Host " -install`t Installs Picassio to C:\Picassio"
+    Write-Host " -install`t Installs/Updates Picassio, extensions are kept intact"
     Write-Host " -uninstall`t Uninstalls Picassio"
     Write-Host " -reinstall`t Uninstalls and then re-installs Picassio"
     Write-Host " -version`t Displays the current version of Picassio"
     Write-Host " -palette`t Specifies the picassio palette file to use"
-    Write-Host " -paint`t`t Runs the config file's paint section"
-    Write-Host " -erase`t`t Runs the config file's erase section, if one is present"
-	Write-Host ''
+    Write-Host " -paint`t`t Runs the palette file's paint section"
+    Write-Host " -erase`t`t Runs the palette file's erase section, if one is present"
+    Write-Host " -username`t [Optional] Your username to use for initial credentials"
+    Write-Host " -password`t [Optional] Your password, this can be left blank"
+	Write-Host ([string]::Empty)
 }
 
 # Writes the current version of Picassio to the console
 function Write-Version() {
 	$version = Get-Version
     Write-Host "Picassio $version" -ForegroundColor Green
-}
-
-# Returns the current version of Picassio
-function Get-Version() {
-	return 'v0.9.6'
 }
 
 # Wipes a given directory

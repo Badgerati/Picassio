@@ -32,6 +32,8 @@
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\nlb-node.psm1" />
+    <Compile Include="Modules\email.psm1" />
     <Compile Include="Modules\picassio.psm1" />
     <Compile Include="Modules\directory.psm1" />
     <Compile Include="Modules\cake.psm1" />

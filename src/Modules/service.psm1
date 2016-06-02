@@ -22,10 +22,10 @@
 #########################################################################
 
 # Installs a service onto the system
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     # attempt to retrieve the service
     $name = (Replace-Variables $colour.name $variables).Trim()
@@ -107,7 +107,7 @@ function Start-Module($colour, $variables) {
     }
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $name = Replace-Variables $colour.name $variables
     if ([string]::IsNullOrWhiteSpace($name)) {
         throw 'No service name supplied.'

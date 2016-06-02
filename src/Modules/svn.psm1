@@ -22,10 +22,10 @@
 #########################################################################
 
 # Checkout a remote repository using svn into the supplied local path
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     if (!(Test-Software svn.exe 'svn')) {
         Write-Errors 'SVN is not installed'
@@ -78,7 +78,7 @@ function Start-Module($colour, $variables) {
     Write-Message 'SVN checkout was successful.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $url = Replace-Variables $colour.remote $variables
     if ([string]::IsNullOrWhiteSpace($url)) {
         throw 'No remote SVN repository passed.'

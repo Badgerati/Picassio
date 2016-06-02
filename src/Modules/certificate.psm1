@@ -20,10 +20,10 @@
 #########################################################################
 
 # Imports/Exports a certificate on MMC
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	$certStoreType = (Replace-Variables $colour.certStoreType $variables).Trim()
 	$certStoreName = (Replace-Variables $colour.certStoreName $variables).Trim()
@@ -112,7 +112,7 @@ function Start-Module($colour, $variables) {
 	}
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	# check we have a valid cert store type
 	$certStoreType = (Replace-Variables $colour.certStoreType $variables)
 	if ([string]::IsNullOrEmpty($certStoreType)) {

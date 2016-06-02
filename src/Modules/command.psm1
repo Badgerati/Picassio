@@ -20,10 +20,10 @@
 #########################################################################
 
 # Run a passed command using Command Prompt/PowerShell
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     $command = (Replace-Variables $colour.command $variables).Trim()
     $prompt = Replace-Variables $colour.prompt $variables
@@ -75,7 +75,7 @@ function Start-Module($colour, $variables) {
     Write-Message 'Command ran successfully.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$command = Replace-Variables $colour.command $variables
     if ([string]::IsNullOrWhiteSpace($command)) {
         throw 'No command passed to run via Command Prompt.'

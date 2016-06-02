@@ -21,12 +21,12 @@
 #########################################################################
 
 # Add/removes an application pool on IIS
-Import-Module $env:PicassioTools -DisableNameChecking
-Import-Module WebAdministration
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
+Import-Module WebAdministration -ErrorAction Stop
 sleep 2
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
 	$appPoolName = (Replace-Variables $colour.appPoolName $variables).Trim()
 	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
@@ -84,7 +84,7 @@ function Start-Module($colour, $variables) {
 	}
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	if (!(Test-Win64)) {
 		throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
 	}

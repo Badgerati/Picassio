@@ -22,10 +22,10 @@
 #########################################################################
 
 # Clones the remote repository into the supplied local path
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     if (!(Test-Software git.exe 'git')) {
         Write-Errors 'Git is not installed'
@@ -115,7 +115,7 @@ function Start-Module($colour, $variables) {
     Write-Message 'Git clone was successful.'
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $url = Replace-Variables $colour.remote $variables
 	if ($url -eq $null) {
 		$url = [string]::Empty

@@ -10,6 +10,9 @@
 			]
 		},
         {
+            "type": "credentials"
+        },
+        {
         	"type": "software",
         	"names": [ "git", "curl" ],
         	"ensure": "installed",
@@ -98,32 +101,32 @@
         {
         	"type": "mssql",
         	"timeout": 60,
-        	"server": "",
+        	"server": "SOME_SERVER_1",
         	"snapshot": {
         		"type": "create",
-        		"name": "",
-        		"location": "",
-        		"database": ""
+        		"name": "Example_Snapshot",
+        		"location": "C:\\example\\path",
+        		"database": "[Example]"
         	}
         },
         {
         	"type": "mssql",
         	"timeout": 60,
-        	"server": "",
+        	"server": "SOME_SERVER_1",
         	"backup": {
         		"type": "restore",
-        		"location": "",
-        		"database": "",
-        		"sqlpath": ""
+        		"location": "C:\\example\\path",
+        		"database": "[Example]",
+        		"sqlpath": "C:\\"
         	}
         },
         {
         	"type": "mssql",
         	"timeout": 60,
-        	"server": "",
+        	"server": "SOME_SERVER_1",
         	"sqlpsPath": "C:\\Program Files (x86)\\Microsoft SQL Server\\100\\Tools\\Binn\\",
         	"sql": {
-        		"query": ""
+        		"query": "SELECT COUNT(1) FROM [Example]"
         	}
         },
         {
@@ -141,13 +144,6 @@
             "certStoreType": "LocalMachine",
             "certStoreName": "Root",
             "certPath": "C:\\some-cert.cer"
-        },
-        {
-        	"type": "windows-feature",
-        	"ensure": "installed",
-        	"name": "Web-Server",
-        	"includeSubFeatures": true,
-        	"includeManagementTools": true
         }
     ],
     "erase": [

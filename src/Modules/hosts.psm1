@@ -21,10 +21,10 @@
 #########################################################################
 
 # Updates the hosts file
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
@@ -77,7 +77,7 @@ function Start-Module($colour, $variables) {
     Write-Message "'$ip - $hostname' has been $ensure successfully."
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     if (!(Test-Path $hostFile)) {
         throw "Hosts file does not exist at: '$hostFile'."

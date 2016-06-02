@@ -8,6 +8,8 @@
 #########################################################################
 param (
 	[string]$palette,
+    [string]$username,
+    [string]$password,
 	[switch]$help = $false,
 	[switch]$version = $false,
 	[switch]$install = $false,
@@ -19,7 +21,7 @@ param (
 )
 
 $modulePath = $env:PicassioTools
-if ([String]::IsNullOrWhiteSpace($modulePath)) {
+if ([String]::IsNullOrWhiteSpace($modulePath) -or !(Test-Path $modulePath)) {
 	$modulePath = '.\Tools\PicassioTools.psm1'
 
 	if (!(Test-Path $modulePath)) {
@@ -27,7 +29,7 @@ if ([String]::IsNullOrWhiteSpace($modulePath)) {
 	}
 }
 
-Import-Module $modulePath -DisableNameChecking
+Import-Module $modulePath -DisableNameChecking -ErrorAction Stop
 
 
 
@@ -89,6 +91,11 @@ function Test-Section($section, $name) {
 
 		try {
 			switch ($type) {
+                'credentials'
+                    {
+                        # No need to test anything
+                    }
+
 				'extension'
 					{
 						$extensionName = $colour.extension
@@ -102,7 +109,7 @@ function Test-Section($section, $name) {
 							throw "Unrecognised extension found: '$extensionName' in $name section."
 						}
 
-						Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
+						Import-Module $extension -DisableNameChecking -ErrorAction Stop
 
 						if (!(Get-Command 'Start-Extension' -CommandType Function -ErrorAction SilentlyContinue)) {
 							throw "Extension module for '$extensionName' does not have a Start-Extension function."
@@ -112,7 +119,7 @@ function Test-Section($section, $name) {
 							throw "Extension module for '$extensionName' does not have a Test-Extension function."
 						}
 
-						Test-Extension $colour $variables
+						Test-Extension $colour $variables $credentials
 						Remove-Module $extensionName
 					}
 
@@ -124,7 +131,7 @@ function Test-Section($section, $name) {
 							throw "Unrecognised colour type found: '$type' in $name section."
 						}
 
-						Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
+						Import-Module $module -DisableNameChecking -ErrorAction Stop
 
 						if (!(Get-Command 'Start-Module' -CommandType Function -ErrorAction SilentlyContinue)) {
 							throw "Module for '$type' does not have a Start-Module function."
@@ -134,7 +141,7 @@ function Test-Section($section, $name) {
 							throw "Module for '$type' does not have a Test-Module function."
 						}
 
-						Test-Module $colour $variables
+						Test-Module $colour $variables $credentials
 						Remove-Module $type
 					}
 			}
@@ -250,7 +257,7 @@ function Uninstall-Picassio() {
 	Write-Message 'Removing Picassio from environment Path.'
 	if (($env:Path.Contains($main))) {
 		$current = Get-EnvironmentVariable 'Path'
-		$current = $current.Replace($main, '')
+		$current = $current.Replace($main, [string]::Empty)
 		Set-EnvironmentVariable 'Path' $current
 		$env:Path = $current
 	}
@@ -339,13 +346,27 @@ function Run-Section($section) {
 		}
 
 		switch ($type) {
+            'credentials'
+                {
+                    if ($credentials -eq $null) {
+    					Write-Header $type
+                        $credentials = (Get-Credential -Message 'Your credentials are required for use via Picassio.')
+
+                        if ($credentials -eq $null -or [string]::IsNullOrWhiteSpace($credentials.Username)) {
+                            throw 'No credentials have been supplied.'
+                        }
+
+                        Write-Information ("Credentials set for {0}." -f $credentials.Username)
+                    }
+                }
+
 			'extension'
 				{
 					$extensionName = $colour.extension
 					Write-Header "$extensionName (ext)"
 					$extension = "$env:PicassioExtensions\$extensionName.psm1"
 					Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Extension $colour $variables
+					Start-Extension $colour $variables $credentials
 					Remove-Module $extensionName
 				}
 
@@ -354,7 +375,7 @@ function Run-Section($section) {
 					Write-Header $type
 					$module = "$env:PicassioModules\$type.psm1"
 					Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
-					Start-Module $colour $variables
+					Start-Module $colour $variables $credentials
 					Remove-Module $type
 				}
 		}
@@ -440,6 +461,17 @@ try {
 
 	# Setup main variables hashtable
 	$variables = @{}
+
+    # Setup credentials
+    $credentials = $null
+    if (![string]::IsNullOrWhiteSpace($username)) {
+        if ($password -eq $null) {
+            $password = [string]::Empty
+        }
+
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        $credentials = New-Object PSCredential($username, $securePassword)
+    }
 
 	# Validate the config file
 	$json = Test-File (Get-Content $palette -Raw)

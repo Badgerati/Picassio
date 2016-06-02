@@ -20,10 +20,10 @@
 #########################################################################
 
 # Creates or removes a directory
-Import-Module $env:PicassioTools -DisableNameChecking
+Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables) {
-	Test-Module $colour $variables
+function Start-Module($colour, $variables, $credentials) {
+	Test-Module $colour $variables $credentials
 
     $path = (Replace-Variables $colour.path $variables).Trim()
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
@@ -55,7 +55,7 @@ function Start-Module($colour, $variables) {
 	Write-Message "'$path' $ensure."
 }
 
-function Test-Module($colour, $variables) {
+function Test-Module($colour, $variables, $credentials) {
 	$path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path)) {
         throw 'No path passed.'
