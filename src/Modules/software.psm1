@@ -9,137 +9,147 @@
 # Example:
 #
 # {
-#	"paint": [
-#		{
-#			"type": "software",
-#			"names": [ "git.install", "atom" ],
-#			"ensure": "installed",
-#			"versions": [ "latest" ]
-#		}
-#	]
+#    "paint": [
+#        {
+#            "type": "software",
+#            "ensure": "installed",
+#            "software": {
+#               "git.install": "latest",
+#               "atom": "1.0.7"
+#            }
+#        }
+#    ]
 # }
 #########################################################################
 
 # Uses Chocolatey to install, upgrade or uninstall the speicified softwares
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+function Start-Module($colour, $variables, $credentials)
+{
+    Test-Module $colour $variables $credentials
 
-	if (!(Test-Software choco.exe)) {
+    # Check to see if Chocolatey is installed, if not then install it
+    if (!(Test-Software choco.exe))
+    {
         Install-Chocolatey
     }
 
-    # Get list of software names
-    $names = $colour.names
+    $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+    $software = $colour.software
+    $keys = $software.psobject.properties.name
 
-    # Get ensured operation for installing/uninstalling
-    $operation = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
-    $operation = $operation.Substring(0, $operation.Length - 2)
+    ForEach ($key in $keys)
+    {
+        # Grab the software we're dealing with currently
+        $key = (Replace-Variables $key $variables).Trim()
 
-    # Get list of versions (or single version for all names)
-    $versions = $colour.versions
-
-	# Provision software
-    for ($i = 0; $i -lt $names.Length; $i++) {
-        $name = (Replace-Variables $names[$i] $variables).Trim()
-        $this_operation = $operation
-
-        # Work out what version we're trying to install
-        if ($versions -eq $null -or $versions.Length -eq 0) {
+        # What version of that software do we need?
+        $version = Replace-Variables $software.$key $variables
+        if ([string]::IsNullOrWhiteSpace($version))
+        {
             $version = 'latest'
         }
-        elseif ($versions.Length -eq 1) {
-            $version = (Replace-Variables $versions[0] $variables).Trim()
+
+        $version = $version.Trim()
+
+        # Store the current ensure value, as this might be changed to upgrade later
+        $current_ensure = $ensure
+
+        # Deal with the ensure value
+        $nothing_to_do = $false
+        switch ($current_ensure)
+        {
+            'install'
+                {
+                    if ($version -ine 'latest')
+                    {
+                        $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$key*$version*" } | Select-Object -First 1)
+
+                        if (![string]::IsNullOrWhiteSpace($result))
+                        {
+                            Write-Information "$key $version is already installed."
+                            $nothing_to_do = $true
+                        }
+                    }
+
+                    if (!$nothing_to_do)
+                    {
+                        $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$key*" } | Select-Object -First 1)
+
+                        if (![string]::IsNullOrWhiteSpace($result))
+                        {
+                            $current_ensure = 'upgrade'
+                        }
+                    }
+                }
+
+            'uninstall'
+                {
+                    $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$key*" } | Select-Object -First 1)
+
+                    if ([string]::IsNullOrWhiteSpace($result))
+                    {
+                        Write-Information "$key is already uninstalled"
+                        $nothing_to_do = $true
+                    }
+                }
         }
-        else {
-            $version = (Replace-Variables $versions[$i] $variables).Trim()
+
+        # If software already (un)installed, skip to next
+        if ($nothing_to_do)
+        {
+            continue
         }
 
-		$continue = $false
-		switch ($this_operation) {
-			'install'
-				{
-					if ($version.ToLower() -ne 'latest') {
-						$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*$version*" } | Select-Object -First 1)
-
-						if (![string]::IsNullOrWhiteSpace($result)) {
-							Write-Information "$name $version is already installed."
-							$continue = $true
-						}
-					}
-
-					if (!$continue) {
-						$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
-
-						if (![string]::IsNullOrWhiteSpace($result)) {
-							$this_operation = 'upgrade'
-						}
-					}
-				}
-
-			'uninstall'
-				{
-					$result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
-
-					if ([string]::IsNullOrWhiteSpace($result)) {
-						Write-Information "$name is already uninstalled"
-						$continue = $true
-					}
-				}
-		}
-
-		if ($continue) {
-			continue
-		}
-
-        if ([string]::IsNullOrWhiteSpace($version) -or $version.ToLower() -eq 'latest' -or $this_operation -eq 'uninstall') {
+        if ($version -ieq 'latest' -or $current_ensure -ieq 'uninstall')
+        {
             $versionTag = [string]::Empty
             $version = [string]::Empty
             $versionStr = 'latest'
         }
-        else {
+        else
+        {
             $versionTag = '--version'
             $versionStr = $version
         }
 
-        Write-Message "$this_operation on $name application starting. Version: $versionStr"
-        choco.exe $this_operation $name $versionTag $version -y
+        Write-Message "Staring $current_ensure of $key, version: $versionStr"
 
-        if (!$?) {
-            throw "Failed to $this_operation the $name software."
-        }
+        Run-Command 'choco.exe' "$current_ensure $key $versionTag $version -y"
 
-        Write-Message "$this_operation on $name application successful."
+        Write-Message "$current_ensure of $key ($versionStr) successful."
         Reset-Path $false
-
-        if ($i -ne ($names.Length - 1)) {
-            Write-NewLine
-        }
+        Write-NewLine
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
-    $names = $colour.names
-    if ($names -eq $null -or $names.Length -eq 0) {
-        throw 'No names supplied for software.'
-    }
-
+function Test-Module($colour, $variables, $credentials)
+{
     # Get ensured operation for installing/uninstalling
-    $operation = Replace-Variables $colour.ensure $variables
-    if ([string]::IsNullOrWhiteSpace($operation)) {
-        throw 'No ensure operation supplied for software.'
+    $ensure = Replace-Variables $colour.ensure $variables
+    $ensures = @('install', 'uninstall')
+    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
+    {
+        throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
     }
 
-    # check we have a valid ensure property
-    $operation = $operation.ToLower().Trim()
-    if ($operation -ne 'installed' -and $operation -ne 'uninstalled') {
-        throw "Invalid ensure parameter supplied for software: '$ensure'."
+    # Check to see if any software was supplied
+    $software = $colour.software
+    if ($software -eq $null)
+    {
+        throw 'No software has been supplied.'
     }
 
-    # Get list of versions (or single version for all names)
-    $versions = $colour.versions
-    if ($versions -ne $null -and $versions.Length -gt 1 -and $versions.Length -ne $names.Length) {
-        throw 'Incorrect number of versions specified. Expected an equal amount to the amount of names speicified.'
+    # Grab the names of the software, ensure we have valid values
+    $keys = $software.psobject.properties.name
+    if ($keys -eq $null -or $keys.Length -eq 0)
+    {
+        throw 'No software names have been supplied.'
+    }
+
+    if (($keys | Where-Object { [string]::IsNullOrWhiteSpace((Replace-Variables $_ $variables)) } | Measure-Object).Count -gt 0)
+    {
+        throw 'Invalid or empty software names found.'
     }
 }

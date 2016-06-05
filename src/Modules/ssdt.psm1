@@ -9,9 +9,9 @@
 # Example:
 #
 # {
-#	"paint": [
-#		{
-#			"type": "ssdt",
+#   "paint": [
+#       {
+#           "type": "ssdt",
 #           "action": "publish",
 #           "path": "C:\\path\\to\\SqlPackage.exe",
 #           "source": "C:\\path\\to\\some\\file.dacpac",
@@ -21,17 +21,17 @@
 #           "dropFirst": false,
 #           "blockOnLoss": true,
 #           "args": "/p:IgnorePermissions=True"
-#		},
-#		{
-#			"type": "ssdt",
+#       },
+#       {
+#           "type": "ssdt",
 #           "action": "script",
 #           "path": "C:\\path\\to\\SqlPackage.exe",
 #           "source": "C:\\path\\to\\some\\file.dacpac",
 #           "output": "C:\\path\\to\\create\\output.sql",
 #           "timeout": 60,
 #           "args": "/p:IgnorePermissions=True"
-#		}
-#	]
+#       }
+#   ]
 # }
 #########################################################################
 
@@ -43,12 +43,12 @@ function Start-Module($colour, $variables, $credentials) {
 
     $path = (Replace-Variables $colour.path $variables).Trim().ToLower()
     if ([string]::IsNullOrWhiteSpace($path)) {
-		Write-Message 'No path supplied, using default.'
-		$path = 'C:\Program Files (x86)\Microsoft SQL Server\110\DAC\bin\SqlPackage.exe'
-	}
-	else {
-		$path = $path.Trim()
-	}
+        Write-Message 'No path supplied, using default.'
+        $path = 'C:\Program Files (x86)\Microsoft SQL Server\110\DAC\bin\SqlPackage.exe'
+    }
+    else {
+        $path = $path.Trim()
+    }
 
     $action = (Replace-Variables $colour.action $variables).Trim().ToLower()
     $source = (Replace-Variables $colour.source $variables).Trim().ToLower()
@@ -98,14 +98,9 @@ function Start-Module($colour, $variables, $credentials) {
         $final_args = "$final_args $_args"
     }
 
-	Write-Message "Attempting to $action SSDT."
+    Write-Message "Attempting to $action SSDT."
 
-    $output = Run-Command $path $final_args
-
-	if ($output -ne $null) {
-		$output | ForEach-Object { Write-Errors $_ }
-		throw "Failed to $action SSDT."
-	}
+    Run-Command $path $final_args
 
     Write-Message "$action of SSDT successful."
 }
@@ -119,8 +114,8 @@ function Test-Module($colour, $variables, $credentials) {
 
     $path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path)) {
-		$path = 'C:\Program Files (x86)\Microsoft SQL Server\110\DAC\bin\SqlPackage.exe'
-	}
+        $path = 'C:\Program Files (x86)\Microsoft SQL Server\110\DAC\bin\SqlPackage.exe'
+    }
 
     if (!(Test-Path ($path.Trim()))) {
         throw "Invalid path to SqlPackage.exe supplied: '$path'."

@@ -26,57 +26,61 @@
 # Use NUnit to run tests
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+function Start-Module($colour, $variables, $credentials)
+{
+    Test-Module $colour $variables $credentials
 
     $path = (Replace-Variables $colour.path $variables).Trim()
-	if (!(Test-Path $path)) {
+    if (!(Test-Path $path))
+    {
         throw "Path to nunit-console.exe does not exist: '$path'"
     }
 
-	$tests = $colour.tests
+    $tests = $colour.tests
 
-	$_args = Replace-Variables $colour.arguments $variables
-	if ($_args -eq $null) {
-		$_args = [string]::Empty
-	}
+    $_args = Replace-Variables $colour.arguments $variables
+    if ($_args -eq $null) {
+        $_args = [string]::Empty
+    }
 
-	ForEach ($test in $tests) {
-		$test = (Replace-Variables $test $variables).Trim()
+    ForEach ($test in $tests)
+    {
+        $test = (Replace-Variables $test $variables).Trim()
 
-		if (!(Test-Path $test)) {
-			throw "Path to test does not exist: '$test'"
-		}
-	}
+        if (!(Test-Path $test))
+        {
+            throw "Path to test does not exist: '$test'"
+        }
+    }
 
-	Write-Information "Arguments: '$_args'."
-	Write-Message 'Running tests.'
+    Write-Information "Arguments: '$_args'."
+    Write-Message 'Running tests.'
 
-	$test_string = Replace-Variables ($tests -join ' ') $variables
-	$output = Run-Command $path "$test_string $_args" $true
+    $test_string = Replace-Variables ($tests -join ' ') $variables
+    Run-Command $path "$test_string $_args"
 
-	if ($output -ne $null) {
-		$output | ForEach-Object { Write-Host $_ }
-		throw 'Some of the tests have failed.'
-	}
-
-	Write-Message 'Tests ran successfully.'
+    Write-Message 'Tests ran successfully.'
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $path = Replace-Variables $colour.path $variables
-	if ([String]::IsNullOrWhiteSpace($path)) {
-		throw 'No path specified to the location of NUint.'
-	}
+    if ([String]::IsNullOrWhiteSpace($path))
+    {
+        throw 'No path specified to the location of NUint.'
+    }
 
-	$tests = $colour.tests
-	if ($tests -eq $null -or $tests.Length -eq 0) {
-		throw 'No tests have been supplied for NUnit.'
-	}
+    $tests = $colour.tests
+    if ($tests -eq $null -or $tests.Length -eq 0)
+    {
+        throw 'No tests have been supplied for NUnit.'
+    }
 
-	ForEach ($test in $tests) {
-		if ([string]::IsNullOrWhiteSpace($test)) {
-			throw 'No path specified for tests.'
-		}
-	}
+    ForEach ($test in $tests)
+    {
+        if ([string]::IsNullOrWhiteSpace($test))
+        {
+            throw 'No path specified for tests.'
+        }
+    }
 }

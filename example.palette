@@ -1,29 +1,31 @@
 {
-	"rollbackOnFail": false,
-	"eraseBeforePaint": false,
+    "rollbackOnFail": false,
+    "eraseBeforePaint": false,
     "paint": [
-		{
-			"type": "variables",
-			"variables": [
-				{ "value1": true },
-				{ "value2": "added" }
-			]
-		},
+        {
+            "type": "variables",
+            "variables": [
+                { "value1": true },
+                { "value2": "added" }
+            ]
+        },
         {
             "type": "credentials"
         },
         {
-        	"type": "software",
-        	"names": [ "git", "curl" ],
-        	"ensure": "installed",
-        	"versions": [ "latest" ]
+            "type": "software",
+            "ensure": "install",
+            "software": {
+                "git": "latest",
+                "curl": "latest"
+            }
         },
         {
-        	"type": "git",
-        	"remote": "https://github.com/Badgerati/Table.git",
-        	"localpath": "C:\\Projects\\PicassoTest",
+            "type": "git",
+            "remote": "https://github.com/Badgerati/Table.git",
+            "localpath": "C:\\Projects\\PicassoTest",
             "localname": "RenamedFolder",
-        	"branchname": "master"
+            "branchname": "master"
         },
         {
             "type": "msbuild",
@@ -90,44 +92,44 @@
             ]
         },
         {
-        	"type": "nunit",
-        	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
-        	"arguments": "/include:UnitTest,PeformanceTest /nologo",
-        	"tests": [
-        		"Example\\Test1.dll",
-        		"Example\\Test2.dll"
-        	]
+            "type": "nunit",
+            "path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            "arguments": "/include:UnitTest,PeformanceTest /nologo",
+            "tests": [
+                "Example\\Test1.dll",
+                "Example\\Test2.dll"
+            ]
         },
         {
-        	"type": "mssql",
-        	"timeout": 60,
-        	"server": "SOME_SERVER_1",
-        	"snapshot": {
-        		"type": "create",
-        		"name": "Example_Snapshot",
-        		"location": "C:\\example\\path",
-        		"database": "[Example]"
-        	}
+            "type": "mssql",
+            "timeout": 60,
+            "server": "SOME_SERVER_1",
+            "snapshot": {
+                "type": "create",
+                "name": "Example_Snapshot",
+                "location": "C:\\example\\path",
+                "database": "[Example]"
+            }
         },
         {
-        	"type": "mssql",
-        	"timeout": 60,
-        	"server": "SOME_SERVER_1",
-        	"backup": {
-        		"type": "restore",
-        		"location": "C:\\example\\path",
-        		"database": "[Example]",
-        		"sqlpath": "C:\\"
-        	}
+            "type": "mssql",
+            "timeout": 60,
+            "server": "SOME_SERVER_1",
+            "backup": {
+                "type": "restore",
+                "location": "C:\\example\\path",
+                "database": "[Example]",
+                "sqlpath": "C:\\"
+            }
         },
         {
-        	"type": "mssql",
-        	"timeout": 60,
-        	"server": "SOME_SERVER_1",
-        	"sqlpsPath": "C:\\Program Files (x86)\\Microsoft SQL Server\\100\\Tools\\Binn\\",
-        	"sql": {
-        		"query": "SELECT COUNT(1) FROM [Example]"
-        	}
+            "type": "mssql",
+            "timeout": 60,
+            "server": "SOME_SERVER_1",
+            "sqlpsPath": "C:\\Program Files (x86)\\Microsoft SQL Server\\100\\Tools\\Binn\\",
+            "sql": {
+                "query": "SELECT COUNT(1) FROM [Example]"
+            }
         },
         {
             "type": "certificate",
@@ -147,10 +149,13 @@
         }
     ],
     "erase": [
-    	{
-        	"type": "software",
-        	"names": [ "git", "curl" ],
-        	"ensure": "uninstalled"
+        {
+            "type": "software",
+            "ensure": "uninstall",
+            "software": {
+                "git": "",
+                "curl": ""
+            }
         },
         {
             "type": "hosts",

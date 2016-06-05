@@ -9,15 +9,15 @@
 # Example:
 #
 # {
-#	"paint": [
-#		{
-#			"type": "svn",
-#			"url": "https://url.to.some.svn",
-#			"path": "C:\\path\\to\\local\\svn",
-#			"name": "LocalName",
-#			"revision": "12345"
-#		}
-#	]
+#    "paint": [
+#        {
+#            "type": "svn",
+#            "url": "https://url.to.some.svn",
+#            "path": "C:\\path\\to\\local\\svn",
+#            "name": "LocalName",
+#            "revision": "12345"
+#        }
+#    ]
 # }
 #########################################################################
 
@@ -25,7 +25,7 @@
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
 function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+    Test-Module $colour $variables $credentials
 
     if (!(Test-Software svn.exe 'svn')) {
         Write-Errors 'SVN is not installed'
@@ -41,41 +41,40 @@ function Start-Module($colour, $variables, $credentials) {
 
     $name = (Replace-Variables $colour.localname $variables).Trim()
     $revision = Replace-Variables $colour.revision $variables
-	if ($revision -ne $null) {
-		$revision = $revision.Trim()
-	}
+    if ($revision -ne $null) {
+        $revision = $revision.Trim()
+    }
 
     # Delete existing directory
     Push-Location $path
-    if ((Test-Path $name)) {
-        Backup-Directory $name
-    }
 
-    # checkout
-    Write-Message "Checking out SVN repository from '$url' to '$path'."
-    svn.exe checkout $url $name
-
-    if (!$?) {
-        Pop-Location
-        throw 'Failed to checkout SVN repository.'
-    }
-
-    # reset to revision
-    if (![string]::IsNullOrWhiteSpace($revision)) {
-        Write-Message "Resetting local repository to revision $revision."
-        Push-Location $name
-        svn.exe up -r $revision
-
-        if (!$?) {
-            Pop-Location
-            Pop-Location
-            throw "Failed to reset repository to revision $revision."
+    try {
+        if ((Test-Path $name)) {
+            Backup-Directory $name
         }
-    }
 
-    Pop-Location
-    Pop-Location
-    Write-Message 'SVN checkout was successful.'
+        # checkout
+        Write-Message "Checking out SVN repository from '$url' to '$path'."
+        Run-Command 'svn.exe' "checkout $url $name"
+
+        # reset to revision
+        if (![string]::IsNullOrWhiteSpace($revision)) {
+            Write-Message "Resetting local repository to revision $revision."
+            Push-Location $name
+
+            try {
+                Run-Command 'svn.exe' "up -r $revision"
+            }
+            finally {
+                Pop-Location
+            }
+        }
+
+        Write-Message 'SVN checkout was successful.'
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 function Test-Module($colour, $variables, $credentials) {

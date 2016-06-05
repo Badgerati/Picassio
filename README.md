@@ -99,40 +99,70 @@ Picassio does have support for username/password credentials should you require 
 The credentials are passed to every `Start-Module`, `Test-Module`, `Start-Extension` and `Test-Extension` call, and does have the possibility of being null.
 
 
+Palette Settings
+----------------
+A palette has two sections: a paint and an erase section. The paint section is designed to deploy and provision the machine, where as the erase section should roll the machine back to a state before it was painted.
+
+When painting the machine it is possible for it to fail, and then you're left in a malformed state. Or what if you wish to roll everything back, and then paint the machine.
+
+Well, Picassio has the following three settings that can be supplied at the top of a palette:
+
+* rollbackOnFail: Runs the opposite section to the one that was just attempted, if the current one fails to run successfully.
+* eraseBeforePaint: Runs the erase section first, before painting the current machine.
+* eraseAfterPaint: Mostly for testing purposes, but will erase the machine after it has been painted.
+
+```json
+{
+    "rollbackOnFail": true,
+    "eraseBeforePaint": false,
+    "eraseAfterPaint": false,
+    "paint": [
+        "..."
+    ],
+    "erase": [
+        "..."
+    ]
+}
+```
+
+If none of the settings are supplied, then they are all defaulted to false.
+
+
 Installing Software
 -------------------
 This example palette will install Git onto the computer that Picassio is run:
 ```json
 {
-	"paint": [
-		{
-			"type": "software",
-			"names": [ "git" ],
-			"ensure": "installed",
-			"versions": [ "latest" ]
-		}
-	]
+    "paint": [
+        {
+            "type": "software",
+            "ensure": "install",
+            "software": {
+                "git": "latest"
+            }
+        }
+    ]
 }
 ```
-The above palette will ensure that Git is installed, and is installed up to the latest version (that is available to Chocolatey). If you wish to install a specific version of Git, then you would supply the version such as "versions": [ "1.8.3" ].
+The above palette will ensure that Git is installed, and is installed up to the latest version (that is available to Chocolatey). If you wish to install a specific version of Git, then you would supply the version such as `"git": "1.8.3"`.
 
 If the version key is not supplied, then the install will default to the latest version. If you try to install software that is already installed, then Picassio will upgrade the software to what ever version you supply. If the version is less than the one installed then nothing will happen; so first you'll have to uninstall then re-install.
-
-If you specify multiple names to install such as '"names": [ "git", "curl" ]', then you must either specify all possible versions. If you omit the versions key then all software will be installed to the latest version. Specifying one version means all software will attempt to be installed to that version.
 
 If you instead wish to uninstall some software (so long as it was originally installed by Chocolately), then the following example palette will uninstall, say, Git
 ```json
 {
-	"paint": [
-		{
-			"type": "software",
-			"names": [ "git" ],
-			"ensure": "uninstalled"
-		}
-	]
+    "paint": [
+        {
+            "type": "software",
+            "ensure": "uninstall",
+            "software": {
+                "git": ""
+            }
+        }
+    ]
 }
 ```
-Here you'll notice that the version key is not required, as you're uninstalling software.
+Here you'll notice that the version is not required, as you're uninstalling software.
 
 
 Cloning a Branch from Git
@@ -140,15 +170,15 @@ Cloning a Branch from Git
 Picassio has the ability to clone a branch from any Git server. Simply supply the remote path to your branch as well as the branch's name, along with a local path/name to which to clone, and Picassio will pull down the branch for you.
 ```json
 {
-	"paint": [
-		{
-			"type": "git",
-			"remote": "https://path/to/some/branch.git",
-			"localpath": "C:\\path\\to\\place\\branch",
-			"localname": "NewBranch",
-			"branchname": "master"
-		}
-	]
+    "paint": [
+        {
+            "type": "git",
+            "remote": "https://path/to/some/branch.git",
+            "localpath": "C:\\path\\to\\place\\branch",
+            "localname": "NewBranch",
+            "branchname": "master"
+        }
+    ]
 }
 ```
 This will pull down our master branch, an rename the auto-created folder to be "NewBranch" at the specified local path. If Picassio sees that the local folder already exists, the current one is renamed with the current date appended.
@@ -161,15 +191,15 @@ Picassio is able to build a .NET project/solution using MSBuild (so long as the 
 To clean the projects before building, you can pass true to the "clean" parameter:
 ```json
 {
-	"paint": [
-		{
-			"type": "msbuild",
-			"path": "C:\\path\\to\\your\\msbuild.exe",
-			"projects": [ "C:\\path\\to\\your\\project.csproj" ],
-			"arguments": "/p:Configuration=Debug",
-			"clean": true
-		}
-	]
+    "paint": [
+        {
+            "type": "msbuild",
+            "path": "C:\\path\\to\\your\\msbuild.exe",
+            "projects": [ "C:\\path\\to\\your\\project.csproj" ],
+            "arguments": "/p:Configuration=Debug",
+            "clean": true
+        }
+    ]
 }
 ```
 
@@ -179,18 +209,18 @@ Running Specific Commands
 For the things that Picassio doesn't do, such as renaming folders or if you wish to run an inhouse script, you can use the command type colour to run commands from the prompt. You have the option of either Command Prompt or PowerShell, and you can run any command you wish.
 ```json
 {
-	"paint": [
-		{
-			"type": "command",
-			"prompt": "cmd",
-			"command": "echo Hello, world!"
-		},
-		{
-			"type": "command",
-			"prompt": "powershell",
-			"command": "echo 'Hello, world again!'"
-		}
-	]
+    "paint": [
+        {
+            "type": "command",
+            "prompt": "cmd",
+            "command": "echo Hello, world!"
+        },
+        {
+            "type": "command",
+            "prompt": "powershell",
+            "command": "echo 'Hello, world again!'"
+        }
+    ]
 }
 ```
 
@@ -202,28 +232,28 @@ Something else Picassio can do it install/uninstall and stop/start Windows servi
 The following palette will install and start a service.
 ```json
 {
-	"paint": [
-		{
-			"type": "service",
-			"name": "Test Service",
-			"path": "C:\\absolute\\path\\to\\your\\service.exe",
-			"ensure": "installed",
-			"state": "started"
-		}
-	]
+    "paint": [
+        {
+            "type": "service",
+            "name": "Test Service",
+            "path": "C:\\absolute\\path\\to\\your\\service.exe",
+            "ensure": "installed",
+            "state": "started"
+        }
+    ]
 }
 ```
 
 The following palette will uninstall a service.
 ```json
 {
-	"paint": [
-		{
-			"type": "service",
-			"name": "Test Service",
-			"ensure": "uninstalled"
-		}
-	]
+    "paint": [
+        {
+            "type": "service",
+            "name": "Test Service",
+            "ensure": "uninstalled"
+        }
+    ]
 }
 ```
 
@@ -245,33 +275,33 @@ You can also specify files/folders to include/exclude using:
 The following palette will copy a folder, and then backup a file within it:
 ```json
 {
-	"paint": [
-		{
-			"type": "copy",
-			"from": "C:\\path\\to\\some\\folder",
-			"to": "C:\\path\\to\\some\\other\\folder"
-		},
-		{
-			"type": "copy",
-			"from": "C:\\path\\to\\some\\other\\folder\\test.txt",
-			"to": "C:\\path\\to\\some\\other\\folder\\backups\\test.txt"
-		}
-	]
+    "paint": [
+        {
+            "type": "copy",
+            "from": "C:\\path\\to\\some\\folder",
+            "to": "C:\\path\\to\\some\\other\\folder"
+        },
+        {
+            "type": "copy",
+            "from": "C:\\path\\to\\some\\other\\folder\\test.txt",
+            "to": "C:\\path\\to\\some\\other\\folder\\backups\\test.txt"
+        }
+    ]
 }
 ```
 
 The following palette will copy a folder, excluding html/js files; but including a src folder only:
 ```json
 {
-	"paint": [
-		{
-			"type": "copy",
-			"from": "C:\\path\\to\\some\\folder",
-			"to": "C:\\path\\to\\some\\other\\folder",
-			"excludeFiles": [ "*.html", "*.js" ],
-			"includeFolders": [ "src" ]
-		}
-	]
+    "paint": [
+        {
+            "type": "copy",
+            "from": "C:\\path\\to\\some\\folder",
+            "to": "C:\\path\\to\\some\\other\\folder",
+            "excludeFiles": [ "*.html", "*.js" ],
+            "includeFolders": [ "src" ]
+        }
+    ]
 }
 ```
 
@@ -291,13 +321,13 @@ from with a Picassio palette. You will need to supply a path to where a Vagrantf
 The following palette with navigate to a folder, and call "vagrant up":
 ```json
 {
-	"paint": [
-		{
-			"type": "vagrant",
-			"path": "C:\\path\\to\\project",
-			"command": "up"
-		}
-	]
+    "paint": [
+        {
+            "type": "vagrant",
+            "path": "C:\\path\\to\\project",
+            "command": "up"
+        }
+    ]
 }
 ```
 
@@ -311,27 +341,27 @@ When removing, if you supply only either the IP or Hostname, all lines with that
 The following palette will add an entry to the hosts
 ```json
 {
-	"paint": [
-		{
-			"type": "hosts",
-			"ensure": "added",
-			"ip": "127.0.0.3",
-			"hostname": "test.local.com"
-		}
-	]
+    "paint": [
+        {
+            "type": "hosts",
+            "ensure": "added",
+            "ip": "127.0.0.3",
+            "hostname": "test.local.com"
+        }
+    ]
 }
 ```
 
 The following will remove all entries with the passed IP
 ```json
 {
-	"paint": [
-		{
-			"type": "hosts",
-			"ensure": "removed",
-			"ip": "127.0.0.3"
-		}
-	]
+    "paint": [
+        {
+            "type": "hosts",
+            "ensure": "removed",
+            "ip": "127.0.0.3"
+        }
+    ]
 }
 ```
 
@@ -348,26 +378,26 @@ The following palette will setup an entry into the hosts file, and also create a
 ```json
 {
     "paint": [
-    	{
-    		"type": "hosts",
-    		"ensure": "added",
-    		"ip": "127.0.0.2",
-    		"hostname": "test.site.com"
-    	},
         {
-        	"type": "iis",
-        	"ensure": "added",
-        	"state": "started",
-        	"siteName": "Test Website",
-        	"appPoolName": "Test Website",
-        	"path": "C:\\Website\\TestWebsite",
-        	"bindings": [
-        		{
-        			"ip": "127.0.0.2",
-	            	"port": "80",
-	            	"protocol": "http"
-        		}
-        	]
+            "type": "hosts",
+            "ensure": "added",
+            "ip": "127.0.0.2",
+            "hostname": "test.site.com"
+        },
+        {
+            "type": "iis",
+            "ensure": "added",
+            "state": "started",
+            "siteName": "Test Website",
+            "appPoolName": "Test Website",
+            "path": "C:\\Website\\TestWebsite",
+            "bindings": [
+                {
+                    "ip": "127.0.0.2",
+                    "port": "80",
+                    "protocol": "http"
+                }
+            ]
         }
     ]
 }
@@ -385,12 +415,12 @@ The following palette will add an http binding to a website. This is rather simi
 {
     "paint": [
         {
-        	"type": "iis-binding",
-        	"ensure": "added",
-        	"siteName": "Test Website",
-        	"ip": "127.0.0.2",
-	        "port": "80",
-	        "protocol": "http"
+            "type": "iis-binding",
+            "ensure": "added",
+            "siteName": "Test Website",
+            "ip": "127.0.0.2",
+            "port": "80",
+            "protocol": "http"
         }
     ]
 }
@@ -406,17 +436,17 @@ Picassio supports the ability to test your applications via NUnit from a Picassi
 The following palette with navigate to NUnit, and then run the tests. Picassio by default will just call NUnit for the specified tests. If you wish to pass any further arguments then you may use the "arguments" parameter like below:
 ```json
 {
-	"paint": [
-		{
-        	"type": "nunit",
-        	"path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
-        	"arguments": "/include:UnitTest,PeformanceTest /nologo",
-        	"tests": [
-        		"Example\\Test1.dll",
-        		"Example\\Test2.dll"
-        	]
+    "paint": [
+        {
+            "type": "nunit",
+            "path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            "arguments": "/include:UnitTest,PeformanceTest /nologo",
+            "tests": [
+                "Example\\Test1.dll",
+                "Example\\Test2.dll"
+            ]
         }
-	]
+    ]
 }
 ```
 If any of the tests fail (or NUnit fails), then Picassio will be aborted.
@@ -445,15 +475,15 @@ function Start-Extension($colour, $variables, $credentials) {
     Test-Extension $colour $variables $credentials
 
     # Main logic
-	Write-Message 'Echo text supplied.'
-	$text = $colour.text
-	Write-Host $test
+    Write-Message 'Echo text supplied.'
+    $text = $colour.text
+    Write-Host $test
 }
 
 function Test-Extension($colour, $variables, $credentials) {
-	if ([string]::IsNullOrWhiteSpace($colour.text)) {
-		throw 'No text supplied to echo.'
-	}
+    if ([string]::IsNullOrWhiteSpace($colour.text)) {
+        throw 'No text supplied to echo.'
+    }
 }
 ```
 
@@ -480,9 +510,9 @@ The palette for this will look like the following
 {
     "paint": [
         {
-        	"type": "extension",
-        	"extension": "echo",
-        	"text": "Hello, world!"
+            "type": "extension",
+            "extension": "echo",
+            "text": "Hello, world!"
         }
     ]
 }

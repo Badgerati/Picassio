@@ -9,12 +9,12 @@
 # Example:
 #
 # {
-#	"paint": [
-#		{
-#			"type": "echo",
-#			"text": "Hello, world!"
-#		}
-#	]
+#    "paint": [
+#        {
+#            "type": "echo",
+#            "text": "Hello, world!"
+#        }
+#    ]
 # }
 #########################################################################
 
@@ -22,10 +22,10 @@
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
 function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+    Test-Module $colour $variables $credentials
 
-	$text = Replace-Variables $colour.text $variables
-	Write-Host $text
+    $text = Replace-Variables $colour.text $variables
+    Write-Host $text
 
     if (!$?) {
         throw "Failed to echo: '$text'."
@@ -33,7 +33,7 @@ function Start-Module($colour, $variables, $credentials) {
 }
 
 function Test-Module($colour, $variables, $credentials) {
-	$text = Replace-Variables $colour.text $variables
+    $text = Replace-Variables $colour.text $variables
     if ([string]::IsNullOrWhiteSpace($text)) {
         throw 'No text passed to echo.'
     }
