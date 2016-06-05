@@ -12,7 +12,7 @@
 #    "paint": [
 #        {
 #            "type": "software",
-#            "ensure": "installed",
+#            "ensure": "install",
 #            "software": {
 #               "git.install": "latest",
 #               "atom": "1.0.7"
