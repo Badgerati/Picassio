@@ -135,7 +135,7 @@ This example palette will install Git onto the computer that Picassio is run:
 {
     "paint": [
         {
-            "type": "software",
+            "type": "chocolatey",
             "ensure": "install",
             "software": {
                 "git": "latest"
@@ -153,7 +153,7 @@ If you instead wish to uninstall some software (so long as it was originally ins
 {
     "paint": [
         {
-            "type": "software",
+            "type": "chocolatey",
             "ensure": "uninstall",
             "software": {
                 "git": ""

@@ -13,7 +13,7 @@
             "type": "credentials"
         },
         {
-            "type": "software",
+            "type": "chocolatey",
             "ensure": "install",
             "software": {
                 "git": "latest",
@@ -150,7 +150,7 @@
     ],
     "erase": [
         {
-            "type": "software",
+            "type": "chocolatey",
             "ensure": "uninstall",
             "software": {
                 "git": "",

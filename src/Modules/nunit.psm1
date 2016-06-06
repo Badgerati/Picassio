@@ -33,7 +33,7 @@ function Start-Module($colour, $variables, $credentials)
     $path = (Replace-Variables $colour.path $variables).Trim()
     if (!(Test-Path $path))
     {
-        throw "Path to nunit-console.exe does not exist: '$path'"
+        throw "Path to nunit-console.exe does not exist: '$path'."
     }
 
     $tests = $colour.tests
@@ -49,7 +49,7 @@ function Start-Module($colour, $variables, $credentials)
 
         if (!(Test-Path $test))
         {
-            throw "Path to test does not exist: '$test'"
+            throw "Path to test does not exist: '$test'."
         }
     }
 
@@ -78,6 +78,8 @@ function Test-Module($colour, $variables, $credentials)
 
     ForEach ($test in $tests)
     {
+        $test = Replace-Variables $test $variables
+
         if ([string]::IsNullOrWhiteSpace($test))
         {
             throw 'No path specified for tests.'

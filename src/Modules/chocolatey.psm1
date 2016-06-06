@@ -11,7 +11,7 @@
 # {
 #    "paint": [
 #        {
-#            "type": "software",
+#            "type": "chocolatey",
 #            "ensure": "install",
 #            "software": {
 #               "git.install": "latest",

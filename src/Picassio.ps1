@@ -137,7 +137,7 @@ function Test-Section($section, $name)
                         }
 
                         Test-Extension $colour $variables $credentials
-                        Remove-Module $extensionName
+                        Remove-Module $extensionName -ErrorAction Stop
                     }
 
                 default
@@ -162,7 +162,7 @@ function Test-Section($section, $name)
                         }
 
                         Test-Module $colour $variables $credentials
-                        Remove-Module $type
+                        Remove-Module $type -ErrorAction Stop
                     }
             }
         }
@@ -399,12 +399,22 @@ function Run-Section($section)
         Write-NewLine
 
         $type = $colour.type.ToLower()
+
+        if ($type -ieq 'extension')
+        {
+            Write-Header ("{0} (ext)" -f $colour.extension)
+        }
+        else
+        {
+            Write-Header $type
+        }
+
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
         $description = $colour.description
         if (![String]::IsNullOrWhiteSpace($description))
         {
-            Write-Information $description
+            Write-Information "[$description]"
         }
 
         switch ($type)
@@ -413,8 +423,6 @@ function Run-Section($section)
                 {
                     if ($credentials -eq $null)
                     {
-                        Write-Header $type
-
                         $message = $colour.message
                         if ([string]::IsNullOrWhiteSpace($message))
                         {
@@ -435,25 +443,23 @@ function Run-Section($section)
             'extension'
                 {
                     $extensionName = $colour.extension
-                    Write-Header "$extensionName (ext)"
                     $extension = "$env:PicassioExtensions\$extensionName.psm1"
-                    Import-Module $extension -DisableNameChecking -ErrorAction SilentlyContinue
+                    Import-Module $extension -DisableNameChecking -ErrorAction Stop
                     Start-Extension $colour $variables $credentials
-                    Remove-Module $extensionName
+                    Remove-Module $extensionName -ErrorAction Stop
                 }
 
             default
                 {
-                    Write-Header $type
                     $module = "$env:PicassioModules\$type.psm1"
-                    Import-Module $module -DisableNameChecking -ErrorAction SilentlyContinue
+                    Import-Module $module -DisableNameChecking -ErrorAction Stop
                     Start-Module $colour $variables $credentials
-                    Remove-Module $type
+                    Remove-Module $type -ErrorAction Stop
                 }
         }
 
         # Report import the picassio tools module
-        Import-Module $modulePath -DisableNameChecking
+        Import-Module $modulePath -DisableNameChecking -ErrorAction Stop
         Reset-Path
 
         Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
