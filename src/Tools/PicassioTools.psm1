@@ -331,12 +331,12 @@ function Test-Win64()
 # Runs the passed command and arguments. If fails displays the last 200 lines of output
 function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $false)
 {
-    Write-Information "Running command: '$command'."
+    Write-Information "Running command: '$command $_args'."
 
     if ($isPowershell)
     {
-        $output = (powershell.exe /C "`"$command`" $_args")
-
+        $output = powershell.exe /C "`"$command`" $_args"
+        
         if (!$?)
         {
             if ($output -ne $null)
@@ -354,7 +354,7 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
     }
     else
     {
-        $output = (cmd.exe /C "`"$command`" $_args")
+        $output = cmd.exe /C "`"$command`" $_args"
 
         if ($LASTEXITCODE -ne 0)
         {
