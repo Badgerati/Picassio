@@ -1,0 +1,14 @@
+{
+    "paint": [
+        {
+            "type": "command",
+            "prompt": "powershell",
+            "command": "Write-Host 'Hello, world!'"
+        },
+        {
+            "type": "command",
+            "prompt": "cmd",
+            "command": "echo Hello, world again!"
+        }
+    ]
+}

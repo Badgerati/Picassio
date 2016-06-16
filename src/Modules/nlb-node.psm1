@@ -43,7 +43,8 @@
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 Import-Module NetworkLoadBalancingClusters -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
+function Start-Module($colour, $variables, $credentials)
+{
     Test-Module $colour $variables $credentials
 
     $ensure = (Replace-Variables $colour.ensure $variables).Trim().ToLower()
@@ -51,16 +52,19 @@ function Start-Module($colour, $variables, $credentials) {
     $drain = Replace-Variables $colour.drain $variables
 
     $timeout = Replace-Variables $colour.timeout $variables
-    if ([string]::IsNullOrWhiteSpace($timeout)) {
+    if ([string]::IsNullOrWhiteSpace($timeout))
+    {
         $timeout = 30
     }
 
-    ForEach ($node in $nodes) {
+    ForEach ($node in $nodes)
+    {
         $node = (Replace-Variables $node $variables).Trim()
 
-    	Write-Message "Attempting to set the $node node as $ensure."
+        Write-Message "Attempting to set the $node node as $ensure."
 
-        switch ($ensure) {
+        switch ($ensure)
+        {
             'added'
                 {
                     $cluster = (Replace-Variables $colour.cluster $variables).Trim()
@@ -99,42 +103,51 @@ function Start-Module($colour, $variables, $credentials) {
                 }
         }
 
-    	if (!$?) {
-    		throw "Failed to load balance the $node node as $ensure."
-    	}
+        if (!$?)
+        {
+            throw "Failed to load balance the $node node as $ensure."
+        }
 
         Write-Message "$node node $ensure successfully."
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $ensure = Replace-Variables $colour.ensure $variables
     $ensures = @('stopped', 'started', 'added', 'removed', 'resumed', 'suspended')
-    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim())) {
+    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
+    {
         throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
     }
 
     $nodes = $colour.nodes
-	if ($nodes -eq $null -or $nodes.Length -eq 0) {
-		throw 'No nodes to load balance specified.'
-	}
+    if ($nodes -eq $null -or $nodes.Length -eq 0)
+    {
+        throw 'No nodes to load balance specified.'
+    }
 
-	ForEach ($node in $nodes) {
+    ForEach ($node in $nodes)
+    {
         $node = Replace-Variables $node $variables
 
-		if ([string]::IsNullOrWhiteSpace($node)) {
-			throw 'Cannot pass an empty node name for load balancing.'
-		}
-	}
+        if ([string]::IsNullOrWhiteSpace($node))
+        {
+            throw 'Cannot pass an empty node name for load balancing.'
+        }
+    }
 
-    if ($ensure -ieq 'added') {
+    if ($ensure -ieq 'added')
+    {
         $cluster = Replace-Variables $colour.cluster $variables
-        if ([string]::IsNullOrWhiteSpace($cluster)) {
+        if ([string]::IsNullOrWhiteSpace($cluster))
+        {
             throw 'No cluster name specified when adding new node to load balance.'
         }
 
         $interface = Replace-Variables $colour.interface $variables
-        if ([string]::IsNullOrWhiteSpace($interface)) {
+        if ([string]::IsNullOrWhiteSpace($interface))
+        {
             throw 'No interface type specified when adding new node to load balance.'
         }
     }

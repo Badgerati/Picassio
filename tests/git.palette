@@ -1,0 +1,38 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "directory",
+            "ensure": "exists",
+            "path": "C:\\Tests"
+        },
+        {
+            "type": "chocolatey",
+            "ensure": "install",
+            "software": {
+                "git.install": ""
+            }
+        },
+        {
+            "type": "git",
+            "remote": "https://github.com/Badgerati/Picassio.git",
+            "localpath": "C:\\Tests",
+            "localname": "PicassioRenamed",
+            "branchname": "master"
+        }
+    ],
+    "erase": [
+        {
+            "type": "directory",
+            "ensure": "removed",
+            "path": "C:\\Tests\\PicassioRenamed"
+        },
+        {
+            "type": "chocolatey",
+            "ensure": "uninstall",
+            "software": {
+                "git.install": ""
+            }
+        }
+    ]
+}

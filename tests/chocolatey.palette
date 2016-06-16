@@ -1,0 +1,31 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "chocolatey",
+            "description": "Test to install edison",
+            "ensure": "install",
+            "software": {
+                "edison": "latest"
+            }
+        },
+        {
+            "type": "chocolatey",
+            "description": "Test to attempt to install edison again",
+            "ensure": "install",
+            "software": {
+                "edison": "latest"
+            }
+        }
+    ],
+    "erase": [
+        {
+            "type": "chocolatey",
+            "description": "Test to uninstall edison",
+            "ensure": "uninstall",
+            "software": {
+                "edison": ""
+            }
+        }
+    ]
+}

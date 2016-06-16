@@ -24,52 +24,64 @@
 # Clones the remote repository into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
+function Start-Module($colour, $variables, $credentials)
+{
     Test-Module $colour $variables $credentials
 
-    if (!(Test-Software git.exe 'git')) {
+    # Check to see if git is installed, if not then install it
+    if (!(Test-Software 'git --version' 'git'))
+    {
         Write-Errors 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 
     $url = (Replace-Variables $colour.remote $variables).Trim()
-    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
+    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git'))
+    {
         throw "Remote git repository of '$url' is not valid."
     }
 
     $directory = $matches['repo']
 
     $path = (Replace-Variables $colour.localpath $variables).Trim()
-    if (!(Test-Path $path)) {
+    if (!(Test-Path $path))
+    {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
     $branch = Replace-Variables $colour.branchname $variables
-    if ([string]::IsNullOrWhiteSpace($branch)) {
+    if ([string]::IsNullOrWhiteSpace($branch))
+    {
         $branch = 'master'
     }
-    else {
+    else
+    {
         $branch = $branch.Trim()
     }
 
     $commit = Replace-Variables $colour.commit $variables
-    if ($commit -ne $null) {
+    if ($commit -ne $null)
+    {
         $commit = $commit.Trim()
     }
 
     $name = Replace-Variables $colour.localname $variables
-    if ($name -ne $null) {
+    if ($name -ne $null)
+    {
         $name = $name.Trim()
     }
 
     # delete directory if exists
     Push-Location $path
 
-    try {
-        if ((Test-Path $directory)) {
+    try
+    {
+        if ((Test-Path $directory))
+        {
             Backup-Directory $directory
         }
-        elseif (![string]::IsNullOrWhiteSpace($name) -and (Test-Path $name)) {
+        elseif (![string]::IsNullOrWhiteSpace($name) -and (Test-Path $name))
+        {
             Backup-Directory $name
         }
 
@@ -78,9 +90,11 @@ function Start-Module($colour, $variables, $credentials) {
         Run-Command 'git.exe' "clone $url"
 
         # rename
-        if (![string]::IsNullOrWhiteSpace($name)) {
+        if (![string]::IsNullOrWhiteSpace($name))
+        {
             Rename-Item $directory $name | Out-Null
-            if (!$?) {
+            if (!$?)
+            {
                 throw "Rename of directory from '$directory' to '$name' failed."
             }
 
@@ -92,44 +106,53 @@ function Start-Module($colour, $variables, $credentials) {
         Write-Message "Checking out the '$branch' branch."
         Push-Location $directory
 
-        try {
+        try
+        {
             Run-Command 'git.exe' "checkout $branch"
 
             # reset
-            if (![string]::IsNullOrWhiteSpace($commit)) {
+            if (![string]::IsNullOrWhiteSpace($commit))
+            {
                 Write-Message "Resetting local repository to the $commit commit."
                 Run-Command 'git.exe' "reset --hard $commit"
             }
 
             Write-Message 'Git clone was successful.'
         }
-        finally {
+        finally
+        {
             Pop-Location
         }
     }
-    finally {
+    finally
+    {
         Pop-Location
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $url = Replace-Variables $colour.remote $variables
-    if ($url -eq $null) {
+    if ($url -eq $null)
+    {
         $url = [string]::Empty
     }
 
     $url = $url.Trim()
 
-    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git')) {
+    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git'))
+    {
         throw "Remote git repository of '$url' is not valid."
     }
 
     $path = Replace-Variables $colour.localpath $variables
-    if ($path -ne $null) {
+    if ($path -ne $null)
+    {
         $path = $path.Trim()
     }
 
-    if ([string]::IsNullOrWhiteSpace($path)) {
+    if ([string]::IsNullOrWhiteSpace($path))
+    {
         throw 'No local git repository path specified.'
     }
 }

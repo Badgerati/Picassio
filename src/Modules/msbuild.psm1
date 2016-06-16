@@ -27,15 +27,18 @@
 # Use MSBuild to build a project or solution
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
+function Start-Module($colour, $variables, $credentials)
+{
     Test-Module $colour $variables $credentials
 
     $path = Replace-Variables $colour.path $variables
-    if ([string]::IsNullOrWhiteSpace($path)) {
+    if ([string]::IsNullOrWhiteSpace($path))
+    {
         Write-Message 'No path supplied, using default.'
         $path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
     }
-    else {
+    else
+    {
         $path = $path.Trim()
     }
 
@@ -43,19 +46,23 @@ function Start-Module($colour, $variables, $credentials) {
     $clean = Replace-Variables $colour.clean $variables
 
     $_args = Replace-Variables $colour.arguments $variables
-    if ([string]::IsNullOrWhiteSpace($_args)) {
+    if ([string]::IsNullOrWhiteSpace($_args))
+    {
         $_args = [string]::Empty
     }
 
-    ForEach ($project in $projects) {
+    ForEach ($project in $projects)
+    {
         $project = (Replace-Variables $project $variables).Trim()
-        if (!(Test-Path $project)) {
+        if (!(Test-Path $project))
+        {
             throw "Path to project for building does not exist: '$project'."
         }
 
         Push-Location (Split-Path $project -Parent)
 
-        try {
+        try
+        {
             $file = (Split-Path $project -Leaf)
 
             Write-SubHeader "$file"
@@ -63,7 +70,8 @@ function Start-Module($colour, $variables, $credentials) {
 
             $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-            if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true) {
+            if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true)
+            {
                 Write-Host 'Cleaning...'
                 Build-Project $path "/p:Configuration=Debug /t:Clean $project"
                 Build-Project $path "/p:Configuration=Release /t:Clean $project"
@@ -76,40 +84,49 @@ function Start-Module($colour, $variables, $credentials) {
             Write-Message "Project built successfully."
             Write-NewLine
         }
-        finally {
+        finally
+        {
             Pop-Location
         }
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $path = Replace-Variables $colour.path $variables
-    if ([string]::IsNullOrWhiteSpace($path)) {
+    if ([string]::IsNullOrWhiteSpace($path))
+    {
         $path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
     }
 
-    if (!(Test-Path ($path.Trim()))) {
+    if (!(Test-Path ($path.Trim())))
+    {
         throw "Invalid path to MSBuild.exe supplied: '$path'."
     }
 
     $clean = Replace-Variables $colour.clean $variables
-    if (![string]::IsNullOrWhiteSpace($clean) -and $clean -ne $true -and $clean -ne $false) {
+    if (![string]::IsNullOrWhiteSpace($clean) -and $clean -ne $true -and $clean -ne $false)
+    {
         throw "Invalid value for clean: '$clean'. Should be either true or false."
     }
 
     $projects = $colour.projects
-    if ($projects -eq $null -or $projects.Length -eq 0) {
+    if ($projects -eq $null -or $projects.Length -eq 0)
+    {
         throw 'No projects have been supplied for MSBuild.'
     }
 
-    ForEach ($project in $projects) {
-        if ([string]::IsNullOrWhiteSpace($project)) {
+    ForEach ($project in $projects)
+    {
+        if ([string]::IsNullOrWhiteSpace($project))
+        {
             throw 'No path specified to build project.'
         }
     }
 }
 
 
-function Build-Project($command, $_args) {
+function Build-Project($command, $_args)
+{
     Run-Command $command $_args
 }

@@ -12,7 +12,7 @@
 # Returns the current version of Picassio
 function Get-Version()
 {
-    return 'v0.9.8a'
+    return '0.9.10'
 }
 
 # Writes the help manual to the console
@@ -46,7 +46,7 @@ function Write-Help()
 function Write-Version()
 {
     $version = Get-Version
-    Write-Host "Picassio $version" -ForegroundColor Green
+    Write-Host "Picassio v$version" -ForegroundColor Green
 }
 
 # Wipes a given directory
@@ -194,27 +194,27 @@ function Test-Software($command, $name = $null)
         {
             try
             {
-                $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Select-Object -First 1)
+                $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$name*" } | Measure-Object).Count
             }
             catch [exception]
             {
-                $result = $null
+                $result = 0
             }
 
-            if (![string]::IsNullOrWhiteSpace($result))
+            if ($result -ne 0)
             {
                 return $true
             }
         }
 
         # attempt to call the program, see if we get a response back
-        $value = [string]::Empty
-        $value = & $command
-
-        if (![string]::IsNullOrWhiteSpace($value))
+        $output = (powershell.exe /C "$command")
+        if ($LASTEXITCODE -ne 0)
         {
-            return $true
+            return $false
         }
+
+        return $true
     }
     catch [exception] { }
 
@@ -249,37 +249,71 @@ function Test-Url($url)
 }
 
 # Installs software via Chocolatey on an adhoc basis
-function Install-AdhocSoftware($packageName, $name)
+function Install-AdhocSoftware($packageName, $name, $installer = 'choco')
 {
-    if (!(Test-Software 'choco.exe --version'))
-    {
-        Install-Chocolatey
-    }
-
     Write-Message "Installing $name."
 
-    choco.exe install $packageName -y
+    if ([string]::IsNullOrWhiteSpace($packageName))
+    {
+        throw 'Package name for installing adhoc software cannot be empty.'
+    }
 
+    switch ($installer)
+    {
+        'choco'
+            {
+                if (!(Test-Software 'choco list -lo'))
+                {
+                    Install-Chocolatey
+                }
+
+                Run-Command 'choco.exe' "install $packageName -y"
+            }
+
+        'npm'
+            {
+                if (!(Test-Software 'node.exe -v' 'nodejs'))
+                {
+                    Install-AdhocSoftware 'nodejs.install' 'node.js'
+                }
+
+                Run-Command 'npm' "install -g $packageName" $false $true
+            }
+
+        default
+            {
+                throw "Invalid installer type found for adhoc software: '$installer'."
+            }
+    }
+
+    # Was the install successful
     if (!$?)
     {
         throw "Failed to install $name."
     }
 
+    Reset-Path $false
     Write-Message "Installation of $name successful."
 }
 
 # Install Chocolatey - if already installed, will just update
 function Install-Chocolatey()
 {
-    if (Test-Software 'choco.exe --version')
+    if (Test-Software 'choco list -lo')
     {
         Write-Message 'Chocolatey is already installed.'
         return
     }
 
     Write-Message 'Installing Chocolately.'
-    Set-ExecutionPolicy Unrestricted
-    Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+
+    $policies = @('Unrestricted', 'ByPass')
+    if ($policies -inotcontains (Get-ExecutionPolicy))
+    {
+        Set-ExecutionPolicy Bypass
+    }
+
+    Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1')) | Out-Null
     Write-Message 'Chocolately installed.'
 
     Reset-Path
@@ -299,7 +333,7 @@ function Get-EnvironmentVariable($name, $level = 'Machine')
 
     if (!$?)
     {
-        throw
+        throw "Failed to get environment variable '$name' from '$level' level."
     }
 
     return $value
@@ -311,8 +345,8 @@ function Set-EnvironmentVariable($name, $value, $level = 'Machine')
     [Environment]::SetEnvironmentVariable($name, $value, $level)
 
     if (!$?)
-    {
-        throw
+    {1
+        throw "Failed to set environment variable '$name' at '$level' level."
     }
 }
 
@@ -331,12 +365,12 @@ function Test-Win64()
 # Runs the passed command and arguments. If fails displays the last 200 lines of output
 function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $false)
 {
-    Write-Information "Running command: '$command $_args'."
+    Write-Information "Running command: '$command $_args'"
 
     if ($isPowershell)
     {
         $output = powershell.exe /C "`"$command`" $_args"
-        
+
         if (!$?)
         {
             if ($output -ne $null)
@@ -349,7 +383,7 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
                 $output | ForEach-Object { Write-Errors $_ }
             }
 
-            throw 'Command failed to complete.'
+            throw "Command '$command' failed to complete."
         }
     }
     else
@@ -368,7 +402,7 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
                 $output | ForEach-Object { Write-Errors $_ }
             }
 
-            throw 'Command failed to complete.'
+            throw "Command '$command' failed to complete."
         }
     }
 }

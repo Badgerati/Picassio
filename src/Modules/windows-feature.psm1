@@ -9,15 +9,17 @@
 # Example:
 #
 # {
-#	"paint": [
-#		{
-#			"type": "windows-feature",
-#			"ensure": "installed",
-#			"name": "Web-Server",
-#			"includeSubFeatures": true,
-#			"includeManagementTools": true
-#		}
-#	]
+#    "paint": [
+#        {
+#            "type": "windows-feature",
+#            "ensure": "installed",
+#            "includeSubFeatures": true,
+#            "includeManagementTools": true,
+#            "names": [
+#               "Web-Server"
+#            ]
+#        }
+#    ]
 # }
 #########################################################################
 
@@ -25,88 +27,120 @@
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 Import-Module ServerManager -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+function Start-Module($colour, $variables, $credentials)
+{
+    Test-Module $colour $variables $credentials
 
-	$name = (Replace-Variables $colour.name $variables).Trim()
-	$ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
-	$includeSubFeatures = Replace-Variables $colour.includeSubFeatures $variables
-	$includeManagementTools = Replace-Variables $colour.includeManagementTools $variables
+    $names = $colour.names
+    $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+    $includeSubFeatures = Replace-Variables $colour.includeSubFeatures $variables
+    $includeManagementTools = Replace-Variables $colour.includeManagementTools $variables
 
-	Write-Message "`nEnsuring '$name' is $ensure."
+    ForEach ($name in $names)
+    {
+        $name = (Replace-Variables $name $variables).Trim()
+        Write-Message "`nEnsuring '$name' is $ensure."
 
-	switch ($ensure) {
-		'installed'
-			{
-				if ($includeSubFeatures -eq $true -and $includeManagementTools -eq $true) {
-					Add-WindowsFeature -Name $name -IncludeAllSubFeature -IncludeManagementTools
-				}
-				elseif ($includeSubFeatures -eq $true) {
-					Add-WindowsFeature -Name $name -IncludeAllSubFeature
-				}
-				elseif ($includeManagementTools -eq $true) {
-					Add-WindowsFeature -Name $name -IncludeManagementTools
-				}
-				else {
-					Add-WindowsFeature -Name $name
-				}
+        switch ($ensure)
+        {
+            'installed'
+                {
+                    if ((Get-WindowsFeature -Name $name).Installed -eq $true)
+                    {
+                        Write-Information "$name has already been $ensure."
+                        continue
+                    }
 
-				if (!$?) {
-					throw 'Failed to install Windows feature.'
-				}
-			}
+                    if ($includeSubFeatures -eq $true -and $includeManagementTools -eq $true)
+                    {
+                        Add-WindowsFeature -Name $name -IncludeAllSubFeature -IncludeManagementTools
+                    }
+                    elseif ($includeSubFeatures -eq $true)
+                    {
+                        Add-WindowsFeature -Name $name -IncludeAllSubFeature
+                    }
+                    elseif ($includeManagementTools -eq $true)
+                    {
+                        Add-WindowsFeature -Name $name -IncludeManagementTools
+                    }
+                    else
+                    {
+                        Add-WindowsFeature -Name $name
+                    }
 
-		'uninstalled'
-			{
-				if ($includeManagementTools -eq $true) {
-					Remove-WindowsFeature -Name $name -IncludeManagementTools
-				}
-				else {
-					Remove-WindowsFeature -Name $name
-				}
+                    if (!$?)
+                    {
+                        throw 'Failed to install Windows feature.'
+                    }
+                }
 
-				if (!$?) {
-					throw 'Failed to uninstall Windows feature.'
-				}
-			}
-	}
+            'uninstalled'
+                {
+                    if ((Get-WindowsFeature -Name $name).Installed -eq $false)
+                    {
+                        Write-Information "$name has already been $ensure."
+                        continue
+                    }
 
-	Write-Message "'$name' has been $ensure."
-	Write-Information 'It is suggested that you restart your computer.'
+                    if ($includeManagementTools -eq $true)
+                    {
+                        Remove-WindowsFeature -Name $name -IncludeManagementTools
+                    }
+                    else
+                    {
+                        Remove-WindowsFeature -Name $name
+                    }
+
+                    if (!$?)
+                    {
+                        throw 'Failed to uninstall Windows feature.'
+                    }
+                }
+        }
+
+        Write-Message "'$name' has been $ensure."
+    }
+
+    Write-Information 'It is suggested that you restart your computer.'
 }
 
-function Test-Module($colour, $variables, $credentials) {
-	$name = Replace-Variables $colour.name $variables
-	if ([string]::IsNullOrEmpty($name)) {
-		throw 'No feature name has been supplied.'
-	}
-
-	# ensure the feature exists
-	$name = $name.Trim()
-	$featureExists = (Get-WindowsFeature -Name $name | Measure-Object).Count
-
-	if ($featureExists -eq 0) {
-		throw "Windows feature does not exist: '$name'."
-	}
-
-	$ensure = Replace-Variables $colour.ensure $variables
-    if ([string]::IsNullOrWhiteSpace($ensure)) {
-        throw 'No ensure parameter supplied.'
+function Test-Module($colour, $variables, $credentials)
+{
+    # Check feature names are all valid
+    $names = $colour.names
+    if ($names -eq $null -or $names.Length -eq 0)
+    {
+        throw 'No Windows feature names have been supplied.'
     }
 
-    # check we have a valid ensure property
-    $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'installed' -and $ensure -ne 'uninstalled') {
-        throw "Invalid ensure parameter supplied: '$ensure'."
+    ForEach ($name in $names)
+    {
+        $name = Replace-Variables $name $variables
+
+        if ([string]::IsNullOrEmpty($name) -or (Get-WindowsFeature -Name $name | Measure-Object).Count -eq 0)
+        {
+            throw "Invalid Windows feature: '$name'."
+        }
     }
 
-	$includeSubFeatures = Replace-Variables $colour.includeSubFeatures $variables
-	if (![string]::IsNullOrWhiteSpace($includeSubFeatures) -and $includeSubFeatures -ne $true -and $includeSubFeatures -ne $false) {
-		throw "Invalid value for includeSubFeatures: '$includeSubFeatures'. Should be either true or false."
-	}
+    # Check ensures value
+    $ensure = Replace-Variables $colour.ensure $variables
+    $ensures = @('installed', 'uninstalled')
+    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
+    {
+        throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
+    }
 
-	$includeManagemementTools = Replace-Variables $colour.includeManagementTools $variables
-	if (![string]::IsNullOrWhiteSpace($includeManagemementTools) -and $includeManagemementTools -ne $true -and $includeManagemementTools -ne $false) {
-		throw "Invalid value for includeManagementTools: '$includeManagemementTools'. Should be either true or false."
-	}
+    # Check sub features and tools values
+    $includeSubFeatures = Replace-Variables $colour.includeSubFeatures $variables
+    if (![string]::IsNullOrWhiteSpace($includeSubFeatures) -and $includeSubFeatures -ne $true -and $includeSubFeatures -ne $false)
+    {
+        throw "Invalid value for includeSubFeatures: '$includeSubFeatures'. Should be either true or false."
+    }
+
+    $includeManagemementTools = Replace-Variables $colour.includeManagementTools $variables
+    if (![string]::IsNullOrWhiteSpace($includeManagemementTools) -and $includeManagemementTools -ne $true -and $includeManagemementTools -ne $false)
+    {
+        throw "Invalid value for includeManagementTools: '$includeManagemementTools'. Should be either true or false."
+    }
 }

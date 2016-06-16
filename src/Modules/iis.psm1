@@ -59,36 +59,45 @@ function Start-Module($colour, $variables, $credentials) {
     $siteExists = (Test-Path "IIS:\Sites\$siteName")
     $poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
-    switch ($ensure) {
+    switch ($ensure)
+    {
         'added'
             {
                 Write-Message "Creating application pool: '$appPoolName'."
 
-                if (!$poolExists) {
+                if (!$poolExists)
+                {
                     $pool = New-WebAppPool -Name $appPoolName -Force
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw
                     }
 
-                    if ([string]::IsNullOrWhiteSpace($runtimeVersion)) {
+                    if ([string]::IsNullOrWhiteSpace($runtimeVersion))
+                    {
                         $pool.managedRuntimeVersion = 'v4.0'
                     }
-                    else {
+                    else
+                    {
                         $pool.managedRuntimeVersion = $runtimeVersion
                     }
 
-                    if ([string]::IsNullOrWhiteSpace($appPoolIdentity)) {
-                        if (![string]::IsNullOrWhiteSpace($username) -and ![string]::IsNullOrWhiteSpace($password)) {
+                    if ([string]::IsNullOrWhiteSpace($appPoolIdentity))
+                    {
+                        if (![string]::IsNullOrWhiteSpace($username) -and ![string]::IsNullOrWhiteSpace($password))
+                        {
                             $appPoolIdentity = 'SpecificUser'
                         }
-                        else {
+                        else
+                        {
                             $appPoolIdentity = 'ApplicationPoolIdentity'
                         }
                     }
 
                     $appPoolIdentity = $appPoolIdentity.ToLower().Trim()
 
-                    switch ($appPoolIdentity) {
+                    switch ($appPoolIdentity)
+                    {
                         'applicationpoolidentity'
                             {
                                 $pool.processmodel.identityType = 4
@@ -118,11 +127,13 @@ function Start-Module($colour, $variables, $credentials) {
                     }
 
                     $pool | Set-Item
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw
                     }
                 }
-                else {
+                else
+                {
                     Write-Warnings 'Application pool already exists.'
                 }
 
@@ -130,37 +141,45 @@ function Start-Module($colour, $variables, $credentials) {
                 Write-Message "`nCreating website: '$siteName'."
 
                 $path = $path.Trim()
-                if (!(Test-Path $path)) {
+                if (!(Test-Path $path))
+                {
                     throw "Path passed to add website does not exist: '$path'."
                 }
 
-                if (!$siteExists) {
+                if (!$siteExists)
+                {
                     New-Website -Name $siteName -PhysicalPath $path -ApplicationPool $appPoolName -Force | Out-Null
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw
                     }
 
                     Remove-WebBinding -Name $siteName -IPAddress * -Port 80 -Protocol 'http'
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw 'Failed to remove the default *:80 endpoint from the website.'
                     }
                 }
-                else {
+                else
+                {
                     Write-Warnings 'Website already exists, updating.'
 
-                    if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -eq $true) {
+                    if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -eq $true)
+                    {
                         $currentPath = (Get-Item "IIS:\Sites\$siteName" | Select-Object -ExpandProperty physicalPath)
                         Write-Message "Current Path: '$currentPath'."
 
                         $matchingSites = (Get-Website | Select-Object Name, physicalPath | Where-Object { $_.physicalPath -eq $currentPath } | Select-Object -ExpandProperty Name)
                         Write-Message "Found $($matchingSites.Count) matching websites for current path."
 
-                        ForEach ($site in $matchingSites) {
+                        ForEach ($site in $matchingSites)
+                        {
                             Write-Information "Updating website: '$site'."
                             Set-ItemProperty -Path "IIS:\Sites\$site" -Name physicalPath -Value $path
                         }
                     }
-                    else {
+                    else
+                    {
                         Set-ItemProperty -Path "IIS:\Sites\$siteName" -Name physicalPath -Value $path
                     }
 
@@ -171,11 +190,13 @@ function Start-Module($colour, $variables, $credentials) {
                 Write-Message "`nSetting up website binding."
 
                 $web = Get-Item "IIS:\Sites\$siteName"
-                if (!$?) {
+                if (!$?)
+                {
                     throw
                 }
 
-                ForEach ($binding in $bindings) {
+                ForEach ($binding in $bindings)
+                {
                     $protocol = (Replace-Variables $binding.protocol $variables).ToLower().Trim()
                     $ip = (Replace-Variables $binding.ip $variables).Trim()
                     $port = (Replace-Variables $binding.port $variables).Trim()
@@ -185,17 +206,21 @@ function Start-Module($colour, $variables, $credentials) {
 
                     Write-Message ("Setting up website $protocol binding for '$ip" + ":" + "$port'.")
 
-                    if ($col -eq $null -or $col.Length -eq 0 -or $col.bindingInformation -notlike $endpoint) {
+                    if ($col -eq $null -or $col.Length -eq 0 -or $col.bindingInformation -notlike $endpoint)
+                    {
                         New-WebBinding -Name $siteName -IPAddress $ip -Port $port -Protocol $protocol
-                        if (!$?) {
+                        if (!$?)
+                        {
                             throw
                         }
 
-                        if ($protocol -eq 'https') {
+                        if ($protocol -eq 'https')
+                        {
                             $certificate = (Replace-Variables $binding.certificate $variables).Trim()
                             $certs = (Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Subject -match $certificate } | Select-Object -First 1)
 
-                            if ([string]::IsNullOrWhiteSpace($certs)) {
+                            if ([string]::IsNullOrWhiteSpace($certs))
+                            {
                                 throw "Certificate passed cannot be found when setting up website binding: '$certificate'."
                             }
 
@@ -204,8 +229,10 @@ function Start-Module($colour, $variables, $credentials) {
                             $sslBindingsPath = 'hklm:\SYSTEM\CurrentControlSet\services\HTTP\Parameters\SslBindingInfo\'
                             $registryItems = Get-ChildItem -Path $sslBindingsPath | Where-Object -FilterScript { $_.Property -eq 'DefaultSslCtlStoreName' }
 
-                            If ($registryItems.Count -gt 0) {
-                                ForEach ($item in $registryItems) {
+                            If ($registryItems.Count -gt 0)
+                            {
+                                ForEach ($item in $registryItems)
+                                {
                                     $item | Remove-ItemProperty -Name DefaultSslCtlStoreName
                                     Write-Host "Deleted DefaultSslCtlStoreName in " $item.Name
                                 }
@@ -214,7 +241,8 @@ function Start-Module($colour, $variables, $credentials) {
                             Push-Location IIS:\SslBindings
 
                             Get-Item Cert:\LocalMachine\My\$thumb | New-Item $ip!$port -Force | Out-Null
-                            if (!$?) {
+                            if (!$?)
+                            {
                                 Pop-Location
                                 throw
                             }
@@ -222,7 +250,8 @@ function Start-Module($colour, $variables, $credentials) {
                             Pop-Location
                         }
                     }
-                    else {
+                    else
+                    {
                         Write-Warnings ("Binding already exists: '$ip" + ":" + "$port'.")
                     }
                 }
@@ -232,23 +261,27 @@ function Start-Module($colour, $variables, $credentials) {
 
                 $acl = Get-Acl -Path $path
 
-                $iis_user = $acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch 'NT AUTHORITY\\IUSR' } } | Select-Object -First 1
-                if ([string]::IsNullOrWhiteSpace($iis_user)) {
+                $iis_user = ($acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch 'NT AUTHORITY\\IUSR' } } | Select-Object -First 1)
+                if ([string]::IsNullOrWhiteSpace($iis_user))
+                {
                     Write-Message 'Adding IIS user.'
                     $iis_ar = New-Object System.Security.AccessControl.FileSystemAccessRule("NT AUTHORITY\IUSR", "ReadAndExecute", "ContainerInherit,ObjectInherit", "None", "Allow")
                     $acl.SetAccessRule($iis_ar)
                 }
-                else {
+                else
+                {
                     Write-Warnings 'IIS user already added.'
                 }
 
-                $app_user = $acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch "IIS APPPOOL\\$appPoolName" } } | Select-Object -First 1
-                if ([string]::IsNullOrWhiteSpace($app_user)) {
+                $app_user = ($acl.Access | ForEach-Object { $_.identityReference.value | Where-Object { $_ -imatch "IIS APPPOOL\\$appPoolName" } } | Select-Object -First 1)
+                if ([string]::IsNullOrWhiteSpace($app_user))
+                {
                     Write-Message 'Adding application pool user.'
                     $app_ar = New-Object System.Security.AccessControl.FileSystemAccessRule("IIS APPPOOL\$appPoolName", "ReadAndExecute", "ContainerInherit,ObjectInherit", "None", "Allow")
                     $acl.SetAccessRule($app_ar)
                 }
-                else {
+                else
+                {
                     Write-Warnings 'Application pool user already added.'
                 }
 
@@ -260,16 +293,19 @@ function Start-Module($colour, $variables, $credentials) {
 
                 Write-Message "`nEnsuring Application Pool and Website are $state."
 
-                switch ($state) {
+                switch ($state)
+                {
                     'started'
                         {
                             Restart-WebAppPool -Name $appPoolName
-                            if (!$?) {
+                            if (!$?)
+                            {
                                 throw
                             }
 
                             Start-Website -Name $siteName
-                            if (!$?) {
+                            if (!$?)
+                            {
                                 throw
                             }
                         }
@@ -277,12 +313,14 @@ function Start-Module($colour, $variables, $credentials) {
                     'stopped'
                         {
                             Stop-WebAppPool -Name $appPoolName
-                            if (!$?) {
+                            if (!$?)
+                            {
                                 throw
                             }
 
                             Stop-Website -Name $siteName
-                            if (!$?) {
+                            if (!$?)
+                            {
                                 throw
                             }
                         }
@@ -295,18 +333,22 @@ function Start-Module($colour, $variables, $credentials) {
             {
                 Write-Message "`nRemoving SSL bindings."
 
-                if ($siteExists) {
+                if ($siteExists)
+                {
                     Push-Location IIS:\SslBindings
 
                     $site = (Get-ChildItem | Select-Object -ExpandProperty Sites | Where-Object { $_.Value -eq $siteName } | Select-Object -First 1)
-                    if (!$?) {
+                    if (!$?)
+                    {
                         Pop-Location
                         throw
                     }
 
-                    if ($site -ne $null) {
+                    if ($site -ne $null)
+                    {
                         Get-ChildItem | Where-Object { $_.Sites -eq $site } | Remove-Item -Force
-                        if (!$?) {
+                        if (!$?)
+                        {
                             Pop-Location
                             throw
                         }
@@ -318,26 +360,32 @@ function Start-Module($colour, $variables, $credentials) {
                 Write-Message 'SSL binding removed successfully.'
                 Write-Message "Removing website: '$siteName'."
 
-                if ($siteExists) {
+                if ($siteExists)
+                {
                     Remove-Website -Name $siteName
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw
                     }
                 }
-                else {
+                else
+                {
                     Write-Warnings 'Website does not exist.'
                 }
 
                 Write-Message 'Website removed successfully.'
                 Write-Message "`nRemoving application pool: '$appPoolName'."
 
-                if ($poolExists) {
+                if ($poolExists)
+                {
                     Remove-WebAppPool -Name $appPoolName
-                    if (!$?) {
+                    if (!$?)
+                    {
                         throw
                     }
                 }
-                else {
+                else
+                {
                     Write-Warnings 'Application pool does not exist.'
                 }
 
@@ -346,20 +394,24 @@ function Start-Module($colour, $variables, $credentials) {
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
-    if (!(Test-Win64)) {
+function Test-Module($colour, $variables, $credentials)
+{
+    if (!(Test-Win64))
+    {
         throw 'Shell needs to be running as a 64-bit host when setting up IIS websites.'
     }
 
     $siteName = Replace-Variables $colour.siteName $variables
-    if ([string]::IsNullOrEmpty($siteName)) {
+    if ([string]::IsNullOrEmpty($siteName))
+    {
         throw 'No site name has been supplied for website.'
     }
 
     $siteName = $siteName.Trim()
 
     $appPoolName = Replace-Variables $colour.appPoolName $variables
-    if ([string]::IsNullOrEmpty($appPoolName)) {
+    if ([string]::IsNullOrEmpty($appPoolName))
+    {
         throw 'No app pool name has been supplied for website.'
     }
 
@@ -369,115 +421,142 @@ function Test-Module($colour, $variables, $credentials) {
     $poolExists = (Test-Path "IIS:\AppPools\$appPoolName")
 
     $ensure = Replace-Variables $colour.ensure $variables
-    if ([string]::IsNullOrWhiteSpace($ensure)) {
+    if ([string]::IsNullOrWhiteSpace($ensure))
+    {
         throw 'No ensure parameter supplied for website.'
     }
 
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'added' -and $ensure -ne 'removed') {
+    if ($ensure -ne 'added' -and $ensure -ne 'removed')
+    {
         throw "Invalid ensure supplied for website: '$ensure'."
     }
 
     $state = Replace-Variables $colour.state $variables
-    if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added') {
+    if ([string]::IsNullOrWhiteSpace($state) -and $ensure -eq 'added')
+    {
         throw 'No state parameter supplied for website.'
     }
 
     # check we have a valid state property
-    if ($state -ne $null) {
+    if ($state -ne $null)
+    {
         $state = $state.ToLower().Trim()
     }
 
-    if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'added') {
+    if ($state -ne 'started' -and $state -ne 'stopped' -and $ensure -eq 'added')
+    {
         throw "Invalid state parameter supplied for website: '$state'."
     }
 
     $path = Replace-Variables $colour.path $variables
-    if ($ensure -eq 'added') {
-        if ([string]::IsNullOrWhiteSpace($path)) {
+    if ($ensure -eq 'added')
+    {
+        if ([string]::IsNullOrWhiteSpace($path))
+        {
             throw 'No path passed to add website.'
         }
     }
 
     $syncPaths = Replace-Variables $colour.syncPaths $variables
-    if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -ne $true -and $syncPaths -ne $false) {
+    if (![string]::IsNullOrWhiteSpace($syncPaths) -and $syncPaths -ne $true -and $syncPaths -ne $false)
+    {
         throw "Invalid value for syncPaths: '$syncPaths'. Should be either true or false."
     }
 
     $runtimeVersion = Replace-Variables $colour.runtimeVersion $variables
-    if (![string]::IsNullOrWhiteSpace($runtimeVersion) -and $ensure -eq 'added') {
-        if ($runtimeVersion -notmatch 'v(1.1|2.0|4.0)') {
+    if (![string]::IsNullOrWhiteSpace($runtimeVersion) -and $ensure -eq 'added')
+    {
+        if ($runtimeVersion -notmatch 'v(1.1|2.0|4.0)')
+        {
             throw "Invalid runtime version value supplied. Can only be v1.1, v2.0 or v4.0. Got: $runtimeVersion"
         }
     }
 
     $appPoolIdentity = Replace-Variables $colour.appPoolIdentity $variables
-    if (![string]::IsNullOrWhiteSpace($appPoolIdentity) -and $ensure -eq 'added') {
+    if (![string]::IsNullOrWhiteSpace($appPoolIdentity) -and $ensure -eq 'added')
+    {
         $appPoolIdentity = $appPoolIdentity.ToLower().Trim()
+        $appIdentities = @('ApplicationPoolIdentity', 'LocalService', 'LocalSystem', 'NetworkService', 'SpecificUser')
 
-        if ($appPoolIdentity -inotmatch '(ApplicationPoolIdentity|LocalService|LocalSystem|NetworkService|SpecificUser)') {
-            throw "Invalid application pool identity: '$appPoolIdentity'. Should be either ApplicationPoolIdentity, LocalService, LocalSystem, NetworkService or SpecificUser."
+        if ($appIdentities -inotcontains $appPoolIdentity)
+        {
+            throw ("Invalid application pool identity: '$appPoolIdentity'. Can only be: {0}." -f ($appIdentities -join ', '))
         }
 
-        if ($appPoolIdentity -ieq 'SpecificUser') {
+        if ($appPoolIdentity -ieq 'SpecificUser')
+        {
             $username = $colour.username
             $password = $colour.password
 
-            if ([string]::IsNullOrWhiteSpace($username) -or [string]::IsNullOrWhiteSpace($password)) {
+            if ([string]::IsNullOrWhiteSpace($username) -or [string]::IsNullOrWhiteSpace($password))
+            {
                 throw 'SpecificUser passed for application pool identity, but not username/password passed.'
             }
         }
     }
 
     $bindings = $colour.bindings
-    if ($ensure -eq 'added' -and ($bindings -eq $null -or $bindings.Length -eq 0)) {
+    if ($ensure -eq 'added' -and ($bindings -eq $null -or $bindings.Length -eq 0))
+    {
         throw 'No bindings specified to setup website.'
     }
 
-    if ($ensure -eq 'added' -and $bindings.Length -gt 0) {
+    if ($ensure -eq 'added' -and $bindings.Length -gt 0)
+    {
         ForEach ($binding in $bindings) {
             $ip = Replace-Variables $binding.ip $variables
-            if([string]::IsNullOrWhiteSpace($ip)) {
+            if ([string]::IsNullOrWhiteSpace($ip))
+            {
                 throw 'No IP address passed to add website binding.'
             }
 
             $port = Replace-Variables $binding.port $variables
-            if([string]::IsNullOrWhiteSpace($port)) {
+            if([string]::IsNullOrWhiteSpace($port))
+            {
                 throw 'No port number passed to add website binding.'
             }
 
             $protocol = Replace-Variables $binding.protocol $variables
-            if ([string]::IsNullOrWhiteSpace($protocol)) {
+            if ([string]::IsNullOrWhiteSpace($protocol))
+            {
                 throw 'No protocol passed for adding website binding.'
             }
 
             $protocol = $protocol.ToLower().Trim()
-            if ($protocol -ne 'http' -and $protocol -ne 'https') {
+            if ($protocol -ne 'http' -and $protocol -ne 'https')
+            {
                 throw "Protocol for website binding is not valid. Expected http(s) but got: '$protocol'."
             }
 
-            if ($protocol -eq 'https') {
+            if ($protocol -eq 'https')
+            {
                 $certificate = Replace-Variables $binding.certificate $variables
-                if ([string]::IsNullOrWhiteSpace($certificate)) {
+                if ([string]::IsNullOrWhiteSpace($certificate))
+                {
                     throw 'No certificate passed for setting up website binding https protocol.'
                 }
             }
 
             $endpoint = ("*$ip" + ":" + "$port*")
 
-            ForEach ($site in (Get-ChildItem IIS:\Sites)) {
-                if ($site.Name -eq $siteName) {
+            ForEach ($site in (Get-ChildItem IIS:\Sites))
+            {
+                if ($site.Name -eq $siteName)
+                {
                     continue
                 }
 
                 $col = $site.Bindings.Collection | Where-Object { $_.protocol -eq $protocol }
 
-                if ($col -eq $null -or $col.Length -eq 0) {
+                if ($col -eq $null -or $col.Length -eq 0)
+                {
                     continue
                 }
 
-                if ($col.bindingInformation -like $endpoint) {
+                if ($col.bindingInformation -like $endpoint)
+                {
                     throw "Website already exists that uses $endpoint : '$($site.Name)'."
                 }
             }

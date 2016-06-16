@@ -1,0 +1,17 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "directory",
+            "ensure": "exists",
+            "path": "C:\\Tests\\MkDir\\Test"
+        }
+    ],
+    "erase": [
+        {
+            "type": "directory",
+            "ensure": "removed",
+            "path": "C:\\Tests\\MkDir"
+        }
+    ]
+}

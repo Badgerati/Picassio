@@ -1,0 +1,22 @@
+{
+    "eraseBeforePaint": true,
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "chocolatey",
+            "ensure": "install",
+            "software": {
+                "edison": ""
+            }
+        }
+    ],
+    "erase": [
+        {
+            "type": "chocolatey",
+            "ensure": "uninstall",
+            "software": {
+                "edison": ""
+            }
+        }
+    ]
+}

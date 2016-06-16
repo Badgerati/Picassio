@@ -1,0 +1,58 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "directory",
+            "ensure": "exists",
+            "path": "C:\\Tests\\Bower"
+        },
+        {
+            "type": "bower",
+            "ensure": "install",
+            "path": "C:\\Tests\\Bower",
+            "packages": {
+                "jquery": "1.8.2",
+                "normalize.css": ""
+            }
+        },
+        {
+            "type": "bower",
+            "ensure": "install",
+            "path": "C:\\Tests\\Bower",
+            "packages": {
+                "jquery": ""
+            }
+        }
+    ],
+    "erase": [
+        {
+            "type": "bower",
+            "ensure": "uninstall",
+            "path": "C:\\Tests\\Bower",
+            "packages": {
+                "jquery": ""
+            }
+        },
+        {
+            "type": "directory",
+            "ensure": "removed",
+            "path": "C:\\Tests\\Bower"
+        },
+        {
+            "type": "npm",
+            "ensure": "uninstall",
+            "global": true,
+            "packages": {
+                "bower": ""
+            }
+        },
+        {
+            "type": "chocolatey",
+            "ensure": "uninstall",
+            "software": {
+                "nodejs.install": "",
+                "git.install": ""
+            }
+        }
+    ]
+}

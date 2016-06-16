@@ -1,0 +1,20 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "windows-feature",
+            "ensure": "installed",
+            "name": "Web-Server",
+            "includeSubFeatures": true,
+            "includeManagementTools": true
+        }
+    ],
+    "erase": [
+        {
+            "type": "windows-feature",
+            "ensure": "uninstalled",
+            "name": "Web-Server",
+            "includeManagementTools": true
+        }
+    ]
+}

@@ -9,22 +9,22 @@ All of Picassio's features (colours) are modularised, allowing for people to hav
 
 Installing
 ==========
-To use Picassio properly, you will need to install the scripts. To do so, once you have downloaded/checked-out the files, navigate to the "src" folder and run the following command in a PowerShell prompt in administrator mode.
+To use Picassio properly, you will need to install the scripts. To do so, once you have cloned the repo, navigate to the "src" folder and run the following command in a PowerShell prompt in administrator mode.
 
 ```shell
 .\Picassio.ps1 -install
 ```
 
-This will install all scripts for you, setting up the Path/environment variables. You will be able to use the "picassio" command straight away.
+This will install all scripts for you, setting up the Path/environment variables. You will be able to use the "picassio" command straight away. Test is out by navigating to a different directory and typing `picassio -version`.
 
-Scripts are installed to "C:\Picassio".
+Scripts are installed to "C:\Picassio". Here you will find the main modules and tools for picassio, you will also see an Extensions directory - covered at the bottom. Running `-install` on `.\Picassio.ps1` again will update the core modules/tools, and will leave the extensions in place. Running `-reinstall` will delete the extensions.
 
 
 Features
 ========
 The following are all supported by Picassio:
 
-* Install/upgrade/uninstall software via Chocolatey
+* Install/upgrade/uninstall software/packages via Chocolatey, NPM, Bower or NuGet
 * Clone/checkout repositories from Git/SVN
 * Build projects/solutions using MSBuild
 * Run specified commands using either Command Prompt or PowerShell
@@ -35,8 +35,8 @@ The following are all supported by Picassio:
 * Add/remove website on IIS
 * Run node.js applications
 * Run tests via NUnit
-* Install/uninstall Windows (optional) features such as IIS
-* Ability to setup certificates
+* Install/uninstall Windows (optional) features such as Web-Server for IIS
+* Ability to setup certificates in MMC
 * Run cake build scripts
 * Run SQL Server scripts or create/restore backups
 * Can send emails
@@ -49,7 +49,7 @@ Dependencies
 ============
 Picassio only depends on a few applications, and when required will automatically install them for you:
 
-* Chocolatey, git, svn, Vagrant, node.js, npm, cake
+* Chocolatey, git, svn, Vagrant, node.js, npm, cake, NuGet, bower
 
 The above will only be installed when Picassio needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
@@ -64,7 +64,6 @@ To Do
 =====
 There are still quite a few things I wish to add to Picassio, the following is a short list:
 
-* Bower and npm support
 * Ability to install Picassio via Chocolatey
 * Setup the wiki properly for better docs
 
@@ -73,20 +72,21 @@ Examples
 ========
 To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it.
 
-As a side note, each colour can have an optional "description" key-value. This value get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
+As a side note, each colour can have an optional "description" key-value. This value will get written to the console for informational purposes only, and to help you find specific sections in the log outputted.
 
-Note: You can few more examples in the `examples.palette` file bundled with the source code, or view each psm1 module for an example of how to use each one in the header.
+Note: You can see more examples in the `examples.palette` file bundled with the source code, or view each psm1 module for an example of how to use each one in the header.
 
 
 Running Picassio
 ---------------
 ```bash
+picassio -palette example.palette -validate
 picassio -palette example.palette -paint
 picassio -version
 picassio -help
 ```
 
-Calling just 'picassio -paint' in a directory will look for a default 'picassio.palette' file.
+Calling just `picassio -paint` in a directory will look for a default 'picassio.palette' file.
 
 
 Passing Credentials
@@ -470,7 +470,8 @@ So, let's have an example. Say we want to have a simple echo extension which ech
 # File name: echo.psm1
 Import-Module $env:PicassioTools -DisableNameChecking
 
-function Start-Extension($colour, $variables, $credentials) {
+function Start-Extension($colour, $variables, $credentials)
+{
     # Although tested already, variables could have changed since then
     Test-Extension $colour $variables $credentials
 
@@ -480,8 +481,10 @@ function Start-Extension($colour, $variables, $credentials) {
     Write-Host $test
 }
 
-function Test-Extension($colour, $variables, $credentials) {
-    if ([string]::IsNullOrWhiteSpace($colour.text)) {
+function Test-Extension($colour, $variables, $credentials)
+{
+    if ([string]::IsNullOrWhiteSpace($colour.text))
+    {
         throw 'No text supplied to echo.'
     }
 }

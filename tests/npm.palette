@@ -1,0 +1,49 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "directory",
+            "ensure": "exists",
+            "path": "C:\\Tests\\Npm"
+        },
+        {
+            "type": "npm",
+            "ensure": "install",
+            "path": "C:\\Tests\\Npm",
+            "packages": {
+                "express": "@4.13.4",
+                "mongoose": ""
+            }
+        },
+        {
+            "type": "npm",
+            "ensure": "install",
+            "path": "C:\\Tests\\Npm",
+            "packages": {
+                "express": ""
+            }
+        }
+    ],
+    "erase": [
+        {
+            "type": "npm",
+            "ensure": "uninstall",
+            "path": "C:\\Tests\\Npm",
+            "packages": {
+                "express": ""
+            }
+        },
+        {
+            "type": "directory",
+            "ensure": "removed",
+            "path": "C:\\Tests\\Npm"
+        },
+        {
+            "type": "chocolatey",
+            "ensure": "uninstall",
+            "software": {
+                "nodejs.install": ""
+            }
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 {
     "rollbackOnFail": false,
     "eraseBeforePaint": false,
+    "eraseAfterPaint": false,
     "paint": [
         {
             "type": "variables",
@@ -10,7 +11,8 @@
             ]
         },
         {
-            "type": "credentials"
+            "type": "credentials",
+            "message": "Picassio requires your credentials"
         },
         {
             "type": "chocolatey",
@@ -101,7 +103,7 @@
             ]
         },
         {
-            "type": "mssql",
+            "type": "ps-sql",
             "timeout": 60,
             "server": "SOME_SERVER_1",
             "snapshot": {
@@ -112,7 +114,7 @@
             }
         },
         {
-            "type": "mssql",
+            "type": "ps-sql",
             "timeout": 60,
             "server": "SOME_SERVER_1",
             "backup": {
@@ -123,7 +125,7 @@
             }
         },
         {
-            "type": "mssql",
+            "type": "ps-sql",
             "timeout": 60,
             "server": "SOME_SERVER_1",
             "sqlpsPath": "C:\\Program Files (x86)\\Microsoft SQL Server\\100\\Tools\\Binn\\",

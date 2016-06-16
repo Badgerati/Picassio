@@ -24,10 +24,12 @@
 # Checkout a remote repository using svn into the supplied local path
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
+function Start-Module($colour, $variables, $credentials)
+{
     Test-Module $colour $variables $credentials
 
-    if (!(Test-Software svn.exe 'svn')) {
+    if (!(Test-Software svn.exe 'svn'))
+    {
         Write-Errors 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
     }
@@ -35,21 +37,25 @@ function Start-Module($colour, $variables, $credentials) {
     $url = (Replace-Variables $colour.remote $variables).Trim()
     $path = (Replace-Variables $colour.localpath $variables).Trim()
 
-    if (!(Test-Path $path)) {
+    if (!(Test-Path $path))
+    {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
     $name = (Replace-Variables $colour.localname $variables).Trim()
     $revision = Replace-Variables $colour.revision $variables
-    if ($revision -ne $null) {
+    if ($revision -ne $null)
+    {
         $revision = $revision.Trim()
     }
 
     # Delete existing directory
     Push-Location $path
 
-    try {
-        if ((Test-Path $name)) {
+    try
+    {
+        if ((Test-Path $name))
+        {
             Backup-Directory $name
         }
 
@@ -58,38 +64,46 @@ function Start-Module($colour, $variables, $credentials) {
         Run-Command 'svn.exe' "checkout $url $name"
 
         # reset to revision
-        if (![string]::IsNullOrWhiteSpace($revision)) {
+        if (![string]::IsNullOrWhiteSpace($revision))
+        {
             Write-Message "Resetting local repository to revision $revision."
             Push-Location $name
 
-            try {
+            try
+            {
                 Run-Command 'svn.exe' "up -r $revision"
             }
-            finally {
+            finally
+            {
                 Pop-Location
             }
         }
 
         Write-Message 'SVN checkout was successful.'
     }
-    finally {
+    finally
+    {
         Pop-Location
     }
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $url = Replace-Variables $colour.remote $variables
-    if ([string]::IsNullOrWhiteSpace($url)) {
+    if ([string]::IsNullOrWhiteSpace($url))
+    {
         throw 'No remote SVN repository passed.'
     }
 
     $path = Replace-Variables $colour.localpath $variables
-    if ([string]::IsNullOrWhiteSpace($path)) {
+    if ([string]::IsNullOrWhiteSpace($path))
+    {
         throw 'No local SVN repository path specified.'
     }
 
     $name = Replace-Variables $colour.localname $variables
-    if ([string]::IsNullOrWhiteSpace($name)) {
+    if ([string]::IsNullOrWhiteSpace($name))
+    {
         throw 'No local name supplied for local repository.'
     }
 }

@@ -1,0 +1,21 @@
+{
+    "paint": [
+        {
+            "type": "echo",
+            "text": "Running Tests"
+        },
+        {
+            "type": "picassio",
+            "ensure": "paint",
+            "palettes": [
+                ".\\command.palette",
+                ".\\chocolatey.palette",
+                ".\\git.palette",
+                ".\\directory.palette",
+                ".\\eraseBeforePaint.palette",
+                ".\\npm.palette",
+                ".\\bower.palette"
+            ]
+        }
+    ]
+}

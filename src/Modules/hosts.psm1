@@ -23,45 +23,53 @@
 # Updates the hosts file
 Import-Module $env:PicassioTools -DisableNameChecking -ErrorAction Stop
 
-function Start-Module($colour, $variables, $credentials) {
-	Test-Module $colour $variables $credentials
+function Start-Module($colour, $variables, $credentials)
+{
+    Test-Module $colour $variables $credentials
 
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 
     # check IP
     $ip = Replace-Variables $colour.ip $variables
-    if ([String]::IsNullOrWhiteSpace($ip)) {
+    if ([String]::IsNullOrWhiteSpace($ip))
+    {
         $ip = [String]::Empty
     }
-	else {
-		$ip = $ip.Trim()
-	}
+    else
+    {
+        $ip = $ip.Trim()
+    }
 
     # check hostname
     $hostname = Replace-Variables $colour.hostname $variables
-    if ([String]::IsNullOrWhiteSpace($hostname)) {
+    if ([String]::IsNullOrWhiteSpace($hostname))
+    {
         $hostname = [String]::Empty
     }
-	else {
-		$hostname = $hostname.Trim()
-	}
+    else
+    {
+        $hostname = $hostname.Trim()
+    }
 
     Write-Message "Ensuring '$ip - $hostname' are $ensure."
     $regex = ".*?$ip.*?$hostname.*?"
     $lines = Get-Content $hostFile
 
-    switch ($ensure) {
+    switch ($ensure)
+    {
         'added'
             {
-				$current = ($lines | Where-Object { $_ -match $regex } | Select-Object -First 1)
+                $current = ($lines | Where-Object { $_ -match $regex } | Measure-Object).Count
 
-				if ([string]::IsNullOrWhiteSpace($current)) {
-					("`n$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
-				}
-				else {
-					Write-Message 'Host entry already exists.'
-				}
+                if ($current -eq 0)
+                {
+                    ("`n$ip`t`t$hostname") | Out-File -FilePath $hostFile -Encoding ASCII -Append
+                }
+                else
+                {
+                    Write-Message 'Host entry already exists.'
+                }
             }
 
         'removed'
@@ -70,46 +78,55 @@ function Start-Module($colour, $variables, $credentials) {
             }
     }
 
-    if (!$?) {
+    if (!$?)
+    {
         throw "Failed to $ensure '$ip - $hostname' to the hosts file."
     }
 
     Write-Message "'$ip - $hostname' has been $ensure successfully."
 }
 
-function Test-Module($colour, $variables, $credentials) {
+function Test-Module($colour, $variables, $credentials)
+{
     $hostFile = "$env:windir\System32\drivers\etc\hosts"
-    if (!(Test-Path $hostFile)) {
+    if (!(Test-Path $hostFile))
+    {
         throw "Hosts file does not exist at: '$hostFile'."
     }
 
     $ensure = Replace-Variables $colour.ensure $variables
-    if ([String]::IsNullOrWhiteSpace($ensure)) {
+    if ([String]::IsNullOrWhiteSpace($ensure))
+    {
         throw 'No ensure parameter supplied for hosts update.'
     }
 
     # check we have a valid ensure property
     $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'added' -and $ensure -ne 'removed') {
+    if ($ensure -ne 'added' -and $ensure -ne 'removed')
+    {
         throw "Invalid ensure parameter supplied for hosts: '$ensure'."
     }
 
     # check IP
     $ip = Replace-Variables $colour.ip $variables
-    if ([String]::IsNullOrWhiteSpace($ip)) {
+    if ([String]::IsNullOrWhiteSpace($ip))
+    {
         $ip = [String]::Empty
     }
 
     # check hostname
     $hostname = Replace-Variables $colour.hostname $variables
-    if ([String]::IsNullOrWhiteSpace($hostname)) {
+    if ([String]::IsNullOrWhiteSpace($hostname))
+    {
         $hostname = [String]::Empty
     }
 
-    if ($ensure -eq 'added' -and ([String]::IsNullOrWhiteSpace($ip) -or [String]::IsNullOrWhiteSpace($hostname))) {
+    if ($ensure -eq 'added' -and ([String]::IsNullOrWhiteSpace($ip) -or [String]::IsNullOrWhiteSpace($hostname)))
+    {
         throw 'No IP or Hostname has been supplied for adding a host entry.'
     }
-    elseif ($ensure -eq 'removed' -and [String]::IsNullOrWhiteSpace($ip) -and [String]::IsNullOrWhiteSpace($hostname)) {
+    elseif ($ensure -eq 'removed' -and [String]::IsNullOrWhiteSpace($ip) -and [String]::IsNullOrWhiteSpace($hostname))
+    {
         throw 'No IP and Hostname have been supplied for removing a host entry.'
     }
 }

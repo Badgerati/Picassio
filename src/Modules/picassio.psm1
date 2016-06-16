@@ -11,9 +11,11 @@
 # {
 #    "paint": [
 #        {
-#            "type": "picassio",
-#            "ensure": "paint",
-#            "palette": "C:\\path\\to\\palette.picassio"
+#           "type": "picassio",
+#           "ensure": "paint",
+#           "palettes": [
+#               "C:\\path\\to\\palette.picassio"
+#           ]
 #        }
 #    ]
 # }
@@ -26,63 +28,78 @@ function Start-Module($colour, $variables, $credentials)
 {
     Test-Module $colour $variables $credentials
 
-    $palette = (Replace-Variables $colour.palette $variables)
-    if (!(Test-Path $palette))
-    {
-        throw "Palette does not exist '$palette'."
-    }
-
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 
-    switch ($ensure)
+    $palettes = $colour.palettes
+    ForEach ($palette in $palettes)
     {
-        'paint'
-            {
-                Write-Message "Painting current machine."
+        $palette = Replace-Variables $palette $variables
 
-                powershell.exe /C "picassio -palette `"$palette`" -paint"
-                if (!$?)
+        if (!(Test-Path $palette))
+        {
+            throw "Palette does not exist: '$palette'."
+        }
+    }
+
+    ForEach ($palette in $palettes)
+    {
+        $palette = Replace-Variables $palette $variables
+
+        switch ($ensure)
+        {
+            'paint'
                 {
-                    throw 'Painting palette failed.'
+                    Write-Message "Painting current machine."
+
+                    powershell.exe /C "picassio -palette `"$palette`" -paint"
+                    if (!$?)
+                    {
+                        throw "Painting palette '$palette' failed."
+                    }
+
+                    Write-Message 'Painting successfully.'
                 }
 
-                Write-Message 'Painting successfully.'
-            }
-
-        'erase'
-            {
-                Write-Message "Erasing current machine."
-
-                powershell.exe /C "picassio -palette `"$palette`" -erase"
-                if (!$?)
+            'erase'
                 {
-                    throw 'Erasing palette failed.'
-                }
+                    Write-Message "Erasing current machine."
 
-                Write-Message 'Erasing successfully.'
-            }
+                    powershell.exe /C "picassio -palette `"$palette`" -erase"
+                    if (!$?)
+                    {
+                        throw "Erasing palette '$palette' failed."
+                    }
+
+                    Write-Message 'Erasing successfully.'
+                }
+        }
     }
 }
 
 function Test-Module($colour, $variables, $credentials)
 {
-    # check we have a valid palette path
-    $palette = (Replace-Variables $colour.palette $variables)
-    if ([string]::IsNullOrEmpty($palette))
+    # check we have a valid palettes
+    $palettes = $colour.palettes
+    if ($palettes -eq $null -or $palettes.Length -eq 0)
     {
-        throw 'No palette path has been supplied.'
+        throw 'No palettes have been supplied.'
+    }
+
+    ForEach ($palette in $palettes)
+    {
+        $palette = Replace-Variables $palette $variables
+
+        if ([string]::IsNullOrEmpty($palette))
+        {
+            throw 'No palette path has been supplied.'
+        }
     }
 
     # check we have a valid ensure property
     $ensure = (Replace-Variables $colour.ensure $variables)
-    if ([string]::IsNullOrWhiteSpace($ensure))
+    $ensures = @('paint', 'erase')
+    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
     {
-        throw 'No ensure parameter supplied for picassio.'
-    }
-
-    $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'paint' -and $ensure -ne 'erase')
-    {
-        throw "Invalid ensure supplied for picassio: '$ensure'."
+        throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
     }
 }
