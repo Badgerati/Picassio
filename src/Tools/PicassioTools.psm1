@@ -12,7 +12,29 @@
 # Returns the current version of Picassio
 function Get-Version()
 {
-    return '0.9.10'
+    return '0.9.11'
+}
+
+# Checks to see if the user has administrator priviledges
+function Test-AdminUser()
+{
+    try
+    {
+        $principal = New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
+
+        if ($principal -eq $null)
+        {
+            return $false
+        }
+
+        return $principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    catch [exception]
+    {
+        Write-Host 'Error checking user administrator priviledges'
+        Write-Host $_.Exception.Message -ForegroundColor Red
+        return $false
+    }
 }
 
 # Writes the help manual to the console
@@ -29,6 +51,7 @@ function Write-Help()
 
     Write-Host 'The following is a list of possible commands:'
     Write-Host " -help`t`t Displays the help page"
+    Write-Host " -voice`t`t Enables voice over for some textual output"
     Write-Host " -validate`t Validates the palette"
     Write-Host " -install`t Installs/Updates Picassio, extensions are kept intact"
     Write-Host " -uninstall`t Uninstalls Picassio"
@@ -39,6 +62,7 @@ function Write-Help()
     Write-Host " -erase`t`t Runs the palette file's erase section, if one is present"
     Write-Host " -username`t [Optional] Your username to use for initial credentials"
     Write-Host " -password`t [Optional] Your password, this can be left blank"
+    Write-Host " -force`t`t Forces Picassio to run, regardless of the user having administrator priviledges"
     Write-Host ([string]::Empty)
 }
 
@@ -85,9 +109,10 @@ function Test-PicassioInstalled()
 }
 
 # Writes a general message to the console (cyan)
-function Write-Message($message)
+function Write-Message($message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Cyan
+    Speak-Text $message $speech
 }
 
 # Writes a new line to the console
@@ -97,9 +122,10 @@ function Write-NewLine()
 }
 
 # Writes error text to the console (red)
-function Write-Errors($message)
+function Write-Errors($message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Red
+    Speak-Text $message $speech
 }
 
 # Writes the exception to the console (red)
@@ -110,21 +136,24 @@ function Write-Exception($exception)
 }
 
 # Write informative text to the console (green)
-function Write-Information($message)
+function Write-Information($message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Green
+    Speak-Text $message $speech
 }
 
 # Write a stamp message to the console (magenta)
-function Write-Stamp($message)
+function Write-Stamp($message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Magenta
+    Speak-Text $message $speech
 }
 
 # Writes a warning to the console (yellow)
-function Write-Warnings($message)
+function Write-Warnings($message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Yellow
+    Speak-Text $message $speech
 }
 
 # Writes a header to the console in uppercase (magenta)
@@ -172,6 +201,36 @@ function Write-SubHeader($message)
         Write-Host "-$message$padding>" -ForegroundColor DarkYellow
     }
 }
+
+# Speaks the passed text using the passed speech object
+function Speak-Text($text, $speech)
+{
+    if ($speech -eq $null -or [string]::IsNullOrWhiteSpace($text))
+    {
+        return
+    }
+
+    try
+    {
+        $speech.SpeakAsync($text) | Out-Null
+    }
+    catch { }
+}
+
+# Read input for the user, to check if they are sure about something (asks y/n)
+function Read-AreYouSure()
+{
+    $valid = @('y', 'n')
+    $value = Read-Host -Prompt "Are you sure you wish to continue? y/n"
+
+    if ([string]::IsNullOrWhiteSpace($value) -or $valid -inotcontains $value)
+    {
+        return Read-AreYouSure
+    }
+
+    return $value -ieq 'y'
+}
+
 
 # Resets the PATH for the current session
 function Reset-Path($showMessage = $true)
@@ -310,7 +369,7 @@ function Install-Chocolatey()
     $policies = @('Unrestricted', 'ByPass')
     if ($policies -inotcontains (Get-ExecutionPolicy))
     {
-        Set-ExecutionPolicy Bypass
+        Set-ExecutionPolicy Bypass -Force
     }
 
     Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1')) | Out-Null

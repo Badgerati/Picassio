@@ -125,11 +125,11 @@ function Start-Module($colour, $variables, $credentials)
 
     if ($useSsl)
     {
-        Send-MailMessage -From $from -To $final_to -Cc $final_cc -Bcc $final_bcc -Attachments $final_attachments -Subject $subject -Body $body -SmtpServer $smtpServer -Port $port -Priority $priority -UseSsl
+        Send-MailMessage -From $from -To $final_to -Cc $final_cc -Bcc $final_bcc -Attachments $final_attachments -Subject $subject -Body $body -BodyAsHtml -SmtpServer $smtpServer -Port $port -Priority $priority -UseSsl
     }
     else
     {
-        Send-MailMessage -From $from -To $final_to -Cc $final_cc -Bcc $final_bcc -Attachments $final_attachments -Subject $subject -Body $body -SmtpServer $smtpServer -Port $port -Priority $priority
+        Send-MailMessage -From $from -To $final_to -Cc $final_cc -Bcc $final_bcc -Attachments $final_attachments -Subject $subject -Body $body -BodyAsHtml -SmtpServer $smtpServer -Port $port -Priority $priority
     }
 
     if (!$?)

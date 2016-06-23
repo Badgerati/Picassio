@@ -17,15 +17,17 @@ param (
     [switch]$reinstall = $false,
     [switch]$paint = $false,
     [switch]$erase = $false,
-    [switch]$validate = $false
+    [switch]$validate = $false,
+    [switch]$voice = $false,
+    [switch]$force = $false
 )
 
-$modulePath = $env:PicassioTools
-if ([String]::IsNullOrWhiteSpace($modulePath) -or !(Test-Path $modulePath))
+$modulePath = '.\Tools\PicassioTools.psm1'
+if (!(Test-Path $modulePath))
 {
-    $modulePath = '.\Tools\PicassioTools.psm1'
+    $modulePath = $env:PicassioTools
 
-    if (!(Test-Path $modulePath))
+    if ([String]::IsNullOrWhiteSpace($modulePath) -or !(Test-Path $modulePath))
     {
         throw 'Cannot find Picassio tools module.'
     }
@@ -368,6 +370,7 @@ function Run-Paint()
     if ($json -ne $null)
     {
         Write-Information "Painting the current machine: $env:COMPUTERNAME"
+        Speak-Text 'Painting the current machine' $speech
         Run-Section $json.paint
     }
 }
@@ -378,6 +381,7 @@ function Run-Erase()
     if ($json -ne $null)
     {
         Write-Information "Erasing the current machine: $env:COMPUTERNAME"
+        Speak-Text 'Erasing the current machine' $speech
         Run-Section $json.erase
     }
 }
@@ -392,6 +396,10 @@ function Run-Section($section)
 
     # Setup variables
     $variables = @{}
+    if ($speech -ne $null)
+    {
+        $variables['__speech__'] = $speech
+    }
 
     # Loop through each colour within the config file
     ForEach ($colour in $section)
@@ -415,6 +423,7 @@ function Run-Section($section)
         if (![String]::IsNullOrWhiteSpace($description))
         {
             Write-Information "[$description]"
+            Speak-Text $description $speech
         }
 
         switch ($type)
@@ -490,7 +499,6 @@ try
         return
     }
 
-    # Check switches
     Write-Version
     if ($version)
     {
@@ -501,7 +509,26 @@ try
         Write-Help
         return
     }
-    elseif ($install)
+
+    # Check administrator priviledges
+    if (!$force -and !(Test-AdminUser))
+    {
+        Write-Warnings 'You must be running as a user with administrator priviledges for Picassio to fully function.'
+        Write-Warnings 'If you believe this to be wrong, you can specify the -force flag. This will force Picassio to run regardless of user priviledges.'
+        return
+    }
+
+    if ($force)
+    {
+        Write-Warnings '[WARNING] You are running Picassio with the -force flag. This may lead to unexpected behaviour.'
+        if (!(Read-AreYouSure))
+        {
+            return
+        }
+    }
+
+    # Check switches
+    if ($install)
     {
         Install-Picassio
         return
@@ -582,18 +609,36 @@ try
     # If paint and erase switches are both false or true, exit program
     if (!$paint -and !$erase)
     {
-        Write-Warning 'Need to specify either the paint or erase flags.'
+        Write-Warnings 'Need to specify either the paint or erase flags.'
         return
     }
 
     if ($paint -and $erase)
     {
-        Write-Warning 'You can only specify either the paint or erase flag, not both.'
+        Write-Warnings 'You can only specify either the paint or erase flag, not both.'
         return
     }
 
     # Start the stopwatch for total time tracking
     $total_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # Check to see if the voice-over is enabled. If so, set it up as a variable
+    if ($voice)
+    {
+        try
+        {
+            Add-Type -AssemblyName 'System.Speech'
+            $speech = New-Object System.Speech.Synthesis.SpeechSynthesizer
+            $variables['__speech__'] = $speech
+            Write-Message 'Voice enabled.'
+        }
+        catch [exception]
+        {
+            # Write the exception, but we don't care if we can't enable the voice
+            Write-Errors 'Failed to enable voice over.'
+            Write-Exception $_.Exception
+        }
+    }
 
     # Check to see if we need to erase first, and only if we're painting
     if (![string]::IsNullOrWhiteSpace($json.eraseBeforePaint) -and $json.eraseBeforePaint -eq $true -and $paint)
@@ -614,7 +659,7 @@ try
     }
 
     Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
-    Write-Information 'Picassio finished successfully.'
+    Write-Information 'Picassio finished successfully.' $speech
 }
 catch [exception]
 {
@@ -623,7 +668,7 @@ catch [exception]
         Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
     }
 
-    Write-Warning 'Picassio failed to finish.'
+    Write-Warnings 'Picassio failed to finish.' $speech
     Pop-Location -ErrorAction SilentlyContinue
 
     # Rollback
@@ -640,13 +685,20 @@ catch [exception]
         Write-Errors 'Failed to rollback the palette. Rollback exception:'
         Write-Exception $_.Exception
         Write-NewLine
-        Write-Notice 'Main failure exception:'
+        Write-Warnings 'Main failure exception:'
     }
 
+    Speak-Text $_.Exception.Message $speech
     throw
 }
 finally
 {
+    if ($speech -ne $null)
+    {
+        Write-Host 'Dipsosing voice.'
+        $speech.Dispose()
+    }
+
     $variables = @{}
 
     # Remove the picassio tools module

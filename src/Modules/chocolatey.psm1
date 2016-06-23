@@ -29,6 +29,9 @@ function Start-Module($colour, $variables, $credentials)
 {
     Test-Module $colour $variables $credentials
 
+    # Grab the speech object
+    $speech = $variables['__speech__']
+
     # Check to see if Chocolatey is installed, if not then install it
     if (!(Test-Software 'choco list -lo'))
     {
@@ -67,7 +70,7 @@ function Start-Module($colour, $variables, $credentials)
                         $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$key*$version*" } | Measure-Object).Count
                         if ($result -ne 0)
                         {
-                            Write-Information "$key $version is already installed."
+                            Write-Information "$key $version is already installed." $speech
                             $nothing_to_do = $true
                         }
                     }
@@ -87,7 +90,7 @@ function Start-Module($colour, $variables, $credentials)
                     $result = (choco.exe list -lo | Where-Object { $_ -ilike "*$key*" } | Measure-Object).Count
                     if ($result -eq 0)
                     {
-                        Write-Information "$key is already uninstalled"
+                        Write-Information "$key is already uninstalled" $speech
                         $nothing_to_do = $true
                     }
                 }
@@ -111,11 +114,11 @@ function Start-Module($colour, $variables, $credentials)
             $versionStr = $version
         }
 
-        Write-Message "Starting $current_ensure of $key, version: $versionStr"
+        Write-Message "Starting $current_ensure of $key, version: $versionStr" $speech
 
         Run-Command 'choco.exe' "$current_ensure $key $versionTag $version -y"
 
-        Write-Message "$current_ensure of $key ($versionStr) successful."
+        Write-Message "$current_ensure of $key ($versionStr) successful." $speech
         Reset-Path $false
         Write-NewLine
     }
