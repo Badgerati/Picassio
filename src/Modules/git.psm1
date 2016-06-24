@@ -31,7 +31,7 @@ function Start-Module($colour, $variables, $credentials)
     # Check to see if git is installed, if not then install it
     if (!(Test-Software 'git --version' 'git'))
     {
-        Write-Errors 'Git is not installed'
+        Write-Warnings 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 

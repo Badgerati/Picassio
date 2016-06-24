@@ -484,15 +484,7 @@ function Run-Section($section)
 try
 {
     # Ensure we're running against the correct version of PowerShell
-    try
-    {
-        $currentVersion = [decimal]([string](Get-Host | Select-Object Version).Version)
-    }
-    catch
-    {
-        $currentVersion = [decimal]((Get-Host).Version.Major)
-    }
-
+    $currentVersion = Get-PowerShellVersion
     if ($currentVersion -lt 3)
     {
         Write-Errors "Picassio requires PowerShell 3.0 or greater, your version is $currentVersion"
@@ -504,7 +496,9 @@ try
     {
         return
     }
-    elseif ($help)
+
+    Write-Host ([string]::Empty)
+    if ($help)
     {
         Write-Help
         return
@@ -563,6 +557,8 @@ try
             Write-Errors "Default 'picassio.palette' file cannot be found in current directory."
             return
         }
+
+        Write-Host ([string]::Empty)
     }
     elseif (!(Test-Path $palette))
     {

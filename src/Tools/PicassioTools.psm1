@@ -12,7 +12,20 @@
 # Returns the current version of Picassio
 function Get-Version()
 {
-    return '0.9.11'
+    return '0.9.12'
+}
+
+# Returns the current version of PowerShell
+function Get-PowerShellVersion()
+{
+    try
+    {
+        return [decimal]([string](Get-Host | Select-Object Version).Version)
+    }
+    catch
+    {
+        return [decimal]((Get-Host).Version.Major)
+    }
 }
 
 # Checks to see if the user has administrator priviledges
@@ -70,7 +83,8 @@ function Write-Help()
 function Write-Version()
 {
     $version = Get-Version
-    Write-Host "Picassio v$version" -ForegroundColor Green
+    $psVersion = Get-PowerShellVersion
+    Write-Host "Picassio v$version (PS $psVersion)" -ForegroundColor Green
 }
 
 # Wipes a given directory
@@ -267,7 +281,7 @@ function Test-Software($command, $name = $null)
         }
 
         # attempt to call the program, see if we get a response back
-        $output = (powershell.exe /C "$command")
+        $output = powershell.exe /C "$command" | Out-Null
         if ($LASTEXITCODE -ne 0)
         {
             return $false
@@ -321,8 +335,9 @@ function Install-AdhocSoftware($packageName, $name, $installer = 'choco')
     {
         'choco'
             {
-                if (!(Test-Software 'choco list -lo'))
+                if (!(Test-Software 'choco -v'))
                 {
+                    Write-Warnings 'Chocolatey is not installed'
                     Install-Chocolatey
                 }
 
@@ -333,6 +348,7 @@ function Install-AdhocSoftware($packageName, $name, $installer = 'choco')
             {
                 if (!(Test-Software 'node.exe -v' 'nodejs'))
                 {
+                    Write-Warnings 'node.js is not installed'
                     Install-AdhocSoftware 'nodejs.install' 'node.js'
                 }
 
@@ -358,7 +374,7 @@ function Install-AdhocSoftware($packageName, $name, $installer = 'choco')
 # Install Chocolatey - if already installed, will just update
 function Install-Chocolatey()
 {
-    if (Test-Software 'choco list -lo')
+    if (Test-Software 'choco -v')
     {
         Write-Message 'Chocolatey is already installed.'
         return
@@ -372,7 +388,7 @@ function Install-Chocolatey()
         Set-ExecutionPolicy Bypass -Force
     }
 
-    Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1')) | Out-Null
+    Run-Command "Invoke-Expression ((New-Object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))" $null $true $true
     Write-Message 'Chocolately installed.'
 
     Reset-Path

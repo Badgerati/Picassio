@@ -38,7 +38,7 @@ function Start-Module($colour, $variables, $credentials)
     # Check to see if NuGet is installed, if not then install it
     if (!(Test-Software 'nuget.exe help' 'NuGet'))
     {
-        Write-Errors 'NuGet is not installed'
+        Write-Warnings 'NuGet is not installed'
         Install-AdhocSoftware 'NuGet.CommandLine' 'NuGet'
     }
 

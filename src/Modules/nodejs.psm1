@@ -28,7 +28,7 @@ function Start-Module($colour, $variables, $credentials)
 
     if (!(Test-Software 'node.exe -v' 'nodejs'))
     {
-        Write-Errors 'Node.js is not installed'
+        Write-Warnings 'Node.js is not installed'
         Install-AdhocSoftware 'nodejs.install' 'node.js'
     }
 
@@ -37,7 +37,7 @@ function Start-Module($colour, $variables, $credentials)
     {
         if (!(Test-Software 'npm -v' 'npm'))
         {
-            Write-Errors 'npm is not installed'
+            Write-Warnings 'npm is not installed'
             Install-AdhocSoftware 'npm' 'npm'
         }
     }

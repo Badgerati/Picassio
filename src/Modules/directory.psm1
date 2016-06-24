@@ -29,7 +29,7 @@ function Start-Module($colour, $variables, $credentials)
     $path = (Replace-Variables $colour.path $variables).Trim()
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
 
-    Write-Message "`nEnsuring '$path' $ensure."
+    Write-Message "Ensuring '$path' $ensure."
 
     switch ($ensure)
     {

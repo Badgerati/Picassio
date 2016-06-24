@@ -28,7 +28,7 @@ function Start-Module($colour, $variables, $credentials)
 
     if (!(Test-Software 'cake.exe -version' 'cake'))
     {
-        Write-Errors 'Cake is not installed'
+        Write-Warnings 'Cake is not installed'
         Install-AdhocSoftware 'cake.portable' 'Cake'
     }
 

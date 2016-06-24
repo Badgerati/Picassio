@@ -33,7 +33,7 @@ function Start-Module($colour, $variables, $credentials)
     $speech = $variables['__speech__']
 
     # Check to see if Chocolatey is installed, if not then install it
-    if (!(Test-Software 'choco list -lo'))
+    if (!(Test-Software 'choco -v'))
     {
         Install-Chocolatey
     }

@@ -41,7 +41,7 @@ function Start-Module($colour, $variables, $credentials)
 
     if (!(Test-Software 'Edison.Console.exe --version' 'Edison'))
     {
-        Write-Errors 'Edison is not installed'
+        Write-Warnings 'Edison is not installed'
         Install-AdhocSoftware 'edison' 'Edison'
     }
 

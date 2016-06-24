@@ -28,7 +28,7 @@ function Start-Module($colour, $variables, $credentials)
 
     if (!(Test-Software 'vagrant version' 'vagrant'))
     {
-        Write-Errors 'Vagrant is not installed'
+        Write-Warnings 'Vagrant is not installed'
         Install-AdhocSoftware 'vagrant' 'Vagrant'
     }
 

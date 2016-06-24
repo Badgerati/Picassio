@@ -30,7 +30,7 @@ function Start-Module($colour, $variables, $credentials)
 
     if (!(Test-Software svn.exe 'svn'))
     {
-        Write-Errors 'SVN is not installed'
+        Write-Warnings 'SVN is not installed'
         Install-AdhocSoftware 'svn' 'SVN'
     }
 

@@ -34,14 +34,14 @@ function Start-Module($colour, $variables, $credentials)
     # Check to see if git is installed, if not then install it
     if (!(Test-Software 'git --version' 'git'))
     {
-        Write-Errors 'Git is not installed'
+        Write-Warnings 'Git is not installed'
         Install-AdhocSoftware 'git.install' 'Git'
     }
 
     # Check to see if bower is installed, if not then install it
     if (!(Test-Software 'bower help'))
     {
-        Write-Errors 'bower is not installed'
+        Write-Warnings 'bower is not installed'
         Install-AdhocSoftware 'bower' 'bower' 'npm'
     }
 

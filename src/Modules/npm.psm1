@@ -35,7 +35,7 @@ function Start-Module($colour, $variables, $credentials)
     # Check to see if npm is installed, if not then install it
     if (!(Test-Software 'npm help' 'nodejs'))
     {
-        Write-Errors 'npm is not installed'
+        Write-Warnings 'npm is not installed'
         Install-AdhocSoftware 'nodejs.install' 'node.js'
     }
 

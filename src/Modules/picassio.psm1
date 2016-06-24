@@ -43,6 +43,7 @@ function Start-Module($colour, $variables, $credentials)
 
     ForEach ($palette in $palettes)
     {
+        Write-Host ([string]::Empty)
         $palette = Replace-Variables $palette $variables
 
         switch ($ensure)
@@ -57,7 +58,7 @@ function Start-Module($colour, $variables, $credentials)
                         throw "Painting palette '$palette' failed."
                     }
 
-                    Write-Message 'Painting successfully.'
+                    Write-Message 'Painting successful.'
                 }
 
             'erase'
@@ -70,7 +71,7 @@ function Start-Module($colour, $variables, $credentials)
                         throw "Erasing palette '$palette' failed."
                     }
 
-                    Write-Message 'Erasing successfully.'
+                    Write-Message 'Erasing successful.'
                 }
         }
     }
