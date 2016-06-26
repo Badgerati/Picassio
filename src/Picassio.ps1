@@ -189,7 +189,7 @@ function Test-Section($section, $name)
 # Installs Picassio
 function Install-Picassio()
 {
-    if (!(Test-Path .\Picassio.ps1))
+    if (!(Test-Path '.\Picassio.ps1'))
     {
         Write-Errors 'Installation should only be called from where the Picassio scripts actually reside.'
         return

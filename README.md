@@ -17,7 +17,7 @@ To use Picassio properly, you will need to install the scripts. To do so, once y
 
 This will install all scripts for you, setting up the Path/environment variables. You will be able to use the "picassio" command straight away. Test is out by navigating to a different directory and typing `picassio -version`.
 
-Scripts are installed to "C:\Picassio". Here you will find the main modules and tools for picassio, you will also see an Extensions directory - covered at the bottom. Running `-install` on `.\Picassio.ps1` again will update the core modules/tools, and will leave the extensions in place. Running `-reinstall` will delete the extensions.
+Scripts are installed to "C:\Picassio". Here you will find the main modules and tools for Picassio, you will also see an Extensions directory - covered at the bottom. Running `-install` on `.\Picassio.ps1` again will update the core modules/tools, and will leave the extensions in place. Running `-reinstall` will delete the extensions for a complete fresh install.
 
 
 Features
@@ -47,11 +47,18 @@ The following are all supported by Picassio:
 
 Dependencies
 ============
-Picassio only depends on a few applications, and when required will automatically install them for you:
+Picassio doesn't depend on any external software to run however, when required it will automatically install the following for you:
 
-* Chocolatey, git, svn, Vagrant, node.js, npm, cake, NuGet, bower
+* Chocolatey
+* git
+* svn
+* Vagrant
+* node.js / npm
+* cake
+* NuGet
+* bower
 
-The above will only be installed when Picassio needs to use them. For example, using a software type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
+The above will only be installed when Picassio needs to use them. For example, using a Chocolatey type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 
 To view the source code, you can see the ps1 scripts via:
 
@@ -174,9 +181,9 @@ Picassio has the ability to clone a branch from any Git server. Simply supply th
         {
             "type": "git",
             "remote": "https://path/to/some/branch.git",
-            "localpath": "C:\\path\\to\\place\\branch",
-            "localname": "NewBranch",
-            "branchname": "master"
+            "path": "C:\\path\\to\\place\\branch",
+            "name": "NewBranch",
+            "branch": "master"
         }
     ]
 }
@@ -194,7 +201,7 @@ To clean the projects before building, you can pass true to the "clean" paramete
     "paint": [
         {
             "type": "msbuild",
-            "path": "C:\\path\\to\\your\\msbuild.exe",
+            "toolpath": "C:\\path\\to\\your\\msbuild.exe",
             "projects": [ "C:\\path\\to\\your\\project.csproj" ],
             "arguments": "/p:Configuration=Debug",
             "clean": true
@@ -439,7 +446,7 @@ The following palette with navigate to NUnit, and then run the tests. Picassio b
     "paint": [
         {
             "type": "nunit",
-            "path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            "toolpath": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
             "arguments": "/include:UnitTest,PeformanceTest /nologo",
             "tests": [
                 "Example\\Test1.dll",

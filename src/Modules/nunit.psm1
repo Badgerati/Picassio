@@ -12,7 +12,7 @@
 #	"paint": [
 #		{
 #			"type": "nunit",
-#			"path": "C:\\path\\to\\nunit-console.exe",
+#			"toolpath": "C:\\path\\to\\nunit-console.exe",
 #			"arguments": "/include:UnitTest /nologo",
 #			"tests": [
 #				"Example\\Test1.dll",
@@ -30,10 +30,10 @@ function Start-Module($colour, $variables, $credentials)
 {
     Test-Module $colour $variables $credentials
 
-    $path = (Replace-Variables $colour.path $variables).Trim()
-    if (!(Test-Path $path))
+    $toolpath = (Replace-Variables $colour.toolpath $variables).Trim()
+    if (!(Test-Path $toolpath))
     {
-        throw "Path to nunit-console.exe does not exist: '$path'."
+        throw "Path to nunit-console.exe does not exist: '$toolpath'."
     }
 
     $tests = $colour.tests
@@ -57,17 +57,17 @@ function Start-Module($colour, $variables, $credentials)
     Write-Message 'Running tests.'
 
     $test_string = Replace-Variables ($tests -join ' ') $variables
-    Run-Command $path "$test_string $_args"
+    Run-Command $toolpath "$test_string $_args"
 
     Write-Message 'Tests ran successfully.'
 }
 
 function Test-Module($colour, $variables, $credentials)
 {
-    $path = Replace-Variables $colour.path $variables
-    if ([String]::IsNullOrWhiteSpace($path))
+    $toolpath = Replace-Variables $colour.toolpath $variables
+    if ([String]::IsNullOrWhiteSpace($toolpath))
     {
-        throw 'No path specified to the location of NUint.'
+        throw 'No tool path specified to the location of NUint.'
     }
 
     $tests = $colour.tests

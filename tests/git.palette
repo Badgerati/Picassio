@@ -16,9 +16,9 @@
         {
             "type": "git",
             "remote": "https://github.com/Badgerati/Picassio.git",
-            "localpath": "C:\\Tests",
-            "localname": "PicassioRenamed",
-            "branchname": "master"
+            "path": "C:\\Tests",
+            "name": "PicassioRenamed",
+            "branch": "master"
         }
     ],
     "erase": [

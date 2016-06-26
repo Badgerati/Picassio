@@ -25,13 +25,13 @@
         {
             "type": "git",
             "remote": "https://github.com/Badgerati/Table.git",
-            "localpath": "C:\\Projects\\PicassoTest",
-            "localname": "RenamedFolder",
-            "branchname": "master"
+            "path": "C:\\Projects\\PicassoTest",
+            "name": "RenamedFolder",
+            "branch": "master"
         },
         {
             "type": "msbuild",
-            "path": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
+            "toolpath": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
             "projects": [ "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln" ],
             "arguments": "/p:Configuration=Debug",
             "clean": true
@@ -95,7 +95,7 @@
         },
         {
             "type": "nunit",
-            "path": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
+            "toolpath": "C:\\Program Files\\NUnit\\bin\\nunit-2.0\\nunit-console.exe",
             "arguments": "/include:UnitTest,PeformanceTest /nologo",
             "tests": [
                 "Example\\Test1.dll",

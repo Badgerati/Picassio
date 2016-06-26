@@ -119,7 +119,7 @@ function Backup-Directory($directory)
 # Returns whether Picassio has been installed or not
 function Test-PicassioInstalled()
 {
-    return !([String]::IsNullOrWhiteSpace($env:PicassioTools) -or [String]::IsNullOrWhiteSpace($env:PicassioModules) -or [String]::IsNullOrWhiteSpace($env:PicassioModules))
+    return !([String]::IsNullOrWhiteSpace($env:PicassioTools) -or [String]::IsNullOrWhiteSpace($env:PicassioModules) -or [String]::IsNullOrWhiteSpace($env:PicassioExtensions))
 }
 
 # Writes a general message to the console (cyan)

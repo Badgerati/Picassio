@@ -13,9 +13,9 @@
 #        {
 #            "type": "git",
 #            "remote": "https://path//to/some/branch.git"
-#            "branchname": "master",
-#            "localpath": "C:\\path\\to\\place",
-#            "localname": "NewBranch"
+#            "branch": "master",
+#            "path": "C:\\path\\to\\place",
+#            "name": "NewBranch"
 #        }
 #    ]
 # }
@@ -43,13 +43,13 @@ function Start-Module($colour, $variables, $credentials)
 
     $directory = $matches['repo']
 
-    $path = (Replace-Variables $colour.localpath $variables).Trim()
+    $path = (Replace-Variables $colour.path $variables).Trim()
     if (!(Test-Path $path))
     {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
-    $branch = Replace-Variables $colour.branchname $variables
+    $branch = Replace-Variables $colour.branch $variables
     if ([string]::IsNullOrWhiteSpace($branch))
     {
         $branch = 'master'
@@ -65,7 +65,7 @@ function Start-Module($colour, $variables, $credentials)
         $commit = $commit.Trim()
     }
 
-    $name = Replace-Variables $colour.localname $variables
+    $name = Replace-Variables $colour.name $variables
     if ($name -ne $null)
     {
         $name = $name.Trim()
@@ -145,7 +145,7 @@ function Test-Module($colour, $variables, $credentials)
         throw "Remote git repository of '$url' is not valid."
     }
 
-    $path = Replace-Variables $colour.localpath $variables
+    $path = Replace-Variables $colour.path $variables
     if ($path -ne $null)
     {
         $path = $path.Trim()

@@ -12,7 +12,7 @@
 #    "paint": [
 #        {
 #            "type": "msbuild",
-#            "path": "C:\\path\\to\\msbuild.exe",
+#            "toolpath": "C:\\path\\to\\msbuild.exe",
 #            "projects": [
 #                "C:\\path\\to\\project.csproj",
 #                "C:\\path\\to\\solution.sln"
@@ -31,15 +31,15 @@ function Start-Module($colour, $variables, $credentials)
 {
     Test-Module $colour $variables $credentials
 
-    $path = Replace-Variables $colour.path $variables
-    if ([string]::IsNullOrWhiteSpace($path))
+    $toolpath = Replace-Variables $colour.toolpath $variables
+    if ([string]::IsNullOrWhiteSpace($toolpath))
     {
-        Write-Message 'No path supplied, using default.'
-        $path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
+        Write-Message 'No MSBuild tool path supplied, using default.'
+        $toolpath = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
     }
     else
     {
-        $path = $path.Trim()
+        $toolpath = $toolpath.Trim()
     }
 
     $projects = $colour.projects
@@ -73,12 +73,12 @@ function Start-Module($colour, $variables, $credentials)
             if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true)
             {
                 Write-Host 'Cleaning...'
-                Build-Project $path "/p:Configuration=Debug /t:Clean $project"
-                Build-Project $path "/p:Configuration=Release /t:Clean $project"
+                Build-Project $toolpath "/p:Configuration=Debug /t:Clean $project"
+                Build-Project $toolpath "/p:Configuration=Release /t:Clean $project"
             }
 
             Write-Host 'Building...'
-            Build-Project $path "$_args $project"
+            Build-Project $toolpath "$_args $project"
 
             Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
             Write-Message "Project built successfully."
@@ -93,15 +93,15 @@ function Start-Module($colour, $variables, $credentials)
 
 function Test-Module($colour, $variables, $credentials)
 {
-    $path = Replace-Variables $colour.path $variables
-    if ([string]::IsNullOrWhiteSpace($path))
+    $toolpath = Replace-Variables $colour.toolpath $variables
+    if ([string]::IsNullOrWhiteSpace($toolpath))
     {
-        $path = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
+        $toolpath = 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe'
     }
 
-    if (!(Test-Path ($path.Trim())))
+    if (!(Test-Path ($toolpath.Trim())))
     {
-        throw "Invalid path to MSBuild.exe supplied: '$path'."
+        throw "Invalid tool path to MSBuild.exe supplied: '$toolpath'."
     }
 
     $clean = Replace-Variables $colour.clean $variables
