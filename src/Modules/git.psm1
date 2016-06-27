@@ -35,10 +35,12 @@ function Start-Module($colour, $variables, $credentials)
         Install-AdhocSoftware 'git.install' 'Git'
     }
 
-    $url = (Replace-Variables $colour.remote $variables).Trim()
-    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git'))
+    $remote = (Replace-Variables $colour.remote $variables).Trim()
+    $pattern = Get-GitPattern
+
+    if (!($remote -imatch $pattern))
     {
-        throw "Remote git repository of '$url' is not valid."
+        throw "Remote git repository of '$remote' is not valid."
     }
 
     $directory = $matches['repo']
@@ -86,8 +88,8 @@ function Start-Module($colour, $variables, $credentials)
         }
 
         # clone
-        Write-Message "Cloning git repository from '$url' to '$path'."
-        Run-Command 'git.exe' "clone $url"
+        Write-Message "Cloning git repository from '$remote' to '$path'."
+        Run-Command 'git.exe' "clone $remote"
 
         # rename
         if (![string]::IsNullOrWhiteSpace($name))
@@ -132,27 +134,22 @@ function Start-Module($colour, $variables, $credentials)
 
 function Test-Module($colour, $variables, $credentials)
 {
-    $url = Replace-Variables $colour.remote $variables
-    if ($url -eq $null)
-    {
-        $url = [string]::Empty
-    }
+    $remote = Replace-Variables $colour.remote $variables
+    $pattern = Get-GitPattern
 
-    $url = $url.Trim()
-
-    if (!($url -match '(\\|\/)(?<repo>[a-zA-Z]+)\.git'))
+    if ([string]::IsNullOrWhiteSpace($remote) -or $remote.Trim() -inotmatch $pattern)
     {
-        throw "Remote git repository of '$url' is not valid."
+        throw "Remote git repository of '$remote' is not valid."
     }
 
     $path = Replace-Variables $colour.path $variables
-    if ($path -ne $null)
-    {
-        $path = $path.Trim()
-    }
-
     if ([string]::IsNullOrWhiteSpace($path))
     {
         throw 'No local git repository path specified.'
     }
+}
+
+function Get-GitPattern()
+{
+    return '(\\|\/)(?<repo>[a-zA-Z]+)\.git'
 }

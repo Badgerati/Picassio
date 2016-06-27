@@ -68,13 +68,13 @@
         },
         {
             "type": "hosts",
-            "ensure": "added",
+            "ensure": "add",
             "ip": "127.0.0.3",
             "hostname": "test.local.com"
         },
         {
             "type": "hosts",
-            "ensure": "added",
+            "ensure": "add",
             "ip": "127.0.0.2",
             "hostname": "test.site.com"
         },
@@ -161,7 +161,7 @@
         },
         {
             "type": "hosts",
-            "ensure": "removed",
+            "ensure": "remove",
             "ip": "127.0.0.3",
             "hostname": "test.local.com"
         }

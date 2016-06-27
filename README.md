@@ -351,7 +351,7 @@ The following palette will add an entry to the hosts
     "paint": [
         {
             "type": "hosts",
-            "ensure": "added",
+            "ensure": "add",
             "ip": "127.0.0.3",
             "hostname": "test.local.com"
         }
@@ -365,7 +365,7 @@ The following will remove all entries with the passed IP
     "paint": [
         {
             "type": "hosts",
-            "ensure": "removed",
+            "ensure": "remove",
             "ip": "127.0.0.3"
         }
     ]

@@ -12,7 +12,7 @@
 #	"paint": [
 #		{
 #			"type": "hosts",
-#			"ensure": "added",
+#			"ensure": "add",
 #			"ip": "127.0.0.3",
 #			"hostname": "test.local.com"
 #		}
@@ -52,13 +52,13 @@ function Start-Module($colour, $variables, $credentials)
         $hostname = $hostname.Trim()
     }
 
-    Write-Message "Ensuring '$ip - $hostname' are $ensure."
+    Write-Message "Attempting to $ensure '$ip - $hostname'."
     $regex = ".*?$ip.*?$hostname.*?"
     $lines = Get-Content $hostFile
 
     switch ($ensure)
     {
-        'added'
+        'add'
             {
                 $current = ($lines | Where-Object { $_ -match $regex } | Measure-Object).Count
 
@@ -72,7 +72,7 @@ function Start-Module($colour, $variables, $credentials)
                 }
             }
 
-        'removed'
+        'remove'
             {
                 $lines | Where-Object { $_ -notmatch $regex } | Out-File -FilePath $hostFile -Encoding ASCII
             }
@@ -83,7 +83,7 @@ function Start-Module($colour, $variables, $credentials)
         throw "Failed to $ensure '$ip - $hostname' to the hosts file."
     }
 
-    Write-Message "'$ip - $hostname' has been $ensure successfully."
+    Write-Message "$ensure of '$ip - $hostname' successful."
 }
 
 function Test-Module($colour, $variables, $credentials)
@@ -95,16 +95,10 @@ function Test-Module($colour, $variables, $credentials)
     }
 
     $ensure = Replace-Variables $colour.ensure $variables
-    if ([String]::IsNullOrWhiteSpace($ensure))
+    $ensures = @('add', 'remove')
+    if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
     {
-        throw 'No ensure parameter supplied for hosts update.'
-    }
-
-    # check we have a valid ensure property
-    $ensure = $ensure.ToLower().Trim()
-    if ($ensure -ne 'added' -and $ensure -ne 'removed')
-    {
-        throw "Invalid ensure parameter supplied for hosts: '$ensure'."
+        throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
     }
 
     # check IP
@@ -121,11 +115,11 @@ function Test-Module($colour, $variables, $credentials)
         $hostname = [String]::Empty
     }
 
-    if ($ensure -eq 'added' -and ([String]::IsNullOrWhiteSpace($ip) -or [String]::IsNullOrWhiteSpace($hostname)))
+    if ($ensure -eq 'add' -and ([String]::IsNullOrWhiteSpace($ip) -or [String]::IsNullOrWhiteSpace($hostname)))
     {
         throw 'No IP or Hostname has been supplied for adding a host entry.'
     }
-    elseif ($ensure -eq 'removed' -and [String]::IsNullOrWhiteSpace($ip) -and [String]::IsNullOrWhiteSpace($hostname))
+    elseif ($ensure -eq 'remove' -and [String]::IsNullOrWhiteSpace($ip) -and [String]::IsNullOrWhiteSpace($hostname))
     {
         throw 'No IP and Hostname have been supplied for removing a host entry.'
     }
