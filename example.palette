@@ -32,9 +32,10 @@
         {
             "type": "msbuild",
             "toolpath": "C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\MSBuild.exe",
+            "configuration": "Debug",
             "projects": [ "C:\\Projects\\PicassoTest\\RenamedFolder\\C#\\Table.sln" ],
-            "arguments": "/p:Configuration=Debug",
-            "clean": true
+            "arguments": "/t:Rebuild",
+            "clean": false
         },
         {
             "type": "command",

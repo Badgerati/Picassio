@@ -13,12 +13,13 @@
 #        {
 #            "type": "msbuild",
 #            "toolpath": "C:\\path\\to\\msbuild.exe",
+#            "configuration": "Debug",
 #            "projects": [
 #                "C:\\path\\to\\project.csproj",
 #                "C:\\path\\to\\solution.sln"
 #            ],
-#            "arguments": "/p:Configuration=Debug",
-#            "clean": true
+#            "arguments": "/t:Rebuild",
+#            "clean": false
 #        }
 #    ]
 # }
@@ -40,6 +41,12 @@ function Start-Module($colour, $variables, $credentials)
     else
     {
         $toolpath = $toolpath.Trim()
+    }
+
+    $configuration = Replace-Variables $colour.configuration $variables
+    if ([string]::IsNullOrWhiteSpace($configuration))
+    {
+        $configuration = 'Debug'
     }
 
     $projects = $colour.projects
@@ -73,12 +80,11 @@ function Start-Module($colour, $variables, $credentials)
             if (![string]::IsNullOrWhiteSpace($clean) -and $clean -eq $true)
             {
                 Write-Host 'Cleaning...'
-                Build-Project $toolpath "/p:Configuration=Debug /t:Clean $project"
-                Build-Project $toolpath "/p:Configuration=Release /t:Clean $project"
+                Build-Project $toolpath "/p:Configuration=$configuration /t:Clean $project"
             }
 
             Write-Host 'Building...'
-            Build-Project $toolpath "$_args $project"
+            Build-Project $toolpath "/p:Configuration=$configuration $_args $project"
 
             Write-Stamp ('Time taken: {0}' -f $stopwatch.Elapsed)
             Write-Message "Project built successfully."

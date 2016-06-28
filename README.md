@@ -202,9 +202,10 @@ To clean the projects before building, you can pass true to the "clean" paramete
         {
             "type": "msbuild",
             "toolpath": "C:\\path\\to\\your\\msbuild.exe",
+            "configuration": "Debug",
             "projects": [ "C:\\path\\to\\your\\project.csproj" ],
-            "arguments": "/p:Configuration=Debug",
-            "clean": true
+            "arguments": "/t:Rebuild",
+            "clean": false
         }
     ]
 }
