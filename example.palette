@@ -5,10 +5,10 @@
     "paint": [
         {
             "type": "variables",
-            "variables": [
-                { "value1": true },
-                { "value2": "added" }
-            ]
+            "variables": {
+                "value1": true,
+                "value2": "added"
+            }
         },
         {
             "type": "credentials",

@@ -12,10 +12,10 @@
 #	"paint": [
 #		{
 #			"type": "variables",
-#			"variables": [
-#				{ "value1": true },
-#				{ "value2": "added" }
-#			]
+#			"variables": {
+#				"value1": true,
+#				"value2": "added"
+#			}
 #		}
 #	]
 # }
@@ -34,24 +34,31 @@ function Start-Module($colour, $variables, $credentials)
 
 function Test-Module($colour, $variables, $credentials)
 {
-	$vars = $colour.variables
-	if ($vars -eq $null -or $vars.Length -eq 0)
+    $vars = $colour.variables
+    if ($vars -eq $null)
     {
-		return
-	}
+        return
+    }
 
-	$pattern = Get-VariableRegex
-	$invalid = ($vars | Where-Object { $_.PSObject.Properties.Name -notmatch $pattern })
-
-	if ($invalid -ne $null -and $invalid.Length -ne 0)
+    $keys = $vars.psobject.properties.name
+    if ($keys -eq $null -or $keys.Length -eq 0)
     {
-		Write-Errors "Invalid variable names found. Variable names can only be alphanumeric`n$invalid"
-		throw
-	}
+        Write-Message 'No variables supplied.'
+        return
+    }
 
-    $vars | ForEach-Object { $variables[$_.PSObject.Properties.Name] = $_.PSObject.Properties.Value }
-	if (!$?)
+    $pattern = Get-VariableRegex
+
+    $invalid = ($keys | Where-Object { $_ -inotmatch $pattern })
+    if ($invalid -ne $null -and $invalid.Length -gt 0)
     {
-		throw 'Variables failed to setup.'
-	}
+        Write-Errors "Invalid variable names found. Variable names can only be alphanumeric`n$invalid"
+        throw
+    }
+
+    $keys | ForEach-Object { $variables[$_] = $vars.$_ }
+    if (!$?)
+    {
+        throw 'Variables failed to setup.'
+    }
 }

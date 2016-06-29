@@ -12,7 +12,7 @@
 # Returns the current version of Picassio
 function Get-Version()
 {
-    return '0.9.12'
+    return '0.9.13'
 }
 
 # Returns the current version of PowerShell

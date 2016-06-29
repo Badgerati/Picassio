@@ -1,0 +1,23 @@
+{
+    "paint": [
+        {
+            "type": "variables",
+            "variables": {
+                "value1": "world",
+                "value2": 123
+            }
+        },
+        {
+            "type": "echo",
+            "text": "Hello, #(value1)!"
+        },
+        {
+            "type": "echo",
+            "text": "Example of a number: #(value2)"
+        },
+        {
+            "type": "echo",
+            "text": "Using two variables: Hello, #(value1) and #(value2)"
+        }
+    ]
+}

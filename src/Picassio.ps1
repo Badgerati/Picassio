@@ -73,6 +73,7 @@ function Test-File($palette)
 
     # Ensure all modules for paint exist
     $variables = @{}
+    $variables['__initial_validation__'] = $true
     Test-Section $paint 'paint'
 
     # Ensure that if there's an erase section, it too is valid
@@ -87,9 +88,11 @@ function Test-File($palette)
 
         # Ensure all modules for erase exist
         $variables = @{}
+        $variables['__initial_validation__'] = $true
         Test-Section $erase 'erase'
     }
 
+    $variables['__initial_validation__'] = $false
     Write-Message 'Palette file is valid.'
 
     # Return config as json

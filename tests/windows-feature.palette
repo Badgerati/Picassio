@@ -3,7 +3,7 @@
     "paint": [
         {
             "type": "windows-feature",
-            "ensure": "installed",
+            "ensure": "install",
             "name": "Web-Server",
             "includeSubFeatures": true,
             "includeManagementTools": true
@@ -12,7 +12,7 @@
     "erase": [
         {
             "type": "windows-feature",
-            "ensure": "uninstalled",
+            "ensure": "uninstall",
             "name": "Web-Server",
             "includeManagementTools": true
         }

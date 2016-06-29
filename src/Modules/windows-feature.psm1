@@ -12,7 +12,7 @@
 #    "paint": [
 #        {
 #            "type": "windows-feature",
-#            "ensure": "installed",
+#            "ensure": "install",
 #            "includeSubFeatures": true,
 #            "includeManagementTools": true,
 #            "names": [
@@ -39,15 +39,15 @@ function Start-Module($colour, $variables, $credentials)
     ForEach ($name in $names)
     {
         $name = (Replace-Variables $name $variables).Trim()
-        Write-Message "`nEnsuring '$name' is $ensure."
+        Write-Message "`nAttempting to $ensure '$name'."
 
         switch ($ensure)
         {
-            'installed'
+            'install'
                 {
                     if ((Get-WindowsFeature -Name $name).Installed -eq $true)
                     {
-                        Write-Information "$name has already been $ensure."
+                        Write-Information ("$name has already been {0}ed." -f $ensure)
                         continue
                     }
 
@@ -74,11 +74,11 @@ function Start-Module($colour, $variables, $credentials)
                     }
                 }
 
-            'uninstalled'
+            'uninstall'
                 {
                     if ((Get-WindowsFeature -Name $name).Installed -eq $false)
                     {
-                        Write-Information "$name has already been $ensure."
+                        Write-Information ("$name has already been {0}ed." -f $ensure)
                         continue
                     }
 
@@ -98,7 +98,7 @@ function Start-Module($colour, $variables, $credentials)
                 }
         }
 
-        Write-Message "'$name' has been $ensure."
+        Write-Message "$ensure of '$name' successful."
     }
 
     Write-Information 'It is suggested that you restart your computer.'
@@ -125,7 +125,7 @@ function Test-Module($colour, $variables, $credentials)
 
     # Check ensures value
     $ensure = Replace-Variables $colour.ensure $variables
-    $ensures = @('installed', 'uninstalled')
+    $ensures = @('install', 'uninstall')
     if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
     {
         throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))

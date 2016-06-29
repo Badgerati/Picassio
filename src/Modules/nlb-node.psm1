@@ -12,7 +12,7 @@
 #	"paint": [
 #		{
 #			"type": "nlb-node",
-#           "ensure": "stopped",
+#           "ensure": "stop",
 #           "drain": true,
 #           "timeout": 30,
 #           "nodes": [
@@ -21,14 +21,14 @@
 #		},
 #		{
 #			"type": "nlb-node",
-#           "ensure": "started",
+#           "ensure": "start",
 #           "nodes": [
 #               "NODE_NAME_1"
 #           ]
 #		},
 #		{
 #			"type": "nlb-node",
-#           "ensure": "added",
+#           "ensure": "add",
 #           "cluster": "NODE_CLUSTER_NAME",
 #           "interface": "vlan-3",
 #           "nodes": [
@@ -61,43 +61,45 @@ function Start-Module($colour, $variables, $credentials)
     {
         $node = (Replace-Variables $node $variables).Trim()
 
-        Write-Message "Attempting to set the $node node as $ensure."
+        Write-Message "Attempting to $ensure the $node node."
 
         switch ($ensure)
         {
-            'added'
+            'add'
                 {
                     $cluster = (Replace-Variables $colour.cluster $variables).Trim()
                     $interface = (Replace-Variables $colour.interface $variables).Trim()
-                    Get-NlbCluster $cluster | Add-NlbClusterNode -NewNodeName $node -NewNodeInterface $interface
+                    Get-NlbCluster $cluster | Add-NlbClusterNode -NewNodeName $node -NewNodeInterface $interface -Force
                 }
 
-            'removed'
+            'remove'
                 {
                     Remove-NlbClusterNode $node -Force
                 }
 
-            'started'
+            'start'
                 {
                     Start-NlbClusterNode $node
                 }
 
-            'stopped'
+            'stop'
                 {
-                    if ($drain -eq $true) {
+                    if ($drain -eq $true)
+                    {
                         Stop-NlbClusterNode $node -Drain -Timeout $timeout
                     }
-                    else {
+                    else
+                    {
                         Stop-NlbClusterNode $node
                     }
                 }
 
-            'suspended'
+            'suspend'
                 {
                     Suspend-NlbClusterNode $node
                 }
 
-            'resumed'
+            'resume'
                 {
                     Resume-NlbClusterNode $node
                 }
@@ -105,17 +107,17 @@ function Start-Module($colour, $variables, $credentials)
 
         if (!$?)
         {
-            throw "Failed to load balance the $node node as $ensure."
+            throw "Failed to $ensure the $node node."
         }
 
-        Write-Message "$node node $ensure successfully."
+        Write-Message "$ensure of $node node successful."
     }
 }
 
 function Test-Module($colour, $variables, $credentials)
 {
     $ensure = Replace-Variables $colour.ensure $variables
-    $ensures = @('stopped', 'started', 'added', 'removed', 'resumed', 'suspended')
+    $ensures = @('stop', 'start', 'add', 'remove', 'resume', 'suspend')
     if ([string]::IsNullOrWhiteSpace($ensure) -or $ensures -inotcontains ($ensure.Trim()))
     {
         throw ("Invalid ensure found: '$ensure'. Can be only: {0}." -f ($ensures -join ', '))
@@ -137,7 +139,7 @@ function Test-Module($colour, $variables, $credentials)
         }
     }
 
-    if ($ensure -ieq 'added')
+    if ($ensure -ieq 'add')
     {
         $cluster = Replace-Variables $colour.cluster $variables
         if ([string]::IsNullOrWhiteSpace($cluster))

@@ -14,7 +14,7 @@
 #           "type": "picassio",
 #           "ensure": "paint",
 #           "palettes": [
-#               "C:\\path\\to\\palette.picassio"
+#               "C:\\path\\to\\picassio.palette"
 #           ]
 #        }
 #    ]

@@ -34,26 +34,26 @@ function Start-Module($colour, $variables, $credentials)
         Install-AdhocSoftware 'svn' 'SVN'
     }
 
-    $url = (Replace-Variables $colour.remote $variables).Trim()
-    $path = (Replace-Variables $colour.localpath $variables).Trim()
+    $url = (Replace-Variables $colour.url $variables).Trim()
+    $name = (Replace-Variables $colour.name $variables).Trim()
 
+    $path = (Replace-Variables $colour.path $variables).Trim()
     if (!(Test-Path $path))
     {
         New-Item -ItemType Directory -Force -Path $path | Out-Null
     }
 
-    $name = (Replace-Variables $colour.localname $variables).Trim()
     $revision = Replace-Variables $colour.revision $variables
     if ($revision -ne $null)
     {
         $revision = $revision.Trim()
     }
 
-    # Delete existing directory
     Push-Location $path
 
     try
     {
+        # Delete existing directory
         if ((Test-Path $name))
         {
             Backup-Directory $name
@@ -89,19 +89,19 @@ function Start-Module($colour, $variables, $credentials)
 
 function Test-Module($colour, $variables, $credentials)
 {
-    $url = Replace-Variables $colour.remote $variables
+    $url = Replace-Variables $colour.url $variables
     if ([string]::IsNullOrWhiteSpace($url))
     {
-        throw 'No remote SVN repository passed.'
+        throw 'No URL to an SVN repository passed.'
     }
 
-    $path = Replace-Variables $colour.localpath $variables
+    $path = Replace-Variables $colour.path $variables
     if ([string]::IsNullOrWhiteSpace($path))
     {
         throw 'No local SVN repository path specified.'
     }
 
-    $name = Replace-Variables $colour.localname $variables
+    $name = Replace-Variables $colour.name $variables
     if ([string]::IsNullOrWhiteSpace($name))
     {
         throw 'No local name supplied for local repository.'
