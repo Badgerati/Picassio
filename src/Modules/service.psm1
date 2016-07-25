@@ -79,7 +79,7 @@ function Start-Module($colour, $variables, $credentials)
 
         $tasks = (tasklist /FI "IMAGENAME eq mmc.exe")
         $t = ($tasks | Where-Object { $_ -match "mmc.exe" })
-        if ($tasks.Count -gt 0)
+        if ($t.Count -gt 0)
         {
             taskkill /F /IM mmc.exe | Out-Null
         }

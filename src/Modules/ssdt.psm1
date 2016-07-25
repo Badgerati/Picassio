@@ -20,7 +20,7 @@
 #           "backupFirst": false,
 #           "dropFirst": false,
 #           "blockOnLoss": true,
-#           "args": "/p:IgnorePermissions=True"
+#           "arguments": "/p:IgnorePermissions=True"
 #       },
 #       {
 #           "type": "ssdt",
@@ -29,7 +29,7 @@
 #           "source": "C:\\path\\to\\some\\file.dacpac",
 #           "output": "C:\\path\\to\\create\\output.sql",
 #           "timeout": 60,
-#           "args": "/p:IgnorePermissions=True"
+#           "arguments": "/p:IgnorePermissions=True"
 #       }
 #   ]
 # }
@@ -68,7 +68,7 @@ function Start-Module($colour, $variables, $credentials)
         $timeoutAction = "/p:CommandTimeout=$timeout"
     }
 
-    $_args = Replace-Variables $colour.args $variables
+    $_args = Replace-Variables $colour.arguments $variables
     if ([string]::IsNullOrWhiteSpace($_args))
     {
         $_args = [string]::Empty

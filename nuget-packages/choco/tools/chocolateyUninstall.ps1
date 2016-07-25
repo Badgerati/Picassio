@@ -1,0 +1,2 @@
+# Uninstall Picassio
+picassio -uninstall
