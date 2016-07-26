@@ -7,14 +7,14 @@
     <version>$version$</version>
     <authors>Badgerati</authors>
     <owners>Badgerati</owners>
-    <summary>Picassio is a PowerShell provisioning/deployment script for Windows</summary>
-    <description>Picassio is a PowerShell v3.0+ provisioning/deployment script which uses a single JSON file to determine what commands to execute.</description>
+    <summary>Picassio is a PowerShell automated provisioning/deployment tool for Windows</summary>
+    <description>Picassio is a PowerShell v3.0+ automated provisioning/deployment tool, which uses a single JSON file to determine what commands to execute.</description>
     <projectUrl>https://github.com/Badgerati/Picassio</projectUrl>
     <projectSourceUrl>https://github.com/Badgerati/Picassio</projectSourceUrl>
     <packageSourceUrl>https://github.com/Badgerati/Picassio/tree/master/nuget-packages</packageSourceUrl>
     <docsUrl>https://github.com/Badgerati/Picassio/wiki</docsUrl>
     <bugTrackerUrl>https://github.com/Badgerati/Picassio/issues</bugTrackerUrl>
-    <tags>picassio powershell deploy build provision automate</tags>
+    <tags>picassio powershell deploy build provision automate test install software iis</tags>
     <copyright>Copyright 2016</copyright>
     <licenseUrl>https://github.com/Badgerati/Picassio/blob/master/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
