@@ -13,15 +13,33 @@ $packageArgs = @{
 # Download Picassio
 Install-ChocolateyZipPackage @packageArgs
 
-Write-Host $pwd -ForegroundColor Cyan
-
 # Install Picassio
 $picassioPath = Join-Path $env:chocolateyPackageFolder 'tools/src'
 Push-Location $picassioPath
 
 try
 {
-    .\Picassio.ps1 -install
+    $main = $pwd
+    $tools = "$main\Tools"
+    $modules = "$main\Modules"
+    $extensions = "$main\Extensions"
+
+    if (!(Test-Path $extensions))
+    {
+        Write-Host "Creating '$extensions' directory."
+        New-Item -ItemType Directory -Force -Path $extensions | Out-Null
+    }
+
+    Write-Host 'Updating environment Path.'
+    Install-ChocolateyPath -PathToInstall $main -PathType 'Machine'
+
+    Write-Host 'Creating environment variables.'
+    Install-ChocolateyEnvironmentVariable -VariableName 'PicassioModules' -VariableValue $modules -VariableType 'Machine'
+    Install-ChocolateyEnvironmentVariable -VariableName 'PicassioExtensions' -VariableValue $extensions -VariableType 'Machine'
+
+    $tools = "$tools\PicassioTools.psm1"
+    Install-ChocolateyEnvironmentVariable -VariableName 'PicassioTools' -VariableValue $tools -VariableType 'Machine'
+
     refreshenv
 }
 finally
