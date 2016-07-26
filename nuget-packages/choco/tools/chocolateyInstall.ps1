@@ -22,6 +22,7 @@ Push-Location $picassioPath
 try
 {
     .\Picassio.ps1 -install
+    refreshenv
 }
 finally
 {

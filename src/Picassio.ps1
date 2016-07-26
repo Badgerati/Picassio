@@ -265,7 +265,7 @@ function Uninstall-Picassio()
 
     Write-Information 'Uninstalling Picassio.'
 
-    $main = Split-Path -Path $env:PicassioTools
+    $main = Split-Path -Path $env:PicassioModules
 
     if ((Test-Path $main))
     {

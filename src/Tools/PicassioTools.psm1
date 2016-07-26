@@ -70,7 +70,7 @@ function Write-Help()
     Write-Host " -uninstall`t Uninstalls Picassio"
     Write-Host " -reinstall`t Uninstalls and then re-installs Picassio"
     Write-Host " -version`t Displays the current version of Picassio"
-    Write-Host " -palette`t Specifies the picassio palette file to use"
+    Write-Host " -palette`t Specifies the picassio palette file to use (Default: picassio.palette)"
     Write-Host " -paint`t`t Runs the palette file's paint section"
     Write-Host " -erase`t`t Runs the palette file's erase section, if one is present"
     Write-Host " -username`t [Optional] Your username to use for initial credentials"
