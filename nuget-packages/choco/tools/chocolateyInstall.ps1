@@ -13,5 +13,17 @@ $packageArgs = @{
 # Download Picassio
 Install-ChocolateyZipPackage @packageArgs
 
+Write-Host $pwd -ForegroundColor Cyan
+
 # Install Picassio
-.\Picassio -install
+$picassioPath = Join-Path $env:chocolateyPackageFolder 'tools/src'
+Push-Location $picassioPath
+
+try
+{
+    .\Picassio.ps1 -install
+}
+finally
+{
+    Pop-Location
+}

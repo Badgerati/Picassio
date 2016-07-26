@@ -62,11 +62,6 @@ To view the source code, you can see the ps1 scripts via:
 * Your favourite text editor
 * Visual Studio (you will need the "PowerShell Tools" Visual Studio extension)
 
-# To Do
-There are still quite a few things I wish to add to Picassio, the following is a short list:
-
-* Ability to install Picassio via Chocolatey
-
 # Examples
 To chain them together, just append more colour objects within the paint array. This way you can clone a branch from Git which is a simple WCF Service, build it and then install the service and start it.
 

@@ -200,46 +200,15 @@ function Install-Picassio()
 
     Write-Information 'Installing Picassio.'
 
-    $main = 'C:\Picassio'
+    $main = $pwd
     $tools = "$main\Tools"
     $modules = "$main\Modules"
     $extensions = "$main\Extensions"
-
-    if (!(Test-Path $main))
-    {
-        Write-Message "Creating '$main' directory."
-        New-Item -ItemType Directory -Force -Path $main | Out-Null
-    }
-
-    if (!(Test-Path $tools))
-    {
-        Write-Message "Creating '$tools' directory."
-        New-Item -ItemType Directory -Force -Path $tools | Out-Null
-    }
-
-    if (!(Test-Path $modules))
-    {
-        Write-Message "Creating '$modules' directory."
-        New-Item -ItemType Directory -Force -Path $modules | Out-Null
-    }
 
     if (!(Test-Path $extensions))
     {
         Write-Message "Creating '$extensions' directory."
         New-Item -ItemType Directory -Force -Path $extensions | Out-Null
-    }
-
-    Write-Message 'Copying Picassio scripts.'
-    Copy-Item -Path .\Picassio.ps1 -Destination $main -Force | Out-Null
-    Copy-Item -Path .\Tools\PicassioTools.psm1 -Destination $tools -Force | Out-Null
-
-    Write-Message 'Copying core modules.'
-    Copy-Item -Path .\Modules\* -Destination $modules -Force -Recurse | Out-Null
-
-    if ((Test-Path '.\Extensions'))
-    {
-        Write-Message 'Copying saved extensions.'
-        Copy-Item -Path .\Extensions\* -Destination $extensions -Force -Recurse | Out-Null
     }
 
     Write-Message 'Updating environment Path.'
@@ -296,7 +265,7 @@ function Uninstall-Picassio()
 
     Write-Information 'Uninstalling Picassio.'
 
-    $main = 'C:\Picassio'
+    $main = Split-Path -Path $env:PicassioTools
 
     if ((Test-Path $main))
     {
@@ -338,7 +307,7 @@ function Uninstall-Picassio()
 # Re-installs Picassio by uninstalling then re-installing
 function Reinstall-Picassio()
 {
-    if (!(Test-Path .\Picassio.ps1))
+    if (!(Test-Path '.\Picassio.ps1'))
     {
         Write-Errors 'Re-installation should only be called from where the Picassio scripts actually reside.'
         return
