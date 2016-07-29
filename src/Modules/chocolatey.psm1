@@ -39,6 +39,7 @@ function Start-Module($colour, $variables, $credentials)
     }
 
     $ensure = (Replace-Variables $colour.ensure $variables).ToLower().Trim()
+    $ignoreFailure = [bool](Replace-Variables $colour.ignoreFailure $variables)
     $software = $colour.software
     $keys = $software.psobject.properties.name
 
@@ -116,7 +117,7 @@ function Start-Module($colour, $variables, $credentials)
 
         Write-Message "Starting $current_ensure of $key, version: $versionStr" $speech
 
-        Run-Command 'choco.exe' "$current_ensure $key $versionTag $version -y"
+        Run-Command 'choco.exe' "$current_ensure $key $versionTag $version -y" -ignoreFailure $ignoreFailure
 
         Write-Message "$current_ensure of $key ($versionStr) successful." $speech
         Reset-Path $false

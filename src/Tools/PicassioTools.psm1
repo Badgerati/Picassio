@@ -438,15 +438,20 @@ function Test-Win64()
 }
 
 # Runs the passed command and arguments. If fails displays the last 200 lines of output
-function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $false)
+function Run-Command([string]$command, [string]$_args, [bool]$fullOutput = $false, [bool]$isPowershell = $false, [bool]$ignoreFailure = $false)
 {
     Write-Information "Running command: '$command $_args'"
+
+    if ($ignoreFailure)
+    {
+        Write-Warnings 'Failures are being suppressed'
+    }
 
     if ($isPowershell)
     {
         $output = powershell.exe /C "`"$command`" $_args"
 
-        if (!$?)
+        if (!$? -and !$ignoreFailure)
         {
             if ($output -ne $null)
             {
@@ -464,8 +469,9 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
     else
     {
         $output = cmd.exe /C "`"$command`" $_args"
+        $code = $LASTEXITCODE
 
-        if ($LASTEXITCODE -ne 0)
+        if ($code -ne 0 -and !$ignoreFailure)
         {
             if ($output -ne $null)
             {
@@ -477,7 +483,7 @@ function Run-Command($command, $_args, $fullOutput = $false, $isPowershell = $fa
                 $output | ForEach-Object { Write-Errors $_ }
             }
 
-            throw "Command '$command' failed to complete."
+            throw "Command '$command' failed to complete. Exit code: $code"
         }
     }
 }
