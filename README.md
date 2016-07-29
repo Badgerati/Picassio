@@ -9,15 +9,11 @@ Picassio is named so, as you take a just built empty server/computer and 'paint'
 All of Picassio's features (colours) are modularised, allowing for people to have the ability to create extension modules - explained at the end of this document.
 
 # Installing
-To use Picassio properly, you will need to install the scripts. To do so, once you have cloned the repo, navigate to the "src" folder and run the following command in a PowerShell prompt in administrator mode.
+Picassio can be installed via Chocolatey:
 
-```shell
-.\Picassio.ps1 -install
+```bash
+choco install picassio
 ```
-
-This will install all scripts for you, setting up the Path/environment variables. You will be able to use the "picassio" command straight away. Test is out by navigating to a different directory and typing `picassio -version`.
-
-Scripts are installed to "C:\Picassio". Here you will find the main modules and tools for Picassio, you will also see an Extensions directory - covered at the bottom. Running `-install` on `.\Picassio.ps1` again will update the core modules/tools, and will leave the extensions in place. Running `-reinstall` will delete the extensions for a complete fresh install.
 
 # Features
 The following are all supported by Picassio:
