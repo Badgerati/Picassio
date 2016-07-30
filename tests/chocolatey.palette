@@ -13,6 +13,7 @@
             "type": "chocolatey",
             "description": "Test to attempt to install edison again",
             "ensure": "install",
+            "ignoreFailure": true,
             "software": {
                 "edison": "latest"
             }

@@ -2,6 +2,7 @@ Vagrant.configure("2") do |config|
     config.vm.box = "opentable/win-2012r2-standard-amd64-nocm"
     config.vm.guest = :windows
     config.vm.communicator = "winrm"
+    config.winrm.max_tries = 20
 
     config.vm.provider "virtualbox" do |vb|
         vb.gui = true
@@ -12,13 +13,8 @@ Vagrant.configure("2") do |config|
         s.inline = "winrm quickconfig"
     end
 
-    config.vm.provision "shell" do |s|
-        s.inline = "cd c:/vagrant/src; ./picassio.ps1 -reinstall"
-        s.keep_color = true
-    end
-
-    config.vm.provision "shell" do |s|
-        s.inline = "cd c:/vagrant/tests; picassio -paint"
+    config.vm.provision "shell", run: "always" do |s|
+        s.inline = "cd c:/vagrant/src; ./picassio.ps1 -install; refreshenv"
         s.keep_color = true
     end
 end

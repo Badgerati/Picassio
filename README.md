@@ -9,7 +9,7 @@ Picassio is named so, as you take a just built empty server/computer and 'paint'
 All of Picassio's features (colours) are modularised, allowing for people to have the ability to create extension modules - explained at the end of this document.
 
 # Installing
-Picassio can be installed via Chocolatey:
+[Picassio](https://chocolatey.org/packages/picassio) can be installed via Chocolatey:
 
 ```bash
 choco install picassio

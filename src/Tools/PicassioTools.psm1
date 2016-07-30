@@ -123,7 +123,7 @@ function Test-PicassioInstalled()
 }
 
 # Writes a general message to the console (cyan)
-function Write-Message($message, $speech = $null)
+function Write-Message([string]$message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Cyan
     Speak-Text $message $speech
@@ -136,8 +136,13 @@ function Write-NewLine()
 }
 
 # Writes error text to the console (red)
-function Write-Errors($message, $speech = $null)
+function Write-Errors([string]$message, $speech = $null, [switch]$tag)
 {
+    if ($tag)
+    {
+        $message = "[ERROR] $message"
+    }
+
     Write-Host $message -ForegroundColor Red
     Speak-Text $message $speech
 }
@@ -150,28 +155,33 @@ function Write-Exception($exception)
 }
 
 # Write informative text to the console (green)
-function Write-Information($message, $speech = $null)
+function Write-Information([string]$message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Green
     Speak-Text $message $speech
 }
 
 # Write a stamp message to the console (magenta)
-function Write-Stamp($message, $speech = $null)
+function Write-Stamp([string]$message, $speech = $null)
 {
     Write-Host $message -ForegroundColor Magenta
     Speak-Text $message $speech
 }
 
 # Writes a warning to the console (yellow)
-function Write-Warnings($message, $speech = $null)
+function Write-Warnings([string]$message, $speech = $null, [switch]$tag)
 {
+    if ($tag)
+    {
+        $message = "[WARNING] $message"
+    }
+
     Write-Host $message -ForegroundColor Yellow
     Speak-Text $message $speech
 }
 
 # Writes a header to the console in uppercase (magenta)
-function Write-Header($message)
+function Write-Header([string]$message)
 {
     if ($message -eq $null)
     {
@@ -194,7 +204,7 @@ function Write-Header($message)
 }
 
 # Writes a sub-header to the console in uppercase (dark yellow)
-function Write-SubHeader($message)
+function Write-SubHeader([string]$message)
 {
     if ($message -eq $null)
     {
@@ -217,7 +227,7 @@ function Write-SubHeader($message)
 }
 
 # Speaks the passed text using the passed speech object
-function Speak-Text($text, $speech)
+function Speak-Text([string]$text, $speech)
 {
     if ($speech -eq $null -or [string]::IsNullOrWhiteSpace($text))
     {
@@ -444,7 +454,7 @@ function Run-Command([string]$command, [string]$_args, [bool]$fullOutput = $fals
 
     if ($ignoreFailure)
     {
-        Write-Warnings 'Failures are being suppressed'
+        Write-Warnings 'Failures are being suppressed' -tag
     }
 
     if ($isPowershell)

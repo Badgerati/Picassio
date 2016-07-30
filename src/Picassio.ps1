@@ -486,7 +486,7 @@ try
 
     if ($force)
     {
-        Write-Warnings '[WARNING] You are running Picassio with the -force flag. This may lead to unexpected behaviour.'
+        Write-Warnings 'You are running Picassio with the -force flag. This may lead to unexpected behaviour.' -tag
         if (!(Read-AreYouSure))
         {
             return
@@ -636,7 +636,7 @@ catch [exception]
         Write-Stamp ('Total time taken: {0}' -f $total_stopwatch.Elapsed)
     }
 
-    Write-Warnings 'Picassio failed to finish.' $speech
+    Write-Warnings 'Picassio failed to finish.' -speech $speech
     Pop-Location -ErrorAction SilentlyContinue
 
     # Rollback
