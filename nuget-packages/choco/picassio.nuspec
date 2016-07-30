@@ -8,7 +8,32 @@
     <authors>Badgerati</authors>
     <owners>Badgerati</owners>
     <summary>Picassio is a PowerShell automated provisioning/deployment tool for Windows</summary>
-    <description>Picassio is a PowerShell v3.0+ automated provisioning/deployment tool, which uses a single JSON file to determine what commands to execute.</description>
+    <description>
+Picassio is a PowerShell v3.0+ automated provisioning/deployment tool, which uses a single JSON file to determine what commands to execute.
+
+### Features
+The following are all supported by Picassio:
+
+ * Install/upgrade/uninstall software/packages via Chocolatey, NPM, Bower or NuGet
+ * Clone/checkout repositories from Git/SVN
+ * Build projects/solutions using MSBuild
+ * Run specified commands using either Command Prompt or PowerShell
+ * Install/uninstall and stop/start Windows services
+ * Copy files/folders with inclusions/exclusions
+ * Call Vagrant
+ * Add/remove entries from the hosts file
+ * Add/remove website on IIS
+ * Run node.js applications
+ * Run tests via NUnit
+ * Install/uninstall Windows (optional) features such as Web-Server for IIS
+ * Ability to setup certificates in MMC
+ * Run cake build scripts
+ * Run SQL Server scripts or create/restore backups
+ * Can send emails
+ * Ability to publish/generate scripts for SSDT
+ * Support for Network Load Balancer
+ * Extension modules can be written for third-parties
+    </description>
     <projectUrl>https://github.com/Badgerati/Picassio</projectUrl>
     <packageSourceUrl>https://github.com/Badgerati/Picassio/tree/master/nuget-packages</packageSourceUrl>
     <docsUrl>https://github.com/Badgerati/Picassio/wiki</docsUrl>
