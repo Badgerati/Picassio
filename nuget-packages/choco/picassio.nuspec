@@ -13,7 +13,7 @@
     <packageSourceUrl>https://github.com/Badgerati/Picassio/tree/master/nuget-packages</packageSourceUrl>
     <docsUrl>https://github.com/Badgerati/Picassio/wiki</docsUrl>
     <bugTrackerUrl>https://github.com/Badgerati/Picassio/issues</bugTrackerUrl>
-    <tags>picassio powershell deploy build provision automate test install software iis admin</tags>
+    <tags>picassio powershell json deploy build provision automate test install software iis admin</tags>
     <copyright>Copyright 2016</copyright>
     <licenseUrl>https://github.com/Badgerati/Picassio/blob/master/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
