@@ -510,6 +510,19 @@ try
         return
     }
 
+    # If paint and erase switches are both false or true, exit program
+    if ($paint -and $erase)
+    {
+        Write-Warnings 'You can only specify either the paint or erase flag, not both.'
+        return
+    }
+
+    if (!$validate -and !$paint -and !$erase)
+    {
+        Write-Warnings 'Need to specify either the paint or erase flag.'
+        return
+    }
+
     # Main Picassio logic
     # Check that picassio is installed on the machine
     if (!(Test-PicassioInstalled))
@@ -571,19 +584,6 @@ try
     # If we're only validating, exit the program now
     if ($validate)
     {
-        return
-    }
-
-    # If paint and erase switches are both false or true, exit program
-    if (!$paint -and !$erase)
-    {
-        Write-Warnings 'Need to specify either the paint or erase flags.'
-        return
-    }
-
-    if ($paint -and $erase)
-    {
-        Write-Warnings 'You can only specify either the paint or erase flag, not both.'
         return
     }
 
