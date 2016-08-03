@@ -1,0 +1,20 @@
+{
+    "paint": [
+        {
+            "type": "ms-sql",
+            "connectionString": "server=127.0.0.1;database=Example;Trusted_Connection=True;",
+            "sql": "DELETE FROM [SomeTable]"
+        },
+        {
+            "type": "ms-sql",
+            "connectionString": "server=127.0.0.1;database=Example;Trusted_Connection=True;",
+            "sqlFile": "C:\\Some\\File.sql"
+        },
+        {
+            "type": "ms-sql",
+            "connectionString": "server=127.0.0.1;database=Example;Trusted_Connection=True;",
+            "sql": "INSERT INTO [SomeTable] VALUES ('value', 1)",
+            "notIf": "SELECT TOP 1 * FROM [SomeTable] WHERE SomeValue = 'value'"
+        }
+    ]
+}
