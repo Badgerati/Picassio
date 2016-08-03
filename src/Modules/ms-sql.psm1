@@ -12,13 +12,13 @@
 #    "paint": [
 #        {
 #            "type": "ms-sql",
-#            "connectionString": "server=(local);Databas=Example;Trusted_Connection=True;",
+#            "connectionString": "server=(local);Database=Example;Trusted_Connection=True;",
 #            "sql": "INSERT INTO [SomeTable] VALUES ('value', 1001)",
 #            "notIf": "SELECT TOP 1 * FROM [SomeTable] WHERE SomeValue = 'value'"
 #        },
 #        {
 #            "type": "ms-sql",
-#            "connectionString": "server=(local);Databas=Example;Trusted_Connection=True;",
+#            "connectionString": "server=(local);Database=Example;Trusted_Connection=True;",
 #            "sqlFile": "C:\\path\\to\\some.sql",
 #            "notIf": "SELECT TOP 1 * FROM [SomeTable] WHERE SomeValue = 'value'"
 #        }
