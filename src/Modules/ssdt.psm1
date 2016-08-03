@@ -80,8 +80,16 @@ function Start-Module($colour, $variables, $credentials)
     {
         'publish'
             {
-                $publish = (Replace-Variables $colour.publish $variables).Trim()
-                $publish = Resolve-Path $publish
+                $publish = Replace-Variables $colour.publish $variables
+                if (![string]::IsNullOrWhiteSpace($publish))
+                {
+                    $publish = Resolve-Path $publish
+                    $publish = "/pr:`"$publish`""
+                }
+                else
+                {
+                    $publish = [string]::Empty
+                }
 
                 $backupFirst = Replace-Variables $colour.backupFirst $variables
                 if ([string]::IsNullOrWhiteSpace($backupFirst))
@@ -101,7 +109,7 @@ function Start-Module($colour, $variables, $credentials)
                     $blockOnLoss = $true
                 }
 
-                $final_args = "$final_args /pr:`"$publish`" /p:BackupDatabaseBeforeChanges=$backupFirst /p:CreateNewDatabase=$dropFirst /p:BlockOnPossibleDataLoss=$blockOnLoss"
+                $final_args = "$final_args $publish /p:BackupDatabaseBeforeChanges=$backupFirst /p:CreateNewDatabase=$dropFirst /p:BlockOnPossibleDataLoss=$blockOnLoss"
             }
 
         'script'
@@ -152,13 +160,13 @@ function Test-Module($colour, $variables, $credentials)
         $path = 'C:\Program Files (x86)\Microsoft SQL Server\110\DAC\bin\SqlPackage.exe'
     }
 
-    if (!(Test-Path ($path.Trim())))
+    if (!(Test-Path ($path.Trim())) -and $variables['__initial_validation__'] -eq $false)
     {
         throw "Invalid path to SqlPackage.exe supplied: '$path'."
     }
 
     $source = Replace-Variables $colour.source $variables
-    if ([string]::IsNullOrEmpty($source) -or !(Test-Path ($source.Trim())))
+    if ([string]::IsNullOrWhiteSpace($source) -or (!(Test-Path ($source.Trim())) -and $variables['__initial_validation__'] -eq $false))
     {
         throw "Invalid or empty source path supplied: '$source'."
     }
@@ -168,16 +176,24 @@ function Test-Module($colour, $variables, $credentials)
         'publish'
             {
                 $publish = Replace-Variables $colour.publish $variables
-                if ([string]::IsNullOrEmpty($publish) -or !(Test-Path ($publish.Trim())))
+                if ([string]::IsNullOrWhiteSpace($publish))
                 {
-                    throw "Invalid or empty publish profile path supplied: '$publish'."
+                    $_args = Replace-Variables $colour.arguments $variables
+                    if ([string]::IsNullOrWhiteSpace($_args))
+                    {
+                        throw 'If no publish profile is supplied, then you must supply the appropriate arguments to pass to the SqlPackage tool.'
+                    }
+                }
+                elseif (!(Test-Path ($publish.Trim())) -and $variables['__initial_validation__'] -eq $false)
+                {
+                    throw "Invalid publish profile path supplied: '$publish'."
                 }
             }
 
         'script'
             {
                 $output = Replace-Variables $colour.output $variables
-                if ([string]::IsNullOrEmpty($output))
+                if ([string]::IsNullOrWhiteSpace($output))
                 {
                     throw "Empty output path supplied: '$output'."
                 }
