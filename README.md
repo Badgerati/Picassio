@@ -24,7 +24,7 @@ The following are all supported by Picassio:
 * Run specified commands using either Command Prompt or PowerShell
 * Install/uninstall and stop/start Windows services
 * Copy files/folders with inclusions/exclusions
-* Call Vagrant
+* Create VMs using Vagrant
 * Add/remove entries from the hosts file
 * Add/remove website on IIS
 * Run node.js applications
@@ -32,11 +32,13 @@ The following are all supported by Picassio:
 * Install/uninstall Windows (optional) features such as Web-Server for IIS
 * Ability to setup certificates in MMC
 * Run cake build scripts
-* Run SQL Server scripts or create/restore backups
+* Run SQL Server scripts or create/restore backups using PS-SQL
+* Run SQL scripts directly on a SQL Server
 * Can send emails
 * Ability to publish/generate scripts for SSDT
 * Support for Network Load Balancer
 * Extension modules can be written for third-parties
+* Run cookbooks and recipes using Chef
 
 # Dependencies
 Picassio doesn't depend on any external software to run however, when required it will automatically install the following for you:
@@ -49,6 +51,7 @@ Picassio doesn't depend on any external software to run however, when required i
 * cake
 * NuGet
 * bower
+* Chef
 
 The above will only be installed when Picassio needs to use them. For example, using a Chocolatey type colour to install node.js will automatically install Chocolatey as well, or cloning a Git branch will auto-install Git if needed.
 

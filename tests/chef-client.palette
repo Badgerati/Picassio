@@ -1,0 +1,21 @@
+{
+    "eraseAfterPaint": true,
+    "paint": [
+        {
+            "type": "chef-client",
+            "path": ".",
+            "recipes": [
+                "chef-test-recipe.rb"
+            ]
+        }
+    ],
+    "erase": [
+        {
+            "type": "chocolatey",
+            "ensure": "uninstall",
+            "software": {
+                "chef-client": ""
+            }
+        }
+    ]
+}
