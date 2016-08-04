@@ -23,6 +23,9 @@ bld/
 .vagrant/
 *.box
 
+# Chef
+tests/nodes
+
 # Roslyn cache directories
 *.ide/
 
