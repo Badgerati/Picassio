@@ -182,7 +182,7 @@ function Toggle-Service($name, $state, $restart = $true)
         }
         else
         {
-            Start-Service $name -Force
+            Start-Service $name
         }
     }
     else
