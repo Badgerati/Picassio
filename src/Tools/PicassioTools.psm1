@@ -430,7 +430,7 @@ function Set-EnvironmentVariable($name, $value, $level = 'Machine')
     [Environment]::SetEnvironmentVariable($name, $value, $level)
 
     if (!$?)
-    {1
+    {
         throw "Failed to set environment variable '$name' at '$level' level."
     }
 }

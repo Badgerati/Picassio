@@ -2,6 +2,8 @@
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/Badgerati/Picassio/master/LICENSE.txt)
 
+> NOTE: I have started work a [`Picassio2`](https://github.com/Badgerati/Picassio2) which is code-over-config - making Picassio more flexible
+
 Picassio is a PowerShell v3.0+ automated provisioning/deployment tool, which uses a single JSON file to determine what commands to execute.
 
 Picassio is named so, as you take a just built empty server/computer and 'paint' it like a canvas using Picassio. The JSON file you pass in is called a 'palette' and this contains a 'paint' (with optional 'erase') object which is an array of 'colours'.
